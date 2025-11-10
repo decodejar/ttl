@@ -43,6 +43,6 @@ jobs:
       - name: Commit and push if data changed
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Automated update of bittensor/price_data.json"
-          # The file pattern now points to the file inside the bittensor subfolder.
-          file_pattern: "/price_data.json"
+          commit_message: "Automated update of price_data.json"
+          # This pattern correctly points to the root folder.
+          file_pattern: "price_data.json"
