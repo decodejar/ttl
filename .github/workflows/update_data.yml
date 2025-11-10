@@ -1,5 +1,5 @@
-# This workflow runs a Python script to fetch data from the bittensor subfolder
-# and commits the resulting data file back to the same subfolder.
+# This workflow runs a Python script to fetch data from the root folder
+# and commits the resulting data file back to the same root folder.
 
 name: update-bittensor-price-data
 
@@ -18,7 +18,7 @@ jobs:
   permissions:
     contents: write
     
-    steps:
+  steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
