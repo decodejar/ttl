@@ -45,4 +45,4 @@ jobs:
         with:
           commit_message: "Automated update of bittensor/price_data.json"
           # The file pattern now points to the file inside the bittensor subfolder.
-          file_pattern: "price_data.json"
+          file_pattern: "/price_data.json"
