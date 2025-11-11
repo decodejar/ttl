@@ -143,11 +143,6 @@
              width: 1.25rem !important; /* w-5 */
              height: 1.25rem !important; /* h-5 */
         }
-        /* NEW: Rule to show text link on mobile landscape */
-        #mainContainer.mobile-fullscreen-landscape header a[href="https://x.com/decodejar"].hidden {
-            display: block !important;
-            font-size: 0.75rem !important; /* text-xs */
-        }
         /* --- END: Mobile Fullscreen Optimizations --- */
 
         /* --- Projection Table Styles --- */
@@ -222,16 +217,23 @@
 
         <!-- Page Header -->
         <header class="relative mb-3 h-10 flex items-center justify-between">
-            <!-- Left Element: Logo and Link -->
-            <div class="flex items-center space-x-2">
-                <!-- Image is now a link and visible on all screens -->
-                <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer">
+            <!-- Left Element: Logo and Links -->
+            <div class="flex items-center gap-3">
+                <!-- Image link -->
+                <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="flex-shrink-0">
                     <img src="decode.png" alt="Decode Logo" class="w-10 h-10 rounded-full border border-gray-200" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                 </a>
-                <!-- Text link is hidden on mobile (screens < sm) -->
-                <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="text-sm text-gray-600 hover:text-indigo-500 transition-colors hidden sm:block">
-                    x.com/decodejar
-                </a>
+                <!-- Text links wrapper: Hidden on XS, Stacked on SM, Row on MD+ -->
+                <div class="hidden sm:flex flex-col gap-0.5 md:flex-row md:items-center md:gap-2 text-sm text-gray-600">
+                    <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 transition-colors">
+                        x.com/decodejar
+                    </a>
+                    <!-- Separator: hidden when stacked, visible in row mode -->
+                    <span class="hidden md:block text-gray-400">|</span>
+                    <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 transition-colors">
+                        decodejar.com
+                    </a>
+                </div>
             </div>
 
             <!-- Center Element: Title (Absolutely centered) -->
