@@ -144,7 +144,7 @@
              height: 1.25rem !important; /* h-5 */
         }
         /* NEW: Rule to shrink header links in mobile landscape */
-        #mainContainer.mobile-fullscreen-landscape header .flex.items-center.gap-3 > div {
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper {
              font-size: 0.75rem !important; /* text-xs */
              line-height: 1rem !important; /* leading-4 */
         }
@@ -230,7 +230,7 @@
                     <img src="decode.png" alt="Decode Logo" class="w-10 h-10 rounded-full border border-gray-200" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                 </a>
                 <!-- Text links wrapper: Hidden on XS, Stacked on SM, Row on MD+ -->
-                <div class="hidden sm:flex sm:items-start flex-col gap-0 sm:leading-4 lg:leading-5 lg:flex-row lg:items-center lg:gap-1 text-sm text-gray-600">
+                <div id="headerLinkWrapper" class="hidden sm:flex sm:items-start flex-col gap-0.5 sm:leading-4 md:gap-0 lg:flex-row lg:items-center lg:gap-1 lg:leading-5 text-sm text-gray-600">
                     <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 transition-colors">
                         x.com/decodejar
                     </a>
