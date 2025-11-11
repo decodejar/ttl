@@ -148,6 +148,11 @@
              font-size: 0.75rem !important; /* text-xs */
              line-height: 1rem !important; /* leading-4 */
         }
+        /* NEW: Hide first link and separator in mobile landscape */
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span {
+             display: none !important;
+        }
         
         /* --- END: Mobile Fullscreen Optimizations --- */
 
