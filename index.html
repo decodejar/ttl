@@ -16,7 +16,7 @@
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-EXV4MXZNHJ');
-    </script>   
+    </script>    
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -101,7 +101,7 @@
 
         /* Styles applied by JS for mobile LANDSCAPE fullscreen */
         #mainContainer.mobile-fullscreen-landscape {
-             padding-top: 0.375rem !important;    /* py-1.5 */
+             padding-top: 0.375rem !important;     /* py-1.5 */
              padding-bottom: 0.375rem !important; /* py-1.5 */
         }
         
@@ -145,11 +145,11 @@
         
         /* --- END: Mobile Fullscreen Optimizations --- */
 
-        /* --- Projection Table Styles --- */
-        #projectionTable {
+        /* --- Projection & Band Table Styles --- */
+        #projectionTable,
+        #bandLevelsTable {
             position: absolute;
             top: 12%;
-            left: 10%;
             z-index: 5; /* Below loader (10) but above chart */
             background-color: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(4px);
@@ -161,7 +161,11 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
             border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        #projectionTable h3 {
+        #projectionTable { left: 10%; }
+        #bandLevelsTable { right: 5%; }
+
+        #projectionTable h3,
+        #bandLevelsTable h3 {
             font-weight: 600; /* font-semibold */
             color: #1f2937; /* text-gray-800 */
             margin-bottom: 0.25rem; /* mb-1 */
@@ -171,19 +175,26 @@
             justify-content: space-between;
             align-items: center;
         }
-        #projectionTable div {
+
+        /* Use direct child selector to avoid styling nested divs */
+        #projectionTable > div,
+        #bandLevelsTable > div {
             display: flex;
             justify-content: space-between;
         }
-        #projectionTable div span:first-child {
+
+        #projectionTable > div span:first-child,
+        #bandLevelsTable > div span:first-child {
             margin-right: 1.25rem; /* mr-5 */
             color: #4b5563; /* text-gray-600 */
         }
-        #projectionTable div span:last-child {
+        #projectionTable > div span:last-child,
+        #bandLevelsTable > div span:last-child {
             font-weight: 500; /* font-medium */
             color: #1f2937; /* text-gray-800 */
         }
-        #projectionTable h3 button {
+        #projectionTable h3 button,
+        #bandLevelsTable h3 button {
             margin-left: 0.5rem; /* ml-2 */
             color: #9ca3af; /* text-gray-400 */
             cursor: pointer;
@@ -192,8 +203,10 @@
             padding: 0;
             line-height: 1;
         }
-         #projectionTable h3 button:hover { color: #374151; }
-        /* --- END: Projection Table Styles --- */
+        #projectionTable h3 button:hover,
+        #bandLevelsTable h3 button:hover { color: #374151; }
+        /* --- END: Projection & Band Table Styles --- */
+        
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 flex flex-col items-center h-screen p-2">
@@ -281,6 +294,48 @@
             <!-- Canvas Wrapper: Scales to fill parent card -->
             <div id="chartWrapper" class="relative flex-grow min-h-0">
                 <div id="projectionTable" class="hidden"></div>
+
+                <!-- NEW: Band Levels Table -->
+                <div id="bandLevelsTable" class="hidden">
+                    <h3>
+                        <span>Band Levels (Today)</span>
+                        <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </h3>
+                    <div id="bandLevelBubble">
+                        <span class="inline-flex items-center">
+                            <span class="status-dot bg-red-500 flex-shrink-0"></span>
+                            <span class="whitespace-nowrap">Bubble (80-99)</span>
+                        </span>
+                        <span class="whitespace-nowrap">$N/A - $N/A</span>
+                    </div>
+                    <div id="bandLevelExpensive">
+                        <span class="inline-flex items-center">
+                            <span class="status-dot bg-yellow-400 flex-shrink-0"></span>
+                            <span class="whitespace-nowrap">Expensive (50-80)</span>
+                        </span>
+                        <span class="whitespace-nowrap">$N/A - $N/A</span>
+                    </div>
+                    <div id="bandLevelValue">
+                        <span class="inline-flex items-center">
+                            <span class="status-dot bg-green-500 flex-shrink-0"></span>
+                            <span class="whitespace-nowrap">Value (20-50)</span>
+                        </span>
+                        <span class="whitespace-nowrap">$N/A - $N/A</span>
+                    </div>
+                    <div id="bandLevelDiscount">
+                        <span class="inline-flex items-center">
+                            <span class="status-dot bg-blue-300 flex-shrink-0"></span>
+                            <span class="whitespace-nowrap">Discount (1-20)</span>
+                        </span>
+                        <span class="whitespace-nowrap">$N/A - $N/A</span>
+                    </div>
+                </div>
+                <!-- END: Band Levels Table -->
+                
                 <canvas id="powerLawChart"></canvas>
             </div>
         </div>
@@ -334,6 +389,7 @@
         const showBandsContainer = document.getElementById('showBandsContainer');
         const showBandsCheckbox = document.getElementById('showBandsCheckbox');
         const projectionTable = document.getElementById('projectionTable');
+        const bandLevelsTable = document.getElementById('bandLevelsTable'); // NEW
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
@@ -341,7 +397,7 @@
         /** The hardcoded day offset used by the "Default Offset" model. */
         const HARDCODED_OFFSET = 74;
         /** The maximum day offset value to search for when finding the "Optimal Offset". */
-        const MAX_OFFSET_SEARCH_LIMIT = 730; 
+        const MAX_OFFSET_SEARCH_LIMIT = 730;    
         
         /** The percentage of the log-time range to add as padding to the right of the x-axis. */
         const X_AXIS_PROJECTION_PADDING = 0.33; // 33%
@@ -391,8 +447,8 @@
                 ctx.save();
                 
                 /**
-                const text = 'decodejar';
-                */
+                 const text = 'decodejar';
+                 */
                 const text = 'taotensorlaw.com';
                 
                 // Dynamically set font size based on chart width.
@@ -676,6 +732,28 @@
             const p20Intercept = meanIntercept + p20Residual;
             const p80Intercept = meanIntercept + p80Residual;
 
+            // --- NEW: Update Band Levels Table ---
+            if (bandLevelsTable) {
+                // Calculate current prices at each percentile
+                const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
+                const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
+                const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
+                const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
+                const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
+
+                // Find the *last span* within each named div
+                const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
+                const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
+                const valueEl = document.querySelector('#bandLevelsTable #bandLevelValue > span:last-child');
+                const discountEl = document.querySelector('#bandLevelsTable #bandLevelDiscount > span:last-child');
+
+                if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
+                if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
+                if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+            }
+            // --- END: Update Band Levels Table ---
+            
             // Call projection function (passes full baseData for date calculations)
             calculateProjections(baseData, activeModelParams, projectionTable);
 
@@ -1010,8 +1088,20 @@
          * Event handler for the "Show Bands" checkbox.
          */
         function handleBandToggle() {
-             if (!chart) return;
-             applyBandVisibility(showBandsCheckbox.checked);
+             if (!chart || !bandLevelsTable) return; // Added check for bandLevelsTable
+             
+             const showBands = showBandsCheckbox.checked;
+             
+             // --- NEW: Show/hide band levels table ---
+             if (showBands) {
+                 bandLevelsTable.style.display = ''; // Show it
+                 bandLevelsTable.classList.remove('hidden'); 
+             } else {
+                 bandLevelsTable.style.display = 'none'; // Hide it
+             }
+             // --- END: NEW ---
+
+             applyBandVisibility(showBands);
              chart.update();
         }
 
@@ -1201,19 +1291,19 @@
                 // if (chartCardElement) chartCardElement.style.padding = '';
                 
                 // if (isInFullscreen && isMobile && isLandscape) {
-                //    if (bottomBarElement) bottomBarElement.style.display = 'none'; 
-                //    if (chartCardElement) chartCardElement.style.padding = '0';
+                //     if (bottomBarElement) bottomBarElement.style.display = 'none'; 
+                //     if (chartCardElement) chartCardElement.style.padding = '0';
                 // }
                 // --- END: REMOVED ---
 
                  if (chart) {
-                    setTimeout(() => {
+                     setTimeout(() => {
                          requestAnimationFrame(() => {
                              if (chart) chart.resize();
                          });
-                    }, 50); 
+                     }, 50); 
                  }
-            });
+             });
         }
 
         /**
