@@ -101,7 +101,7 @@
 
         /* Styles applied by JS for mobile LANDSCAPE fullscreen */
         #mainContainer.mobile-fullscreen-landscape {
-             padding-top: 0.375rem !important;     /* py-1.5 */
+             padding-top: 0.375rem !important;      /* py-1.5 */
              padding-bottom: 0.375rem !important; /* py-1.5 */
         }
         
@@ -236,13 +236,11 @@
                 <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="flex-shrink-0">
                     <img src="decode.png" alt="Decode Logo" class="w-10 h-10 rounded-full border border-gray-200" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                 </a>
-                <!-- Text links wrapper: Hidden on XS, Stacked on SM, Row on MD+ -->
-               <div id="headerLinkWrapper" class="hidden sm:flex sm:items-start flex-col gap-0 text-sm text-gray-600 sm:leading-4 md:leading-5 md:text-gray-800 lg:flex-row lg:items-center lg:gap-1 lg:leading-5 lg:text-gray-900">
+                <!-- Text links wrapper: Always stacked when visible -->
+               <div id="headerLinkWrapper" class="hidden sm:flex flex-col items-start gap-0 text-sm text-gray-600 sm:leading-4 md:leading-5 md:text-gray-800 lg:text-gray-900">
                     <a href="https://x.com/decodejar" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 transition-colors">
                         x.com/decodejar
                     </a>
-                    <!-- Separator: hidden when stacked, visible in row mode -->
-                    <span class="hidden lg:block text-gray-400">|</span>
                     <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-500 transition-colors">
                         decodejar.com
                     </a>
@@ -1016,7 +1014,7 @@
                                              }
 
                                              return `Day ~${targetDayIndex.toFixed(0)}`;
-                                        }
+                                         }
                                          return '';
                                      },
                                     label: (context) => {
