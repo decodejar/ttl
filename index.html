@@ -438,9 +438,9 @@
         const redFillColor = 'rgba(239, 68, 68, 0.1)';
 
         // Reusable Line Styles
-        const grayLineStyle = { borderColor: 'rgba(156, 163, 175, 0.7)', borderWidth: 1 };
-        const orangeLineStyle = { borderColor: '#ff6d00', borderWidth: 2 };
-        const grayDashedLineStyle = { borderColor: 'rgba(156, 163, 175, 0.9)', borderWidth: 1, borderDash: [2, 2] };
+        const grayLineStyle = { borderColor: 'rgba(156, 163, 175, 0.7)', borderWidth: 1, borderDash: [] };
+        const orangeLineStyle = { borderColor: '#ff6d00', borderWidth: 2, borderDash: [] };
+        const grayDashedLineStyle = { borderColor: 'rgba(156, 163, 175, 0.9)', borderWidth: 1, borderDash: [4, 4] };
         const grayFineLineStyle = { borderColor: 'rgba(156, 163, 175, 0.7)', borderWidth: 0.5, borderDash: [] };
 
         /**
@@ -865,34 +865,30 @@
                     // --- VISUAL LINE LAYERS (5-10) ---
                     // 5: Price
                     { label: 'TAO Price', data: chartPriceDataPoints, borderColor: 'rgba(0, 0, 0, 1)', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.05)' },
-                    // 6: Median Line
-                    { label: '50th Percentile', data: medianLineData, ...orangeLineStyle },
+                    // 6: Median Line (P50)
+                    { label: '50th Percentile', data: medianLineData }, 
                     // 7: 1st Pctl
-                    { label: '1st Pctl', data: p1LineData, ...grayLineStyle },
+                    { label: '1st Pctl', data: p1LineData },
                     // 8: 99th Pctl
-                    { label: '99th Pctl', data: p99LineData, ...grayLineStyle },
+                    { label: '99th Pctl', data: p99LineData },
                     // 9: 20th Pctl
-                    { label: '20th Pctl', data: p20LineData, ...grayLineStyle },
+                    { label: '20th Pctl', data: p20LineData },
                     // 10: 80th Pctl
-                    { label: '80th Pctl', data: p80LineData, ...grayLineStyle },
+                    { label: '80th Pctl', data: p80LineData },
                 ];
 
                 // Apply updates to existing chart datasets or push new ones
                 datasetsStruct.forEach((struct, i) => {
                     if (chart.data.datasets[i]) {
-                         // Update existing
-                         const isHidden = chart.data.datasets[i].hidden; // Preserve user toggle state for lines
+                         // Update data and core properties
                          Object.assign(chart.data.datasets[i], struct);
-                         // For bands (0-4), visibility is managed by applyBandVisibility, not user toggle directly usually,
-                         // but we preserve state for lines (5-10) so legend clicks stick during updates.
-                         if (i >= 5) chart.data.datasets[i].hidden = isHidden;
                     } else {
                          // Create new
                          chart.data.datasets.push({
                              ...datasetDefaults,
                              ...struct,
-                             // Initialize bands based on checkbox? applyBandVisibility will handle it right after
-                             hidden: i >= 5 ? false : !showBandsCheckbox.checked 
+                             // Default visibility logic handled in applyBandVisibility
+                             hidden: false
                          });
                     }
                 });
@@ -941,16 +937,16 @@
                                 pointHoverRadius: 0, 
                                 pointHitRadius: 15 
                             },
-                            // 6: Median
-                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData, ...orangeLineStyle },
+                            // 6: Median (P50) - Initial style handled by applyBandVisibility
+                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
                             // 7: 1st
-                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData, ...grayLineStyle },
+                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
                             // 8: 99th
-                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData, ...grayLineStyle },
+                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData },
                             // 9: 20th
-                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData, ...grayLineStyle },
+                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData },
                             // 10: 80th
-                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData, ...grayLineStyle },
+                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData },
                         ]
                     },
                     options: {
@@ -1091,6 +1087,7 @@
 
         /**
          * Toggles visibility and styles for band datasets.
+         * Enforces strictly different "views" based on the checkbox state.
          */
         function applyBandVisibility(showBands) {
              if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
@@ -1101,32 +1098,73 @@
              // Indices 5-10 are the Line layers
              
              if (showBands) {
+                 // --- BANDS VIEW ---
                  // Show fill layers
                  for (let i = 0; i <= 4; i++) {
                      if (chart.data.datasets[i]) chart.data.datasets[i].hidden = false;
                  }
                  
-                 // Update Line Styles to be "Fine" (solid)
-                 // We do NOT change the 'hidden' property here, to respect user legend clicks
-                 if (chart.data.datasets[6]) Object.assign(chart.data.datasets[6], orangeLineStyle); // Median
-                 if (chart.data.datasets[7]) Object.assign(chart.data.datasets[7], grayFineLineStyle);
-                 if (chart.data.datasets[8]) Object.assign(chart.data.datasets[8], grayFineLineStyle);
-                 if (chart.data.datasets[9]) Object.assign(chart.data.datasets[9], grayFineLineStyle);
-                 if (chart.data.datasets[10]) Object.assign(chart.data.datasets[10], grayFineLineStyle);
+                 // Enforce "Thin Solid Grey" style for ALL lines
+                 const fineGrey = grayFineLineStyle;
+                 
+                 // P50 (Median)
+                 if (chart.data.datasets[6]) {
+                     Object.assign(chart.data.datasets[6], fineGrey);
+                     chart.data.datasets[6].hidden = false;
+                 }
+                 // P1
+                 if (chart.data.datasets[7]) {
+                     Object.assign(chart.data.datasets[7], fineGrey);
+                     chart.data.datasets[7].hidden = false;
+                 }
+                 // P99
+                 if (chart.data.datasets[8]) {
+                     Object.assign(chart.data.datasets[8], fineGrey);
+                     chart.data.datasets[8].hidden = false;
+                 }
+                 // P20
+                 if (chart.data.datasets[9]) {
+                     Object.assign(chart.data.datasets[9], fineGrey);
+                     chart.data.datasets[9].hidden = false;
+                 }
+                 // P80
+                 if (chart.data.datasets[10]) {
+                     Object.assign(chart.data.datasets[10], fineGrey);
+                     chart.data.datasets[10].hidden = false;
+                 }
                  
              } else {
+                 // --- CLEAN VIEW ---
                  // Hide fill layers
                  for (let i = 0; i <= 4; i++) {
                      if (chart.data.datasets[i]) chart.data.datasets[i].hidden = true;
                  }
 
-                 // Update Line Styles to be "Dashed" (optional visual cue)
-                 // We do NOT change the 'hidden' property here
-                 if (chart.data.datasets[6]) Object.assign(chart.data.datasets[6], orangeLineStyle); // Median stays solid
-                 if (chart.data.datasets[7]) Object.assign(chart.data.datasets[7], grayDashedLineStyle);
-                 if (chart.data.datasets[8]) Object.assign(chart.data.datasets[8], grayDashedLineStyle);
-                 if (chart.data.datasets[9]) Object.assign(chart.data.datasets[9], grayDashedLineStyle);
-                 if (chart.data.datasets[10]) Object.assign(chart.data.datasets[10], grayDashedLineStyle);
+                 // P50 (Median) -> Solid Orange
+                 if (chart.data.datasets[6]) {
+                     Object.assign(chart.data.datasets[6], orangeLineStyle);
+                     chart.data.datasets[6].hidden = false;
+                 }
+                 // P1 -> Dashed Grey
+                 if (chart.data.datasets[7]) {
+                     Object.assign(chart.data.datasets[7], grayDashedLineStyle);
+                     chart.data.datasets[7].hidden = false;
+                 }
+                 // P99 -> Dashed Grey
+                 if (chart.data.datasets[8]) {
+                     Object.assign(chart.data.datasets[8], grayDashedLineStyle);
+                     chart.data.datasets[8].hidden = false;
+                 }
+                 // P20 -> HIDDEN
+                 if (chart.data.datasets[9]) {
+                     Object.assign(chart.data.datasets[9], grayDashedLineStyle); // Style doesn't matter much if hidden
+                     chart.data.datasets[9].hidden = true;
+                 }
+                 // P80 -> HIDDEN
+                 if (chart.data.datasets[10]) {
+                     Object.assign(chart.data.datasets[10], grayDashedLineStyle); // Style doesn't matter much if hidden
+                     chart.data.datasets[10].hidden = true;
+                 }
              }
         }
 
