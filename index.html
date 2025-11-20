@@ -1094,77 +1094,62 @@
                  return;
              }
              
-             // Indices 0-4 are the Band/Fill layers
-             // Indices 5-10 are the Line layers
-             
+             // Helper to force visibility state
+             const setVis = (index, visible) => {
+                 chart.setDatasetVisibility(index, visible);
+                 chart.data.datasets[index].hidden = !visible; 
+             };
+
              if (showBands) {
                  // --- BANDS VIEW ---
-                 // Show fill layers
-                 for (let i = 0; i <= 4; i++) {
-                     if (chart.data.datasets[i]) chart.data.datasets[i].hidden = false;
-                 }
+                 // 1. Show fill layers (0-4)
+                 for (let i = 0; i <= 4; i++) setVis(i, true);
                  
-                 // Enforce "Thin Solid Grey" style for ALL lines
+                 // 2. Enforce "Thin Solid Grey" style for ALL lines (6-10)
                  const fineGrey = grayFineLineStyle;
                  
-                 // P50 (Median)
-                 if (chart.data.datasets[6]) {
-                     Object.assign(chart.data.datasets[6], fineGrey);
-                     chart.data.datasets[6].hidden = false;
-                 }
-                 // P1
-                 if (chart.data.datasets[7]) {
-                     Object.assign(chart.data.datasets[7], fineGrey);
-                     chart.data.datasets[7].hidden = false;
-                 }
-                 // P99
-                 if (chart.data.datasets[8]) {
-                     Object.assign(chart.data.datasets[8], fineGrey);
-                     chart.data.datasets[8].hidden = false;
-                 }
-                 // P20
-                 if (chart.data.datasets[9]) {
-                     Object.assign(chart.data.datasets[9], fineGrey);
-                     chart.data.datasets[9].hidden = false;
-                 }
-                 // P80
-                 if (chart.data.datasets[10]) {
-                     Object.assign(chart.data.datasets[10], fineGrey);
-                     chart.data.datasets[10].hidden = false;
-                 }
+                 // Median (6)
+                 Object.assign(chart.data.datasets[6], fineGrey);
+                 setVis(6, true);
+                 // P1 (7)
+                 Object.assign(chart.data.datasets[7], fineGrey);
+                 setVis(7, true);
+                 // P99 (8)
+                 Object.assign(chart.data.datasets[8], fineGrey);
+                 setVis(8, true);
+                 // P20 (9)
+                 Object.assign(chart.data.datasets[9], fineGrey);
+                 setVis(9, true);
+                 // P80 (10)
+                 Object.assign(chart.data.datasets[10], fineGrey);
+                 setVis(10, true);
                  
              } else {
                  // --- CLEAN VIEW ---
-                 // Hide fill layers
-                 for (let i = 0; i <= 4; i++) {
-                     if (chart.data.datasets[i]) chart.data.datasets[i].hidden = true;
-                 }
+                 // 1. Hide fill layers (0-4)
+                 for (let i = 0; i <= 4; i++) setVis(i, false);
 
-                 // P50 (Median) -> Solid Orange
-                 if (chart.data.datasets[6]) {
-                     Object.assign(chart.data.datasets[6], orangeLineStyle);
-                     chart.data.datasets[6].hidden = false;
-                 }
-                 // P1 -> Dashed Grey
-                 if (chart.data.datasets[7]) {
-                     Object.assign(chart.data.datasets[7], grayDashedLineStyle);
-                     chart.data.datasets[7].hidden = false;
-                 }
-                 // P99 -> Dashed Grey
-                 if (chart.data.datasets[8]) {
-                     Object.assign(chart.data.datasets[8], grayDashedLineStyle);
-                     chart.data.datasets[8].hidden = false;
-                 }
-                 // P20 -> HIDDEN
-                 if (chart.data.datasets[9]) {
-                     Object.assign(chart.data.datasets[9], grayDashedLineStyle); // Style doesn't matter much if hidden
-                     chart.data.datasets[9].hidden = true;
-                 }
-                 // P80 -> HIDDEN
-                 if (chart.data.datasets[10]) {
-                     Object.assign(chart.data.datasets[10], grayDashedLineStyle); // Style doesn't matter much if hidden
-                     chart.data.datasets[10].hidden = true;
-                 }
+                 // 2. Reset lines to default clean view styles
+                 
+                 // P50 (Median) -> Solid Orange, Visible
+                 Object.assign(chart.data.datasets[6], orangeLineStyle);
+                 setVis(6, true);
+                 
+                 // P1 (7) -> Dashed Grey, Visible
+                 Object.assign(chart.data.datasets[7], grayDashedLineStyle);
+                 setVis(7, true);
+                 
+                 // P99 (8) -> Dashed Grey, Visible
+                 Object.assign(chart.data.datasets[8], grayDashedLineStyle);
+                 setVis(8, true);
+                 
+                 // P20 (9) -> Hidden
+                 Object.assign(chart.data.datasets[9], grayDashedLineStyle);
+                 setVis(9, false);
+                 
+                 // P80 (10) -> Hidden
+                 Object.assign(chart.data.datasets[10], grayDashedLineStyle);
+                 setVis(10, false);
              }
         }
 
