@@ -103,7 +103,7 @@
 
         /* Styles applied by JS for mobile LANDSCAPE fullscreen */
         #mainContainer.mobile-fullscreen-landscape {
-             padding-top: 0.375rem !important;      /* py-1.5 */
+             padding-top: 0.375rem !important;       /* py-1.5 */
              padding-bottom: 0.375rem !important; /* py-1.5 */
         }
         
@@ -599,9 +599,9 @@
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                     modelParamDiv.innerHTML = `<strong>Day Offset:</strong> ${HARDCODED_OFFSET} | <strong>Optimal:</strong> ${optimalOffset} (R² ${optimalOffsetRSquared.toFixed(4)})`;
+                      modelParamDiv.innerHTML = `<strong>Day Offset:</strong> ${HARDCODED_OFFSET} | <strong>Optimal:</strong> ${optimalOffset} (R² ${optimalOffsetRSquared.toFixed(4)})`;
                 } else {
-                     modelParamDiv.innerHTML = `<strong>Day Offset:</strong> ${HARDCODED_OFFSET}`;
+                      modelParamDiv.innerHTML = `<strong>Day Offset:</strong> ${HARDCODED_OFFSET}`;
                 }
             }
             
@@ -1402,6 +1402,7 @@
             chart.update('none');
         }
 
+        // Mouse Pan Logic
         function handlePanStart(event) {
             if (!chart) return;
             isPanning = true;
@@ -1452,6 +1453,134 @@
             event.target.style.cursor = 'default';
         }
 
+        // --- NEW: TOUCH EVENT HANDLERS FOR MOBILE (Pan & Zoom) ---
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let isTouching = false;
+        let touchStartMin = 0;
+        let touchStartLogRange = 0;
+
+        function handleTouchStart(e) {
+            if (!chart) return;
+            // Only handle single touch to avoid conflicts if user accidentally taps with 2 fingers
+            if (e.touches.length !== 1) return;
+            
+            // Prevent default behavior (scrolling the page)
+            e.preventDefault();
+
+            isTouching = true;
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+            
+            // Snapshot current chart state for panning reference
+            touchStartMin = chart.options.scales.x.min;
+            const max = chart.options.scales.x.max;
+            touchStartLogRange = Math.log10(max) - Math.log10(touchStartMin);
+        }
+
+        function handleTouchMove(e) {
+            if (!chart || !isTouching || e.touches.length !== 1) return;
+            e.preventDefault(); // Stop page scroll
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            const deltaX = currentX - lastTouchX;
+            const deltaY = currentY - lastTouchY;
+
+            // 1. PANNING LOGIC (Left/Right)
+            // We apply panning based on X movement
+            const chartArea = chart.chartArea;
+            if (chartArea) {
+                const currentMinLog = Math.log10(chart.options.scales.x.min);
+                const currentMaxLog = Math.log10(chart.options.scales.x.max);
+                const logRange = currentMaxLog - currentMinLog;
+                const pixelRange = chartArea.right - chartArea.left;
+                
+                if (pixelRange > 0) {
+                    const logPerPixel = logRange / pixelRange;
+                    const logDelta = deltaX * logPerPixel;
+
+                    let newLogMin = currentMinLog - logDelta;
+                    let newLogMax = newLogMin + logRange;
+
+                    // Boundary checks
+                    const originalMinLog = Math.log10(originalExtendedMinDay);
+                    const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+                    if (newLogMin < originalMinLog) {
+                        newLogMin = originalMinLog;
+                        newLogMax = newLogMin + logRange;
+                    }
+                    if (newLogMax > originalMaxLog) {
+                         newLogMax = originalMaxLog;
+                         newLogMin = newLogMax - logRange;
+                    }
+                    
+                    chart.options.scales.x.min = Math.pow(10, newLogMin);
+                    chart.options.scales.x.max = Math.pow(10, newLogMax);
+                }
+            }
+
+            // 2. ZOOMING LOGIC (Up/Down)
+            // Sliding UP (negative Y delta) zooms IN. Sliding DOWN (positive Y delta) zooms OUT.
+            // Sensitivity constant - smaller means smoother/slower zoom
+            const ZOOM_SENSITIVITY = 0.002; 
+            
+            // Determine zoom factor based on vertical movement
+            // deltaY < 0 (Up) => Factor < 1 (Shrink range/Zoom In)
+            // deltaY > 0 (Down) => Factor > 1 (Expand range/Zoom Out)
+            const zoomFactor = 1 + (deltaY * ZOOM_SENSITIVITY);
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const currentLogRange = currentMaxLog - currentMinLog;
+            
+            // Calculate new range
+            let newLogRange = currentLogRange * zoomFactor;
+
+            // Enforce Min/Max zoom levels
+            const minLogRange = 0.1; 
+            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+
+            if (newLogRange < minLogRange) newLogRange = minLogRange;
+            if (newLogRange > maxLogRange) newLogRange = maxLogRange;
+
+            // Apply zoom centered on the current view
+            const centerLog = (currentMinLog + currentMaxLog) / 2;
+            let newLogMinZoom = centerLog - (newLogRange / 2);
+            let newLogMaxZoom = centerLog + (newLogRange / 2);
+
+            // Boundary checks for zoom
+            const originalMinLog = Math.log10(originalExtendedMinDay);
+            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+            if (newLogMinZoom < originalMinLog) {
+                newLogMinZoom = originalMinLog;
+                newLogMaxZoom = newLogMinZoom + newLogRange;
+            }
+            if (newLogMaxZoom > originalMaxLog) {
+                newLogMaxZoom = originalMaxLog;
+                newLogMinZoom = newLogMaxZoom - newLogRange;
+            }
+            
+            // Apply Zoom results
+            chart.options.scales.x.min = Math.pow(10, newLogMinZoom);
+            chart.options.scales.x.max = Math.pow(10, newLogMaxZoom);
+
+            // Update references for next frame
+            lastTouchX = currentX;
+            lastTouchY = currentY;
+
+            // Redraw
+            refitYAxis();
+            chart.update('none');
+        }
+
+        function handleTouchEnd(e) {
+             isTouching = false;
+        }
+
     // --- SECTION: EVENT LISTENERS ---
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -1475,11 +1604,19 @@
             
             const canvas = document.getElementById('powerLawChart');
             if (canvas) {
+                // Mouse Events
                 canvas.addEventListener('wheel', handleWheelZoom, { passive: false });
                 canvas.addEventListener('mousedown', handlePanStart);
                 canvas.addEventListener('mousemove', handlePanMove);
                 canvas.addEventListener('mouseup', handlePanEnd);
                 canvas.addEventListener('mouseleave', handlePanEnd);
+                
+                // Touch Events (Mobile)
+                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+                canvas.addEventListener('touchend', handleTouchEnd);
+                canvas.addEventListener('touchcancel', handleTouchEnd);
+
                 canvas.style.cursor = 'default'; 
                 
                 canvas.addEventListener('mouseenter', (e) => {
