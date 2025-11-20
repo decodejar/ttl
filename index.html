@@ -162,7 +162,7 @@
             color: #374151; /* text-gray-700 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
             border: 1px solid rgba(0, 0, 0, 0.05);
-            min-width: 180px; /* Ensure a minimum width for drag comfort */
+            min-width: 180px;
         }
         #projectionTable { left: 10%; }
         #bandLevelsTable { left: 10%; }
@@ -177,24 +177,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: move; /* Indicates draggable */
-            user-select: none; /* Prevents text selection while dragging */
+            cursor: move;
+            user-select: none;
         }
 
         /* Use direct child selector to avoid styling nested divs */
         #projectionData > div,
-        #bandLevelsTable > div {
+        #bandLevelsTable > div:not(h3) { /* Exclude h3 from this rule */
             display: flex;
             justify-content: space-between;
         }
 
         #projectionData > div span:first-child,
-        #bandLevelsTable > div span:first-child {
+        #bandLevelsTable > div:not(h3) span:first-child {
             margin-right: 1.25rem; /* mr-5 */
             color: #4b5563; /* text-gray-600 */
         }
         #projectionData > div span:last-child,
-        #bandLevelsTable > div span:last-child {
+        #bandLevelsTable > div:not(h3) span:last-child {
             font-weight: 500; /* font-medium */
             color: #1f2937; /* text-gray-800 */
         }
@@ -218,7 +218,7 @@
 
     <!-- SEO text for search engines -->
     <div class="sr-only">
-        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
+        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by Decode (x.com/decodejar | decodejar.com).
     </div>
 
     <!-- Main application container -->
@@ -311,7 +311,7 @@
                     <div id="projectionData"></div> <!-- Data rows will be injected here -->
                 </div>
 
-                <!-- Band Levels Table -->
+                <!-- UPDATED: Band Levels Table with Static Header ID -->
                 <div id="bandLevelsTable" class="hidden">
                     <h3 id="bandsHeader">
                         <span>Current Bands</span>
@@ -379,8 +379,8 @@
 
     <script>
         /*
-         * TAO Tensor Law Model — by decodejar
-         * Copyright (c) 2025 TAOTENSORLAW.COM. All Rights Reserved.
+         * TAO Tensor Law Model & Regression Logic
+         * Copyright (c) 2025 decodejar.com. All Rights Reserved.
          */
 
         // --- SECTION: GLOBAL ELEMENT REFERENCES ---
@@ -403,7 +403,7 @@
         const showBandsContainer = document.getElementById('showBandsContainer');
         const showBandsCheckbox = document.getElementById('showBandsCheckbox');
         const projectionTable = document.getElementById('projectionTable');
-        const projectionData = document.getElementById('projectionData'); // Updated ref
+        const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
 
@@ -848,14 +848,15 @@
                 chart.data.datasets[2].data = p1LineData;
                 chart.data.datasets[3].data = p99LineData;
 
+                // Note: We removed 'hidden: true' from the definition here so we rely on applyBandVisibility to set state
                 const datasetsToUpdate = [
-                    { index: 4, label: '20th Pctl', data: p20LineData, style: grayLineStyle, hidden: true },
-                    { index: 5, label: '50th Pctl (Hidden)', data: medianLineData, style: grayLineStyle, hidden: true },
-                    { index: 6, label: '80th Pctl', data: p80LineData, style: grayLineStyle, hidden: true },
-                    { index: 7, label: 'Discount Band (P1-P20)', data: p20LineData, fill: 2, backgroundColor: blueFillColor, hidden: true },
-                    { index: 8, label: 'Value Band (P20-P50)', data: medianLineData, fill: 4, backgroundColor: greenFillColor, hidden: true },
-                    { index: 9, label: 'Expensive Band (P50-P80)', data: p80LineData, fill: 1, backgroundColor: yellowFillColor, hidden: true },
-                    { index: 10, label: 'Bubble Band (P80-P99)', data: p99LineData, fill: 6, backgroundColor: redFillColor, hidden: true },
+                    { index: 4, label: '20th Pctl', data: p20LineData, style: grayLineStyle },
+                    { index: 5, label: '50th Pctl (Hidden)', data: medianLineData, style: grayLineStyle, hidden: true }, // Always hidden
+                    { index: 6, label: '80th Pctl', data: p80LineData, style: grayLineStyle },
+                    { index: 7, label: 'Discount Band (P1-P20)', data: p20LineData, fill: 2, backgroundColor: blueFillColor },
+                    { index: 8, label: 'Value Band (P20-P50)', data: medianLineData, fill: 4, backgroundColor: greenFillColor },
+                    { index: 9, label: 'Expensive Band (P50-P80)', data: p80LineData, fill: 1, backgroundColor: yellowFillColor },
+                    { index: 10, label: 'Bubble Band (P80-P99)', data: p99LineData, fill: 6, backgroundColor: redFillColor },
                 ];
 
                 datasetsToUpdate.forEach(dsInfo => {
@@ -863,14 +864,16 @@
                         Object.assign(chart.data.datasets[dsInfo.index], {
                             data: dsInfo.data, label: dsInfo.label, ...(dsInfo.style || {}),
                             ...(dsInfo.fill !== undefined && { fill: dsInfo.fill, backgroundColor: dsInfo.backgroundColor }),
-                            hidden: dsInfo.index === 5 ? true : dsInfo.hidden,
+                            // Only force hidden if it's the redundant 50th percentile line (index 5)
+                            hidden: dsInfo.index === 5 ? true : chart.data.datasets[dsInfo.index].hidden,
                         });
                     } else {
                          chart.data.datasets.push({
                              ...datasetDefaults, ...(dsInfo.style || {}),
                              ...(dsInfo.fill !== undefined ? fillDatasetDefaults : {}),
                              label: dsInfo.label, data: dsInfo.data,
-                             hidden: dsInfo.index === 5 ? true : dsInfo.hidden,
+                             // Initialize as hidden, applyBandVisibility will fix it immediately after
+                             hidden: dsInfo.index === 5 ? true : true, 
                              ...(dsInfo.fill !== undefined && { fill: dsInfo.fill, backgroundColor: dsInfo.backgroundColor }),
                          });
                     }
@@ -1050,8 +1053,86 @@
         }
 
         /**
-         * Updated Function: Calculates projections and updates the data container.
-         * Only updates inner data rows to preserve header event listeners.
+         * Toggles visibility and styles for band datasets.
+         */
+        function applyBandVisibility(showBands) {
+             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
+                 console.error("Chart or datasets not fully initialized for applyBandVisibility.");
+                 return;
+             }
+             const mainMedianIndex = 1;
+             const p1Index = 2; const p99Index = 3;
+             const p20Index = 4; const redundantP50Index = 5; const p80Index = 6;
+             const fillIndices = [7, 8, 9, 10];
+
+             if (chart.data.datasets[0]) chart.data.datasets[0].hidden = false; // Price always visible
+             if (chart.data.datasets[mainMedianIndex]) chart.data.datasets[mainMedianIndex].hidden = false;
+             if (chart.data.datasets[redundantP50Index]) chart.data.datasets[redundantP50Index].hidden = true; // Always hidden
+
+             if (showBands) {
+                 const styleToApply = grayFineLineStyle;
+                 
+                 // Make boundary lines visible
+                 if (chart.data.datasets[p1Index]) { 
+                     chart.data.datasets[p1Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p1Index], styleToApply); 
+                 }
+                 if (chart.data.datasets[p99Index]) { 
+                     chart.data.datasets[p99Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p99Index], styleToApply); 
+                 }
+                 if (chart.data.datasets[p20Index]) { 
+                     chart.data.datasets[p20Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p20Index], styleToApply); 
+                 }
+                 if (chart.data.datasets[p80Index]) { 
+                     chart.data.datasets[p80Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p80Index], styleToApply); 
+                 }
+                 
+                 // Make fill bands visible
+                 fillIndices.forEach(index => { 
+                     if (chart.data.datasets[index]) chart.data.datasets[index].hidden = false; 
+                 });
+
+                 const medianDataset = chart.data.datasets[mainMedianIndex];
+                 if (medianDataset) Object.assign(medianDataset, grayFineLineStyle);
+
+             } else {
+                 const styleToApply = grayDashedLineStyle; 
+                 
+                 // Make p1 and p99 visible but dashed
+                 if (chart.data.datasets[p1Index]) { 
+                     chart.data.datasets[p1Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p1Index], styleToApply); 
+                 }
+                 if (chart.data.datasets[p99Index]) { 
+                     chart.data.datasets[p99Index].hidden = false; 
+                     Object.assign(chart.data.datasets[p99Index], styleToApply); 
+                 }
+                 
+                 // Hide intermediate lines
+                 if (chart.data.datasets[p20Index]) { 
+                     chart.data.datasets[p20Index].hidden = true; 
+                     Object.assign(chart.data.datasets[p20Index], styleToApply); 
+                 }
+                 if (chart.data.datasets[p80Index]) { 
+                     chart.data.datasets[p80Index].hidden = true; 
+                     Object.assign(chart.data.datasets[p80Index], styleToApply); 
+                 }
+
+                 // Hide fill bands
+                 fillIndices.forEach(index => { 
+                     if (chart.data.datasets[index]) chart.data.datasets[index].hidden = true; 
+                 });
+                 
+                 const medianDataset = chart.data.datasets[mainMedianIndex];
+                 if (medianDataset) Object.assign(medianDataset, orangeLineStyle);
+             }
+        }
+
+        /**
+         * Calculates R-squared (coefficient of determination) for the log-log regression.
          */
         function calculateProjections(baseData, modelParams, dataElement) {
             const tableElement = document.getElementById('projectionTable');
