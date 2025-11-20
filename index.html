@@ -162,7 +162,8 @@
             color: #374151; /* text-gray-700 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
             border: 1px solid rgba(0, 0, 0, 0.05);
-            min-width: 180px;
+            width: max-content; /* UPDATED: Hugs content tightly */
+            /* Removed min-width: 180px to eliminate whitespace */
         }
         #projectionTable { left: 10%; }
         #bandLevelsTable { left: 10%; }
