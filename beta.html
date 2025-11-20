@@ -739,7 +739,9 @@
 
 			const logMinDay = Math.log10(firstDayNum);
 			const logMaxDay = Math.log10(lastDayNum);
-			const logDayRange = logMaxDay - logMinDay;
+			
+			// *** CRITICAL FIX: Correcting logPriceRange calculation which was referencing itself (undefined). ***
+			const logPriceRange = logMaxPrice - logMinPrice;
 
 			const extendedMinDay = firstDayNum;
 			let extendedMaxDay;
@@ -756,7 +758,9 @@
 
 			const logMinPrice = Math.log10(minPrice);
 			const logMaxPrice = Math.log10(maxPrice);
-			const logPriceRange = logPriceRange - logMinPrice;
+			// This line was wrong before, referencing itself. It's safe to calculate the range now.
+			const logPriceRange = logMaxPrice - logMinPrice;
+			
 			const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9;	
 			const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4;	
 
@@ -1560,7 +1564,7 @@
 				newLogMax = newLogMin + panStartLogRange;
 			}
 			if (Math.pow(10, newLogMax) > originalExtendedMaxDay) {
-				newLogMax = originalExtendedMaxDay;
+				newLogMax = originalMaxLog;
 				newLogMin = newLogMax - panStartLogRange;
 			}
 			
