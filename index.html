@@ -840,45 +840,67 @@
                 type: 'line', borderWidth: 1, pointRadius: 0, fill: false, pointStyle: 'line'
             };
             const fillDatasetDefaults = {
-                type: 'line', pointRadius: 0, borderWidth: 0, pointStyle: 'line', hidden: true,
+                type: 'line', pointRadius: 0, borderWidth: 0, pointStyle: 'line', tension: 0.1
             };
 
             if (chart) {
-                chart.data.datasets[0].data = chartPriceDataPoints;
-                chart.data.datasets[1].data = medianLineData;
-                chart.data.datasets[2].data = p1LineData;
-                chart.data.datasets[3].data = p99LineData;
+                // 1. Update Data Arrays for Reused Datasets
+                // We need to ensure the chart has enough datasets slots or push new ones
+                // The new structure requires 11 datasets total (0-10).
+                
+                // Define the data structure for the 11 layers
+                const datasetsStruct = [
+                    // --- BOUNDARY/FILL LAYERS (0-4) ---
+                    // 0: Boundary P1 (Base for Discount)
+                    { label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                    // 1: Discount Band (P1-P20) - Fills to 0
+                    { label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                    // 2: Value Band (P20-P50) - Fills to 1
+                    { label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                    // 3: Expensive Band (P50-P80) - Fills to 2
+                    { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                    // 4: Bubble Band (P80-P99) - Fills to 3
+                    { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
-                // Note: We removed 'hidden: true' from the definition here so we rely on applyBandVisibility to set state
-                const datasetsToUpdate = [
-                    { index: 4, label: '20th Pctl', data: p20LineData, style: grayLineStyle },
-                    { index: 5, label: '50th Pctl (Hidden)', data: medianLineData, style: grayLineStyle, hidden: true }, // Always hidden
-                    { index: 6, label: '80th Pctl', data: p80LineData, style: grayLineStyle },
-                    { index: 7, label: 'Discount Band (P1-P20)', data: p20LineData, fill: 2, backgroundColor: blueFillColor },
-                    { index: 8, label: 'Value Band (P20-P50)', data: medianLineData, fill: 4, backgroundColor: greenFillColor },
-                    { index: 9, label: 'Expensive Band (P50-P80)', data: p80LineData, fill: 1, backgroundColor: yellowFillColor },
-                    { index: 10, label: 'Bubble Band (P80-P99)', data: p99LineData, fill: 6, backgroundColor: redFillColor },
+                    // --- VISUAL LINE LAYERS (5-10) ---
+                    // 5: Price
+                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: 'rgba(0, 0, 0, 1)', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.05)' },
+                    // 6: Median Line
+                    { label: '50th Percentile', data: medianLineData, ...orangeLineStyle },
+                    // 7: 1st Pctl
+                    { label: '1st Pctl', data: p1LineData, ...grayLineStyle },
+                    // 8: 99th Pctl
+                    { label: '99th Pctl', data: p99LineData, ...grayLineStyle },
+                    // 9: 20th Pctl
+                    { label: '20th Pctl', data: p20LineData, ...grayLineStyle },
+                    // 10: 80th Pctl
+                    { label: '80th Pctl', data: p80LineData, ...grayLineStyle },
                 ];
 
-                datasetsToUpdate.forEach(dsInfo => {
-                    if (chart.data.datasets[dsInfo.index]) {
-                        Object.assign(chart.data.datasets[dsInfo.index], {
-                            data: dsInfo.data, label: dsInfo.label, ...(dsInfo.style || {}),
-                            ...(dsInfo.fill !== undefined && { fill: dsInfo.fill, backgroundColor: dsInfo.backgroundColor }),
-                            // Only force hidden if it's the redundant 50th percentile line (index 5)
-                            hidden: dsInfo.index === 5 ? true : chart.data.datasets[dsInfo.index].hidden,
-                        });
+                // Apply updates to existing chart datasets or push new ones
+                datasetsStruct.forEach((struct, i) => {
+                    if (chart.data.datasets[i]) {
+                         // Update existing
+                         const isHidden = chart.data.datasets[i].hidden; // Preserve user toggle state for lines
+                         Object.assign(chart.data.datasets[i], struct);
+                         // For bands (0-4), visibility is managed by applyBandVisibility, not user toggle directly usually,
+                         // but we preserve state for lines (5-10) so legend clicks stick during updates.
+                         if (i >= 5) chart.data.datasets[i].hidden = isHidden;
                     } else {
+                         // Create new
                          chart.data.datasets.push({
-                             ...datasetDefaults, ...(dsInfo.style || {}),
-                             ...(dsInfo.fill !== undefined ? fillDatasetDefaults : {}),
-                             label: dsInfo.label, data: dsInfo.data,
-                             // Initialize as hidden, applyBandVisibility will fix it immediately after
-                             hidden: dsInfo.index === 5 ? true : true, 
-                             ...(dsInfo.fill !== undefined && { fill: dsInfo.fill, backgroundColor: dsInfo.backgroundColor }),
+                             ...datasetDefaults,
+                             ...struct,
+                             // Initialize bands based on checkbox? applyBandVisibility will handle it right after
+                             hidden: i >= 5 ? false : !showBandsCheckbox.checked 
                          });
                     }
                 });
+
+                // Remove extra datasets if any (cleanup from old structure)
+                if (chart.data.datasets.length > datasetsStruct.length) {
+                    chart.data.datasets.splice(datasetsStruct.length, chart.data.datasets.length - datasetsStruct.length);
+                }
 
                  applyBandVisibility(showBandsCheckbox.checked);
 
@@ -892,11 +914,23 @@
 
             } else {
                 chart = new Chart(ctx, {
+                    type: 'line',
                     data: {
                         datasets: [
+                            // 0: Boundary P1
+                            { ...fillDatasetDefaults, label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                            // 1: Discount Band
+                            { ...fillDatasetDefaults, label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                            // 2: Value Band
+                            { ...fillDatasetDefaults, label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                            // 3: Expensive Band
+                            { ...fillDatasetDefaults, label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                            // 4: Bubble Band
+                            { ...fillDatasetDefaults, label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
+                            
+                            // 5: Price
                             { 
                                 ...datasetDefaults, 
-                                type: 'line', 
                                 label: 'TAO Price', 
                                 data: chartPriceDataPoints, 
                                 backgroundColor: 'rgba(0, 0, 0, 0.05)', 
@@ -907,16 +941,16 @@
                                 pointHoverRadius: 0, 
                                 pointHitRadius: 15 
                             },
-                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData, ...orangeLineStyle, hidden: false },
-                            { ...datasetDefaults, ...grayLineStyle, label: '1st Pctl', data: p1LineData },
-                            { ...datasetDefaults, ...grayLineStyle, label: '99th Pctl', data: p99LineData },
-                            { ...datasetDefaults, ...grayLineStyle, label: '20th Pctl', data: p20LineData, hidden: true },
-                            { ...datasetDefaults, ...grayLineStyle, label: '50th Pctl (Hidden)', data: medianLineData, hidden: true },
-                            { ...datasetDefaults, ...grayLineStyle, label: '80th Pctl', data: p80LineData, hidden: true },
-                            { ...fillDatasetDefaults, label: 'Discount Band (P1-P20)', data: p20LineData, fill: 2, backgroundColor: blueFillColor },
-                            { ...fillDatasetDefaults, label: 'Value Band (P20-P50)', data: medianLineData, fill: 4, backgroundColor: greenFillColor },
-                            { ...fillDatasetDefaults, label: 'Expensive Band (P50-P80)', data: p80LineData, fill: 1, backgroundColor: yellowFillColor },
-                            { ...fillDatasetDefaults, label: 'Bubble Band (P80-P99)', data: p99LineData, fill: 6, backgroundColor: redFillColor },
+                            // 6: Median
+                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData, ...orangeLineStyle },
+                            // 7: 1st
+                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData, ...grayLineStyle },
+                            // 8: 99th
+                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData, ...grayLineStyle },
+                            // 9: 20th
+                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData, ...grayLineStyle },
+                            // 10: 80th
+                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData, ...grayLineStyle },
                         ]
                     },
                     options: {
@@ -925,7 +959,8 @@
                             legend: {
                                 labels: {
                                     color: '#374151', usePointStyle: true, boxWidth: 30, boxHeight: 12,
-                                    filter: (item) => !item.text.includes('Band') && item.datasetIndex !== 5,
+                                    // Filter out the Band layers (0-4) and only show Price (5) and Lines (6-10)
+                                    filter: (item) => item.datasetIndex >= 5
                                 }
                             },
                             tooltip: {
@@ -956,7 +991,8 @@
                                          return '';
                                      },
                                     label: (context) => {
-                                        if (context.dataset.label.includes('Band') || context.datasetIndex === 5) return null;
+                                        // Hide tooltips for the transparent band layers
+                                        if (context.datasetIndex < 5) return null;
                                         return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
                                     }
                                 }
@@ -1058,77 +1094,39 @@
          */
         function applyBandVisibility(showBands) {
              if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
-                 console.error("Chart or datasets not fully initialized for applyBandVisibility.");
                  return;
              }
-             const mainMedianIndex = 1;
-             const p1Index = 2; const p99Index = 3;
-             const p20Index = 4; const redundantP50Index = 5; const p80Index = 6;
-             const fillIndices = [7, 8, 9, 10];
-
-             if (chart.data.datasets[0]) chart.data.datasets[0].hidden = false; // Price always visible
-             if (chart.data.datasets[mainMedianIndex]) chart.data.datasets[mainMedianIndex].hidden = false;
-             if (chart.data.datasets[redundantP50Index]) chart.data.datasets[redundantP50Index].hidden = true; // Always hidden
-
+             
+             // Indices 0-4 are the Band/Fill layers
+             // Indices 5-10 are the Line layers
+             
              if (showBands) {
-                 const styleToApply = grayFineLineStyle;
-                 
-                 // Make boundary lines visible
-                 if (chart.data.datasets[p1Index]) { 
-                     chart.data.datasets[p1Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p1Index], styleToApply); 
-                 }
-                 if (chart.data.datasets[p99Index]) { 
-                     chart.data.datasets[p99Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p99Index], styleToApply); 
-                 }
-                 if (chart.data.datasets[p20Index]) { 
-                     chart.data.datasets[p20Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p20Index], styleToApply); 
-                 }
-                 if (chart.data.datasets[p80Index]) { 
-                     chart.data.datasets[p80Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p80Index], styleToApply); 
+                 // Show fill layers
+                 for (let i = 0; i <= 4; i++) {
+                     if (chart.data.datasets[i]) chart.data.datasets[i].hidden = false;
                  }
                  
-                 // Make fill bands visible
-                 fillIndices.forEach(index => { 
-                     if (chart.data.datasets[index]) chart.data.datasets[index].hidden = false; 
-                 });
-
-                 const medianDataset = chart.data.datasets[mainMedianIndex];
-                 if (medianDataset) Object.assign(medianDataset, grayFineLineStyle);
-
+                 // Update Line Styles to be "Fine" (solid)
+                 // We do NOT change the 'hidden' property here, to respect user legend clicks
+                 if (chart.data.datasets[6]) Object.assign(chart.data.datasets[6], orangeLineStyle); // Median
+                 if (chart.data.datasets[7]) Object.assign(chart.data.datasets[7], grayFineLineStyle);
+                 if (chart.data.datasets[8]) Object.assign(chart.data.datasets[8], grayFineLineStyle);
+                 if (chart.data.datasets[9]) Object.assign(chart.data.datasets[9], grayFineLineStyle);
+                 if (chart.data.datasets[10]) Object.assign(chart.data.datasets[10], grayFineLineStyle);
+                 
              } else {
-                 const styleToApply = grayDashedLineStyle; 
-                 
-                 // Make p1 and p99 visible but dashed
-                 if (chart.data.datasets[p1Index]) { 
-                     chart.data.datasets[p1Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p1Index], styleToApply); 
-                 }
-                 if (chart.data.datasets[p99Index]) { 
-                     chart.data.datasets[p99Index].hidden = false; 
-                     Object.assign(chart.data.datasets[p99Index], styleToApply); 
-                 }
-                 
-                 // Hide intermediate lines
-                 if (chart.data.datasets[p20Index]) { 
-                     chart.data.datasets[p20Index].hidden = true; 
-                     Object.assign(chart.data.datasets[p20Index], styleToApply); 
-                 }
-                 if (chart.data.datasets[p80Index]) { 
-                     chart.data.datasets[p80Index].hidden = true; 
-                     Object.assign(chart.data.datasets[p80Index], styleToApply); 
+                 // Hide fill layers
+                 for (let i = 0; i <= 4; i++) {
+                     if (chart.data.datasets[i]) chart.data.datasets[i].hidden = true;
                  }
 
-                 // Hide fill bands
-                 fillIndices.forEach(index => { 
-                     if (chart.data.datasets[index]) chart.data.datasets[index].hidden = true; 
-                 });
-                 
-                 const medianDataset = chart.data.datasets[mainMedianIndex];
-                 if (medianDataset) Object.assign(medianDataset, orangeLineStyle);
+                 // Update Line Styles to be "Dashed" (optional visual cue)
+                 // We do NOT change the 'hidden' property here
+                 if (chart.data.datasets[6]) Object.assign(chart.data.datasets[6], orangeLineStyle); // Median stays solid
+                 if (chart.data.datasets[7]) Object.assign(chart.data.datasets[7], grayDashedLineStyle);
+                 if (chart.data.datasets[8]) Object.assign(chart.data.datasets[8], grayDashedLineStyle);
+                 if (chart.data.datasets[9]) Object.assign(chart.data.datasets[9], grayDashedLineStyle);
+                 if (chart.data.datasets[10]) Object.assign(chart.data.datasets[10], grayDashedLineStyle);
              }
         }
 
