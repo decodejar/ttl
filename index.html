@@ -162,6 +162,7 @@
             color: #374151; /* text-gray-700 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
             border: 1px solid rgba(0, 0, 0, 0.05);
+            min-width: 180px; /* Ensure a minimum width for drag comfort */
         }
         #projectionTable { left: 10%; }
         #bandLevelsTable { left: 10%; }
@@ -176,21 +177,23 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: move; /* Indicates draggable */
+            user-select: none; /* Prevents text selection while dragging */
         }
 
         /* Use direct child selector to avoid styling nested divs */
-        #projectionTable > div,
+        #projectionData > div,
         #bandLevelsTable > div {
             display: flex;
             justify-content: space-between;
         }
 
-        #projectionTable > div span:first-child,
+        #projectionData > div span:first-child,
         #bandLevelsTable > div span:first-child {
             margin-right: 1.25rem; /* mr-5 */
             color: #4b5563; /* text-gray-600 */
         }
-        #projectionTable > div span:last-child,
+        #projectionData > div span:last-child,
         #bandLevelsTable > div span:last-child {
             font-weight: 500; /* font-medium */
             color: #1f2937; /* text-gray-800 */
@@ -294,11 +297,23 @@
             </div>
             <!-- Canvas Wrapper: Scales to fill parent card -->
             <div id="chartWrapper" class="relative flex-grow min-h-0">
-                <div id="projectionTable" class="hidden"></div>
+                
+                <!-- UPDATED: Projection Table with Static Header for Drag Support -->
+                <div id="projectionTable" class="hidden">
+                    <h3 id="projectionHeader">
+                        <span>Fair Value</span>
+                        <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </h3>
+                    <div id="projectionData"></div> <!-- Data rows will be injected here -->
+                </div>
 
-                <!-- NEW: Band Levels Table -->
+                <!-- Band Levels Table -->
                 <div id="bandLevelsTable" class="hidden">
-                    <h3>
+                    <h3 id="bandsHeader">
                         <span>Current Bands</span>
                         <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
@@ -364,12 +379,11 @@
 
     <script>
         /*
-         * TAO Tensor Law Model — by decodejar.
-         * Copyright (c) 2025 DECODEJAR.COM. All Rights Reserved.
+         * TAO Tensor Law Model — by decodejar
+         * Copyright (c) 2025 TAOTENSORLAW.COM. All Rights Reserved.
          */
 
         // --- SECTION: GLOBAL ELEMENT REFERENCES ---
-        // --- ADDED missing element references for fullscreen logic ---
         const mainContainer = document.getElementById('mainContainer');
         const headerElement = document.querySelector('header');
         const topBarElement = document.getElementById('topStatusBar');
@@ -378,11 +392,10 @@
         const fsIconEnter = document.getElementById('fsIconEnter');
         const fsIconExit = document.getElementById('fsIconExit');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
-        // --- END: Added references ---
         const growthExponentDiv = document.getElementById('growthExponentDiv');
         const modelFitDiv = document.getElementById('modelFitDiv');
         const loader = document.getElementById('loader');
-        const dataStatusDiv = document.getElementById('dataStatusDiv'); // Renamed from statusDiv
+        const dataStatusDiv = document.getElementById('dataStatusDiv');
         const lastPriceDiv = document.getElementById('lastPriceDiv');
         const priceZoneDiv = document.getElementById('priceZoneDiv');
         const ctx = document.getElementById('powerLawChart').getContext('2d');
@@ -390,34 +403,28 @@
         const showBandsContainer = document.getElementById('showBandsContainer');
         const showBandsCheckbox = document.getElementById('showBandsCheckbox');
         const projectionTable = document.getElementById('projectionTable');
-        const bandLevelsTable = document.getElementById('bandLevelsTable'); // NEW
+        const projectionData = document.getElementById('projectionData'); // Updated ref
+        const bandLevelsTable = document.getElementById('bandLevelsTable');
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        /** The hardcoded day offset used by the "Default Offset" model. */
         const HARDCODED_OFFSET = 74;
-        /** The maximum day offset value to search for when finding the "Optimal Offset". */
         const MAX_OFFSET_SEARCH_LIMIT = 730;    
+        const X_AXIS_PROJECTION_PADDING = 0.33; 
+        const Y_AXIS_BOTTOM_PADDING = 0.1;
+        const Y_AXIS_TOP_PADDING_MIN = 0.1;
+        const Y_AXIS_TOP_PADDING_MAX = 0.33;
         
-        /** The percentage of the log-time range to add as padding to the right of the x-axis. */
-        const X_AXIS_PROJECTION_PADDING = 0.33; // 33%
-        /** The constant percentage of log-price range to add as padding to the bottom of the y-axis. */
-        const Y_AXIS_BOTTOM_PADDING = 0.1; // 10%
-        /** The minimum percentage of log-price range for the top y-axis padding (when fully zoomed in). */
-        const Y_AXIS_TOP_PADDING_MIN = 0.1; // 10%
-        /** The maximum percentage of log-price range for the top y-axis padding (when fully zoomed out). */
-        const Y_AXIS_TOP_PADDING_MAX = 0.33; // 33%
-        
-        let chart; // Global chart instance
-        let baseData = []; // Global store for the raw, unmodified price data {time, dayIndex, y}
-        let priceData = []; // Global store for the *active* model's data (post-offset) {time, dayIndex, y, x}
-        let activeModelParams = {}; // Global store for the active model's parameters (slope, intercept, etc.)
+        let chart; 
+        let baseData = []; 
+        let priceData = []; 
+        let activeModelParams = {}; 
         
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
         let originalExtendedMaxDay = 1000;
-        const ZOOM_FACTOR = 0.1; // 10% zoom per scroll
+        const ZOOM_FACTOR = 0.1;
         let isPanning = false;
         let panStartX = 0;
         let panStartMin = 0;
@@ -446,43 +453,31 @@
                 if (width <= 0 || height <= 0) return; 
 
                 ctx.save();
-                
-                /**
-                 const text = 'decodejar';
-                 */
                 const text = 'taotensorlaw.com';
                 
-                // Dynamically set font size based on chart width.
                 const baseFontSize = Math.max(30, Math.min(80, width / 12)); 
                 ctx.font = `bold ${baseFontSize.toFixed(0)}px Inter, sans-serif`;
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.075)'; 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 
-                // Get center of chart area
                 const centerX = left + width / 2;
                 const centerY = top + height / 2;
-                // Draw text directly in the center
                 ctx.fillText(text, centerX, centerY);
                 
                 ctx.restore();
             }
         };
-        // Register the plugin globally
         Chart.register(watermarkPlugin);
 
         // --- SECTION: DATA & REGRESSION LOGIC ---
 
-        /**
-         * Fetches and parses price data from JSON file.
-         */
         async function loadPriceData() {
             try {
-                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`); // Cache-bust
+                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
                 const data = await response.json();
                  if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
-                // Store in global baseData
                 baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
                 return baseData;
             } catch (error) {
@@ -493,17 +488,12 @@
             }
         }
 
-        /**
-         * Performs linear regression on log-transformed data.
-         * Input data expects { x, y } format.
-         */
         function linearRegression(data) {
             let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
             const validData = data.filter(p => p.y > 0 && p.x > 0);
             const n = validData.length;
             if (n < 2) return { slope: 0, intercept: 0 }; 
             
-            // Sums of log-transformed values
             for (const { x, y } of validData) {
                 const logX = Math.log10(x);
                 const logY = Math.log10(y);
@@ -518,9 +508,6 @@
             return { slope, intercept };
         }
 
-        /**
-         * Calculates sorted residuals (logY - predictedLogY) from the mean regression line.
-         */
         function calculateResiduals(data, slope, intercept) {
             const validData = data.filter(p => p.y > 0 && p.x > 0);
             if (validData.length === 0) return [];
@@ -532,9 +519,6 @@
             }).sort((a, b) => a - b); 
         }
 
-        /**
-         * Gets a specific percentile value from a pre-sorted array of residuals.
-         */
         function getPercentile(sortedResiduals, percentile) {
             if (!sortedResiduals || sortedResiduals.length === 0) return 0;
             const index = (percentile / 100) * (sortedResiduals.length - 1);
@@ -549,9 +533,6 @@
             }
         }
 
-        /**
-         * Finds the optimal day offset by testing a range of values.
-         */
         function findOptimalOffset(baseData, minOffset = 1, maxOffset) {
             let bestOffset = -1;
             let bestRSquared = -Infinity;
@@ -575,21 +556,16 @@
 
         // --- SECTION: CORE APPLICATION LOGIC ---
 
-        /**
-         * Main function to load data, run calculations, and create or update the chart.
-         */
         async function createOrUpdateChart() {
             loader.style.display = 'flex';
             
-            // Load data if not already loaded
             if (baseData.length === 0) {
                 await loadPriceData();
             }
 
-            // Handle data loading failure
             if (!baseData || baseData.length === 0) {
-                if (!dataStatusDiv.innerHTML.includes('Error')) { // Check updated div
-                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`; // Updated
+                if (!dataStatusDiv.innerHTML.includes('Error')) { 
+                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
                 }
                 growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
                 modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
@@ -600,12 +576,10 @@
                 return;
             }
 
-            // --- 1. GET MODEL PARAMETERS BASED ON SELECTION ---
             const useOptimal = useOptimalOffsetCheckbox.checked;
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
             
-            // Find optimal offset, but only search up to our defined limit
             const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
             
             if (useOptimal) {
@@ -623,7 +597,6 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                // Show comparison to optimal
                 if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
                      modelParamDiv.innerHTML = `<strong>Day Offset:</strong> ${HARDCODED_OFFSET} | <strong>Optimal:</strong> ${optimalOffset} (R² ${optimalOffsetRSquared.toFixed(4)})`;
                 } else {
@@ -631,7 +604,6 @@
                 }
             }
             
-            // Store final model params
             activeModelParams = {
                 modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
                 activeDayOffset: activeDayOffset,
@@ -639,40 +611,35 @@
                 meanIntercept: meanIntercept
             };
 
-            // --- 2. UPDATE UI & CALCULATE AXES (using model data) ---
             if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
             
-            const lastBaseDataPoint = baseData[baseData.length - 1]; // Get "real" last data point
+            const lastBaseDataPoint = baseData[baseData.length - 1]; 
             const lastTimestamp = lastBaseDataPoint.time; 
             const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
                 year: 'numeric', month: 'short', day: 'numeric'
             });
 
-            // --- New Status Logic ---
             const now = new Date().getTime();
             const diffMs = now - lastTimestamp;
             const oneDayMs = 24 * 60 * 60 * 1000;
             const sevenDaysMs = 7 * oneDayMs;
 
-            let dotColor = "bg-red-500"; // Default to red (older than 7 days)
+            let dotColor = "bg-red-500"; 
             if (diffMs < oneDayMs) {
-                dotColor = "bg-green-500"; // Green (within 24 hours)
+                dotColor = "bg-green-500"; 
             } else if (diffMs < sevenDaysMs) {
-                dotColor = "bg-yellow-400"; // Yellow (within 7 days)
+                dotColor = "bg-yellow-400"; 
             }
             
             dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><strong>Updated:</strong>&nbsp;${lastUpdateDate}`;
-            // --- End New Status Logic ---
 
             lastPriceDiv.innerHTML = `<strong>Price:</strong> $${lastBaseDataPoint.y.toFixed(2)}`;
             lastPriceDiv.classList.remove('hidden');
 
-            // Calculate axis ranges based on the *active* priceData
             const chartPrices = priceData.map(p => p.y);
             const minPrice = Math.min(...chartPrices);
             const maxPrice = Math.max(...chartPrices);
 
-            // X-Axis Range (with projection)
             const firstDayNum = priceData[0].x;
             const lastDayNum = priceData[priceData.length - 1].x; 
 
@@ -684,24 +651,21 @@
             let extendedMaxDay;
 
             if (logDayRange > 0) {
-                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING); // USE CONSTANT
+                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
                 extendedMaxDay = Math.pow(10, extendedLogMaxDay);
             } else {
-                extendedMaxDay = lastDayNum * 1.4; // Fallback
+                extendedMaxDay = lastDayNum * 1.4; 
             }
 
-            // Store the full range for this model for zoom reset
             originalExtendedMinDay = extendedMinDay;
             originalExtendedMaxDay = extendedMaxDay;
 
-            // Y-Axis Range (with padding)
             const logMinPrice = Math.log10(minPrice);
             const logMaxPrice = Math.log10(maxPrice);
             const logPriceRange = logMaxPrice - logMinPrice;
-            const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9; // USE CONSTANT
-            const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4; // USE MAX CONSTANT
+            const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9; 
+            const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4; 
 
-            // --- 3. MODEL CALCULATIONS (using regression priceData) ---
             const lastModelDataPoint = priceData[priceData.length - 1];
             const sortedResiduals = calculateResiduals(priceData, slope, meanIntercept);
 
@@ -711,7 +675,6 @@
             const p20Residual = getPercentile(sortedResiduals, 20);
             const p80Residual = getPercentile(sortedResiduals, 80);
 
-            // Determine current price zone
             const lastLogX = Math.log10(lastModelDataPoint.x);
             const lastLogY = Math.log10(lastModelDataPoint.y);
             const predictedLastLogY = slope * lastLogX + meanIntercept;
@@ -733,16 +696,13 @@
             const p20Intercept = meanIntercept + p20Residual;
             const p80Intercept = meanIntercept + p80Residual;
 
-            // --- NEW: Update Band Levels Table ---
             if (bandLevelsTable) {
-                // Calculate current prices at each percentile
                 const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
                 const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
                 const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
                 const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
                 const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
 
-                // Find the *last span* within each named div
                 const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
                 const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
                 const valueEl = document.querySelector('#bandLevelsTable #bandLevelValue > span:last-child');
@@ -750,15 +710,12 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
-            // --- END: Update Band Levels Table ---
             
-            // Call projection function (passes full baseData for date calculations)
-            calculateProjections(baseData, activeModelParams, projectionTable);
+            calculateProjections(baseData, activeModelParams, projectionData);
 
-            // --- Update Bottom Status Bar ---
             growthExponentDiv.innerHTML = `<strong>Exponent (α):</strong> ${slope.toFixed(3)}`;
             
             let fitColorClass = "";
@@ -769,7 +726,6 @@
             
             modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span><strong>Fit (R²):</strong> ${rSquared.toFixed(4)}`;
             
-            // --- 4. GENERATE CHART DATA ---
             const startIndex = extendedMinDay;
             const endIndex = extendedMaxDay;
             const calculateLinePoints = (intercept) => {
@@ -790,13 +746,7 @@
 
             loader.style.display = 'none';
 
-            // --- 5. CHART AXES & DATASET CREATION ---
-
-            /**
-             * Generates ticks for the X-axis (Time) based on Jan 1st of each year.
-             * This includes finding years within the data and projecting future years.
-             */
-             const xAxisAfterBuildTicks = (axis) => {
+            const xAxisAfterBuildTicks = (axis) => {
                  if (!priceData || priceData.length === 0 || !baseData || baseData.length === 0) return;
                  
                  const newTicks = [];
@@ -805,25 +755,20 @@
 
                  const { activeDayOffset } = activeModelParams;
 
-                 // Find maxYear for projection ticks
                  const firstDayIndex = baseData[0].dayIndex;
                  const firstDayTime = baseData[0].time;
                  const lastDayIndex = baseData[baseData.length - 1].dayIndex;
                  const lastDayTime = baseData[baseData.length - 1].time;
                  
                  let maxYear;
-                 let msPerDay = (1000 * 60 * 60 * 24); // fallback
+                 let msPerDay = (1000 * 60 * 60 * 24); 
 
                  if (lastDayIndex > firstDayIndex) {
-                     // Estimate ms per dayIndex from the base data
                      msPerDay = (lastDayTime - firstDayTime) / (lastDayIndex - firstDayIndex);
-                     // Find the projected dayIndex at the end of the axis
                      const maxDayIndexOnAxis = axisMaxDay - activeDayOffset;
-                     // Estimate the time of that projected dayIndex
                      const projectedTime = firstDayTime + (maxDayIndexOnAxis - firstDayIndex) * msPerDay;
                      maxYear = new Date(projectedTime).getFullYear();
                  } else {
-                     // Fallback if data is weird (e.g., only one day)
                      maxYear = new Date(lastDayTime).getFullYear() + 5;
                  }
                  
@@ -831,17 +776,14 @@
                  const firstDataYear = new Date(baseData[0].time).getFullYear();
                  const lastDataYear = new Date(lastDayTime).getFullYear();
 
-                 // Loop 1: Find ticks for years *within* the data
                  for (let year = firstDataYear; year <= lastDataYear; year++) {
                    const yearStartTime = new Date(year, 0, 1).getTime();
-                   // Find the first data point on or after Jan 1st of that year
                    const dayData = baseData.find(p => p.time >= yearStartTime);
                    
                    if (!dayData) continue;
                    
-                   // Get the year from the found data point's time to handle edge cases
                    const actualYear = new Date(dayData.time).getFullYear();
-                   if (actualYear > year && year > firstDataYear) continue; // Already found a tick for the previous year
+                   if (actualYear > year && year > firstDataYear) continue; 
 
                    if (year > lastYearFound) {
                         const xValue = dayData.dayIndex + activeDayOffset;
@@ -852,11 +794,9 @@
                    }
                  }
 
-                 // Loop 2: Estimate ticks for *future* years
                  for (let year = lastDataYear + 1; year <= maxYear; year++) {
                    const yearStartTime = new Date(year, 0, 1).getTime();
                    
-                   // Estimate the dayIndex for this future Jan 1st
                    const diffTime = yearStartTime - firstDayTime;
                    const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
                    
@@ -867,40 +807,34 @@
                    }
                  }
                  
-                 axis.ticks.length = 0; // Clear existing ticks
+                 axis.ticks.length = 0; 
                  const validTicks = newTicks.filter(tick => !isNaN(tick.value) && tick.label);
                  axis.ticks.push(...validTicks);
              };
 
-            /**
-             * Manually generates Y-axis ticks for powers of 10.
-             */
             function yAxisAfterBuildTicks(axis) {
                 const newTicks = [];
                 const min = axis.min;
                 const max = axis.max;
 
-                // Find the starting power of 10
                 let startingPower = Math.floor(Math.log10(min));
-                let currentMagnitude = Math.pow(10, startingPower); // e.g., 10, 100, 1000
+                let currentMagnitude = Math.pow(10, startingPower); 
 
                 while (currentMagnitude < max) {
-                    // Add minor ticks (1, 2, 3 ... 9 or 10, 20, 30, ... 90)
                     for (let i = 1; i <= 9; i++) {
                         const tickValue = currentMagnitude * i;
-                        if (tickValue > max) break; // Stop if we go past the axis max
+                        if (tickValue > max) break; 
                         if (tickValue >= min) {
                             newTicks.push({ value: tickValue });
                         }
                     }
-                    currentMagnitude *= 10; // Move to the next magnitude (e.g., 100, 1000)
+                    currentMagnitude *= 10; 
                 }
 
-                axis.ticks.length = 0; // Clear existing ticks
+                axis.ticks.length = 0; 
                 axis.ticks.push(...newTicks);
             }
 
-            // --- 5. CHART UPDATE OR CREATION ---
             const datasetDefaults = {
                 type: 'line', borderWidth: 1, pointRadius: 0, fill: false, pointStyle: 'line'
             };
@@ -909,7 +843,6 @@
             };
 
             if (chart) {
-                // --- Update Existing Chart ---
                 chart.data.datasets[0].data = chartPriceDataPoints;
                 chart.data.datasets[1].data = medianLineData;
                 chart.data.datasets[2].data = p1LineData;
@@ -950,11 +883,10 @@
                 chart.options.scales.y.min = extendedMinPrice;
                 chart.options.scales.y.max = extendedMaxPrice;
                 chart.options.scales.x.afterBuildTicks = xAxisAfterBuildTicks;
-                chart.options.scales.y.afterBuildTicks = yAxisAfterBuildTicks; // Re-apply custom Y ticks
+                chart.options.scales.y.afterBuildTicks = yAxisAfterBuildTicks; 
                 chart.update();
 
             } else {
-                // --- Create New Chart ---
                 chart = new Chart(ctx, {
                     data: {
                         datasets: [
@@ -967,9 +899,9 @@
                                 borderColor: 'rgba(0, 0, 0, 1)', 
                                 borderWidth: 2, 
                                 tension: 0.1, 
-                                pointRadius: 0, // Explicitly invisible
-                                pointHoverRadius: 0, // Set to 0 to hide hover point
-                                pointHitRadius: 15 // Large invisible hit box
+                                pointRadius: 0, 
+                                pointHoverRadius: 0, 
+                                pointHitRadius: 15 
                             },
                             { ...datasetDefaults, label: '50th Percentile', data: medianLineData, ...orangeLineStyle, hidden: false },
                             { ...datasetDefaults, ...grayLineStyle, label: '1st Pctl', data: p1LineData },
@@ -997,7 +929,7 @@
                                      title: (tooltipItems) => {
                                          if (tooltipItems.length > 0) {
                                              const item = tooltipItems[0];
-                                             const dayNumber = item.parsed.x; // This is the x-value on the chart
+                                             const dayNumber = item.parsed.x; 
                                              
                                              const { activeDayOffset } = activeModelParams;
                                              let targetDayIndex = dayNumber - activeDayOffset;
@@ -1005,7 +937,6 @@
                                              let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
                                              
                                              if (!dataPoint) {
-                                                 // Fallback for projected points: find closest
                                                  dataPoint = baseData.reduce((prev, curr) => {
                                                      return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
                                                  });
@@ -1073,7 +1004,6 @@
                 });
             }
 
-            // --- 6. FINAL EVENT LISTENERS ---
             showBandsContainer.classList.remove('hidden');
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
@@ -1085,71 +1015,22 @@
             if(chart) chart.update('none'); 
         }
 
-        /**
-         * Event handler for the "Show Bands" checkbox.
-         */
         function handleBandToggle() {
-             if (!chart || !bandLevelsTable) return; // Added check for bandLevelsTable
+             if (!chart || !bandLevelsTable) return; 
              
              const showBands = showBandsCheckbox.checked;
              
-             // --- NEW: Show/hide band levels table ---
              if (showBands) {
-                 bandLevelsTable.style.display = ''; // Show it
+                 bandLevelsTable.style.display = ''; 
                  bandLevelsTable.classList.remove('hidden'); 
              } else {
-                 bandLevelsTable.style.display = 'none'; // Hide it
+                 bandLevelsTable.style.display = 'none'; 
              }
-             // --- END: NEW ---
 
              applyBandVisibility(showBands);
              chart.update();
         }
 
-        /**
-         * Toggles visibility and styles for band datasets.
-         */
-        function applyBandVisibility(showBands) {
-             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
-                 console.error("Chart or datasets not fully initialized for applyBandVisibility.");
-                 return;
-             }
-             const mainMedianIndex = 1;
-             const p1Index = 2; const p99Index = 3;
-             const p20Index = 4; const redundantP50Index = 5; const p80Index = 6;
-             const fillIndices = [7, 8, 9, 10];
-
-             if (chart.data.datasets[0]) chart.setDatasetVisibility(0, true); // Price
-             if (chart.data.datasets[mainMedianIndex]) chart.setDatasetVisibility(mainMedianIndex, true);
-             if (chart.data.datasets[redundantP50Index]) chart.setDatasetVisibility(redundantP50Index, false); // Always hidden
-
-             if (showBands) {
-                 const styleToApply = grayFineLineStyle;
-                 if (chart.data.datasets[p1Index]) { chart.setDatasetVisibility(p1Index, true); Object.assign(chart.data.datasets[p1Index], styleToApply); }
-                 if (chart.data.datasets[p99Index]) { chart.setDatasetVisibility(p99Index, true); Object.assign(chart.data.datasets[p99Index], styleToApply); }
-                 if (chart.data.datasets[p20Index]) { chart.setDatasetVisibility(p20Index, true); Object.assign(chart.data.datasets[p20Index], styleToApply); }
-                 if (chart.data.datasets[p80Index]) { chart.setDatasetVisibility(p80Index, true); Object.assign(chart.data.datasets[p80Index], styleToApply); }
-                 
-                 fillIndices.forEach(index => { if (chart.data.datasets[index]) chart.setDatasetVisibility(index, true); });
-                 const medianDataset = chart.data.datasets[mainMedianIndex];
-                 if (medianDataset) Object.assign(medianDataset, grayFineLineStyle);
-
-             } else {
-                 const styleToApply = grayDashedLineStyle; 
-                 if (chart.data.datasets[p1Index]) { chart.setDatasetVisibility(p1Index, true); Object.assign(chart.data.datasets[p1Index], styleToApply); }
-                 if (chart.data.datasets[p99Index]) { chart.setDatasetVisibility(p99Index, true); Object.assign(chart.data.datasets[p99Index], styleToApply); }
-                 if (chart.data.datasets[p20Index]) { chart.setDatasetVisibility(p20Index, false); Object.assign(chart.data.datasets[p20Index], styleToApply); }
-                 if (chart.data.datasets[p80Index]) { chart.setDatasetVisibility(p80Index, false); Object.assign(chart.data.datasets[p80Index], styleToApply); }
-
-                 fillIndices.forEach(index => { if (chart.data.datasets[index]) chart.setDatasetVisibility(index, false); });
-                 const medianDataset = chart.data.datasets[mainMedianIndex];
-                 if (medianDataset) Object.assign(medianDataset, orangeLineStyle);
-             }
-        }
-
-        /**
-         * Calculates R-squared (coefficient of determination) for the log-log regression.
-         */
         function calculateRSquared(data, slope, intercept) {
             let ss_tot = 0, ss_res = 0, y_mean = 0;
             const validData = data.filter(p => p.y > 0 && p.x > 0);
@@ -1169,21 +1050,21 @@
         }
 
         /**
-         * Calculates and displays future price projections in the floating table.
+         * Updated Function: Calculates projections and updates the data container.
+         * Only updates inner data rows to preserve header event listeners.
          */
-        function calculateProjections(baseData, modelParams, tableElement) {
-            if (!baseData || baseData.length === 0 || !tableElement || !modelParams) {
+        function calculateProjections(baseData, modelParams, dataElement) {
+            const tableElement = document.getElementById('projectionTable');
+            
+            if (!baseData || baseData.length === 0 || !modelParams) {
                 if(tableElement) tableElement.classList.add('hidden');
                 return;
             }
 
             const { slope, meanIntercept, activeDayOffset } = modelParams;
-
-            // 1. Get the reference date and dayIndex from the *first data point*
             const firstDataPointDate = new Date(baseData[0].time);
-            const firstDayIndex = baseData[0].dayIndex; // e.g., 1
+            const firstDayIndex = baseData[0].dayIndex; 
             
-            // 2. Define target dates dynamically
             const today = new Date();
             const currentYear = today.getFullYear();
             const targetDates = [
@@ -1192,17 +1073,13 @@
                 { label: `${currentYear + 2}`, date: new Date(currentYear + 2, 0, 1) },
                 { label: `${currentYear + 3}`, date: new Date(currentYear + 3, 0, 1) }
             ];
-
             const MS_PER_DAY = 1000 * 60 * 60 * 24;
-
-            // 3. Helper function to get the target dayIndex
             const getDayIndex = (targetDate) => {
                 const diffTime = targetDate.getTime() - firstDataPointDate.getTime();
                 const diffDays = Math.round(diffTime / MS_PER_DAY);
                 return firstDayIndex + diffDays;
             };
 
-            // 4. Helper function to calculate price using the active model's formula
             const calculatePrice = (targetDayIndex) => {
                 let dayForLog = targetDayIndex + activeDayOffset;
                 if (dayForLog <= 0) return NaN; 
@@ -1210,43 +1087,97 @@
                 return Math.pow(10, slope * logX + meanIntercept);
             };
 
-            // 5. Build HTML
-            let tableHtml = `
-                <h3>
-                    <span>Fair Value</span>
-                    <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </h3>`;
-
-            // 6. Calculate and build HTML for each price
+            let rowsHtml = '';
             targetDates.forEach(item => {
                 const targetDayIndex = getDayIndex(item.date); 
                 const projectedPrice = calculatePrice(targetDayIndex);
-                
                 const priceString = isNaN(projectedPrice) ? "N/A" : `$${projectedPrice.toFixed(2)}`;
-                const label = item.label;
-
-                tableHtml += `
+                rowsHtml += `
                     <div>
-                        <span>${label}</span>
+                        <span>${item.label}</span>
                         <span>${priceString}</span>
                     </div>
                 `;
             });
 
-            tableElement.innerHTML = tableHtml;
-            tableElement.style.display = ''; 
-            tableElement.classList.remove('hidden');
+            if (dataElement) dataElement.innerHTML = rowsHtml;
+            if (tableElement) {
+                tableElement.style.display = ''; 
+                tableElement.classList.remove('hidden');
+            }
         }
+
+        /**
+         * NEW: Helper to make elements draggable via their header.
+         * Supports Mouse and Touch events.
+         */
+        function makeDraggable(element, handle) {
+            if (!element || !handle) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            const startDrag = (e) => {
+                // Prevent default behavior to stop text selection, etc.
+                if (e.type === 'touchstart') {
+                     // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
+                } else {
+                     e.preventDefault();
+                }
+                
+                isDragging = true;
+                
+                // Get start position (mouse or touch)
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                
+                // Get current element position
+                const rect = element.getBoundingClientRect();
+                
+                // We use offsetLeft/Top relative to the parent container
+                initialLeft = element.offsetLeft;
+                initialTop = element.offsetTop;
+
+                handle.style.cursor = 'grabbing';
+            };
+
+            const drag = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                element.style.left = `${initialLeft + dx}px`;
+                element.style.top = `${initialTop + dy}px`;
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+                handle.style.cursor = 'move';
+            };
+
+            // Attach events to handle
+            handle.addEventListener('mousedown', startDrag);
+            handle.addEventListener('touchstart', startDrag, { passive: false });
+
+            // Attach events to document/window to track movement outside the handle
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
 
         // --- SECTION: CHART INTERACTIVITY (PAN & ZOOM) ---
 
-        /**
-         * Toggles fullscreen mode for the main container.
-         */
         function toggleFullScreen() {
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 if (mainContainer.requestFullscreen) mainContainer.requestFullscreen().catch(err => console.error(`Error entering fullscreen: ${err.message}`));
@@ -1257,10 +1188,6 @@
             }
         }
 
-        /**
-         * Handles UI changes on fullscreen, resize, and orientation change.
-         * --- MODIFIED: Uncommented logic and ensured element references are used ---
-         */
         function handleFullscreenChange() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -1277,25 +1204,11 @@
                     fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
                 }
 
-                // --- MODIFIED: Apply/remove class instead of inline styles ---
                 if (isInFullscreen && isMobile && isLandscape) {
                    mainContainer.classList.add('mobile-fullscreen-landscape');
                 } else {
                    mainContainer.classList.remove('mobile-fullscreen-landscape');
                 }
-                // --- END: MODIFIED ---
-
-                // --- REMOVED: Old inline style logic ---
-                // if (headerElement) headerElement.style.display = '';
-                // if (bottomBarElement) bottomBarElement.style.display = '';
-                // if (topBarElement) topBarElement.style.display = '';
-                // if (chartCardElement) chartCardElement.style.padding = '';
-                
-                // if (isInFullscreen && isMobile && isLandscape) {
-                //     if (bottomBarElement) bottomBarElement.style.display = 'none'; 
-                //     if (chartCardElement) chartCardElement.style.padding = '0';
-                // }
-                // --- END: REMOVED ---
 
                  if (chart) {
                      setTimeout(() => {
@@ -1307,9 +1220,6 @@
              });
         }
 
-        /**
-         * Recalculates Y-axis limits based on the current X-axis view.
-         */
         function refitYAxis() {
             if (!chart || !priceData || priceData.length === 0) return;
 
@@ -1332,7 +1242,6 @@
 
             let extendedMinPrice, extendedMaxPrice;
             
-            // Calculate current X-axis zoom ratio
             const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
             const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
             let zoomRatio = 1.0; 
@@ -1342,7 +1251,6 @@
                  if (zoomRatio < 0.0) zoomRatio = 0.0;
             }
             
-            // Interpolate top padding
             const minTopPadding = Y_AXIS_TOP_PADDING_MIN;
             const maxTopPadding = Y_AXIS_TOP_PADDING_MAX;
             const dynamicTopPadding = minTopPadding + (maxTopPadding - minTopPadding) * zoomRatio;
@@ -1360,9 +1268,6 @@
             chart.options.scales.y.max = extendedMaxPrice;
         }
 
-        /**
-         * Handles zooming the X-axis with the mouse wheel.
-         */
         function handleWheelZoom(event) {
             if (!chart || !priceData || priceData.length === 0) return;
             event.preventDefault(); 
@@ -1370,7 +1275,6 @@
             const chartArea = chart.chartArea;
             if (!chartArea) return;
 
-            // 1. Get cursor position and its log-scale value
             const rect = event.target.getBoundingClientRect();
             let cursorX = event.clientX - rect.left;
             
@@ -1384,22 +1288,18 @@
             const cursorPct = (chartArea.right - chartArea.left > 0) ? (cursorX - chartArea.left) / (chartArea.right - chartArea.left) : 0;
             const logAtCursor = currentMinLog + (currentLogRange * cursorPct);
 
-            // 2. Calculate new range
             const zoomDirection = event.deltaY < 0 ? (1 - ZOOM_FACTOR) : (1 + ZOOM_FACTOR);
             let newLogRange = currentLogRange * zoomDirection;
 
-            // 3. Boundary checks for zoom level
             const minLogRange = 0.1; 
             const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
             
             if (newLogRange < minLogRange) newLogRange = minLogRange;
             if (maxLogRange > minLogRange && newLogRange > maxLogRange) newLogRange = maxLogRange;
 
-            // 4. Calculate new min/max based on cursor position
             let newLogMin = logAtCursor - (newLogRange * cursorPct);
             let newLogMax = newLogMin + newLogRange;
             
-            // 5. Boundary checks for panning
             const originalMinLog = Math.log10(originalExtendedMinDay);
             const originalMaxLog = Math.log10(originalExtendedMaxDay);
 
@@ -1413,20 +1313,13 @@
             }
             if (newLogMin < originalMinLog) newLogMin = originalMinLog;
 
-            // 6. Apply new X-axis
             chart.options.scales.x.min = Math.pow(10, newLogMin);
             chart.options.scales.x.max = Math.pow(10, newLogMax);
 
-            // 7. Refit Y-axis
             refitYAxis();
-
-            // 8. Update chart
             chart.update('none');
         }
 
-        /**
-         * Handles starting the pan action.
-         */
         function handlePanStart(event) {
             if (!chart) return;
             isPanning = true;
@@ -1436,9 +1329,6 @@
             event.target.style.cursor = 'grabbing'
         }
 
-        /**
-         * Handles moving the chart during a pan.
-         */
         function handlePanMove(event) {
             if (!chart || !isPanning) return;
 
@@ -1458,7 +1348,6 @@
             let newLogMin = Math.log10(panStartMin) - logDelta;
             let newLogMax = newLogMin + panStartLogRange;
             
-            // Boundary checks
             if (Math.pow(10, newLogMin) < originalExtendedMinDay) {
                 newLogMin = Math.log10(originalExtendedMinDay);
                 newLogMax = newLogMin + panStartLogRange;
@@ -1475,9 +1364,6 @@
             chart.update('none');
         }
 
-        /**
-         * Handles ending the pan action.
-         */
         function handlePanEnd(event) {
             if (!chart) return;
             isPanning = false;
@@ -1486,42 +1372,39 @@
 
     // --- SECTION: EVENT LISTENERS ---
 
-        // Listen for fullscreen and orientation changes
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
         window.addEventListener('resize', handleFullscreenChange);
          if (screen.orientation) {
              screen.orientation.addEventListener('change', handleFullscreenChange);
          } else {
-             window.addEventListener('orientationchange', handleFullscreenChange); // Older mobile
+             window.addEventListener('orientationchange', handleFullscreenChange); 
          }
 
         // Initial load
         window.onload = () => {
             createOrUpdateChart();
             
-            // Add listener for model selection
+            // Enable Dragging
+            makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
+            makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
+            
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
             
-            // Add listeners to the canvas for pan and zoom
             const canvas = document.getElementById('powerLawChart');
             if (canvas) {
                 canvas.addEventListener('wheel', handleWheelZoom, { passive: false });
-                
-                // Add pan listeners
                 canvas.addEventListener('mousedown', handlePanStart);
                 canvas.addEventListener('mousemove', handlePanMove);
                 canvas.addEventListener('mouseup', handlePanEnd);
                 canvas.addEventListener('mouseleave', handlePanEnd);
-                canvas.style.cursor = 'default'; // NEW: Set initial cursor to 'default'
+                canvas.style.cursor = 'default'; 
                 
-                // Add mouseenter to reset cursor just in case
                 canvas.addEventListener('mouseenter', (e) => {
                     e.target.style.cursor = isPanning ? 'grabbing' : 'default';
                 });
             }
 
-            // Initial check for mobile state
             setTimeout(handleFullscreenChange, 150); 
         }
     </script>
