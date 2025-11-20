@@ -1,1735 +1,1736 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAO Tensor Law Model — by decodejar</title>
-    
-    <!-- ===== FAVICON TAGS (NEW) ===== -->
-    <!-- These tags tell browsers and search engines to use 'decode.png' as the site icon -->
-    <link rel="icon" href="/decode.png" type="image/png">
-    <link rel="shortcut icon" href="/decode.png" type="image/png">
-    <link rel="apple-touch-icon" href="/decode.png">
-    <!-- ===== END FAVICON TAGS ===== -->    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LNPN3H8MXB"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAO Tensor Law Model — by decodejar</title>
+    
+    <!-- ===== FAVICON TAGS (NEW) ===== -->
+    <!-- These tags tell browsers and search engines to use 'decode.png' as the site icon -->
+    <link rel="icon" href="/decode.png" type="image/png">
+    <link rel="shortcut icon" href="/decode.png" type="image/png">
+    <link rel="apple-touch-icon" href="/decode.png">
+    <!-- ===== END FAVICON TAGS ===== -->    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EXV4MXZNHJ"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-LNPN3H8MXB');
+      gtag('config', 'G-EXV4MXZNHJ');
     </script>
 
-    <!-- External Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Added JetBrains Mono for technical data display -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Courgette&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind Configuration for Custom Fonts/Colors -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                        handwriting: ['Courgette', 'cursive'],
-                    },
-                    colors: {
-                        slate: {
-                            850: '#1e293b', // Custom deep slate
-                        }
-                    },
-                    boxShadow: {
-                        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
-                        'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)',
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Added JetBrains Mono for technical data display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Courgette&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Configuration for Custom Fonts/Colors -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        handwriting: ['Courgette', 'cursive'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b', // Custom deep slate
+                        }
+                    },
+                    boxShadow: {
+                        'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
+                        'inner-light': 'inset 0 2px 4px 0 rgba(255, 255, 255, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- Internal Styles -->
-    <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            /* Darkened background as requested -> Now Lightened to slate-100 */
-            background-color: #f1f5f9; /* slate-100 */
-            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
-        }
-        
-        .font-mono-data { font-family: 'JetBrains Mono', monospace; }
-        
-        /* Loader animation */
-        .loader {
-            border: 3px solid rgba(226, 232, 240, 0.3); /* slate-200 equivalent */
-            border-left-color: #4f46e5; /* Indigo-600 */
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Colored status dot */
-        .status-dot {
-            height: 8px;
-            width: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    <!-- Internal Styles -->
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            /* Darkened background as requested -> Now Lightened to slate-100 */
+            background-color: #f1f5f9; /* slate-100 */
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
+        }
+        
+        .font-mono-data { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Loader animation */
+        .loader {
+            border: 3px solid rgba(226, 232, 240, 0.3); /* slate-200 equivalent */
+            border-left-color: #4f46e5; /* Indigo-600 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Colored status dot */
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* --- Fullscreen CSS Logic (PRESERVED) --- */
-        
-        body:has(#mainContainer:fullscreen) { display: block; background: white; }
+        /* --- Fullscreen CSS Logic (PRESERVED) --- */
+        
+        body:has(#mainContainer:fullscreen) { display: block; background: white; }
 
-        #mainContainer:fullscreen {
-            width: 100vw;
-            height: 100vh;
-            max-width: none !important;
-            border-radius: 0 !important;
-            border: none !important;
-            display: flex;
-            flex-direction: column;
-            padding: 1rem !important;
-            background: white;
-        }
+        #mainContainer:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            max-width: none !important;
+            border-radius: 0 !important;
+            border: none !important;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem !important;
+            background: white;
+        }
 
-        #mainContainer:fullscreen #chartCard {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            box-shadow: none !important;
-            border: none !important;
-            background: transparent !important;
-        }
+        #mainContainer:fullscreen #chartCard {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none !important;
+            border: none !important;
+            background: transparent !important;
+        }
 
-        #mainContainer:fullscreen #chartWrapper {
-            height: 100% !important;
-            flex-grow: 1;
-        }
+        #mainContainer:fullscreen #chartWrapper {
+            height: 100% !important;
+            flex-grow: 1;
+        }
 
-        body:has(#mainContainer:fullscreen) footer { display: none; }
+        body:has(#mainContainer:fullscreen) footer { display: none; }
 
-        /* --- Mobile Fullscreen Optimizations --- */
-        @media (max-width: 639px) and (orientation: portrait) {
-            #mainContainer:fullscreen #rotateOverlay { display: flex !important; }
-            #mainContainer:fullscreen header,
-            #mainContainer:fullscreen #topStatusBar,
-            #mainContainer:fullscreen #chartCard,
-            #mainContainer:fullscreen #bottomModelBar,
-            #mainContainer:fullscreen #fullscreenBtn { display: none !important; }
-        }
+        /* --- Mobile Fullscreen Optimizations --- */
+        @media (max-width: 639px) and (orientation: portrait) {
+            #mainContainer:fullscreen #rotateOverlay { display: flex !important; }
+            #mainContainer:fullscreen header,
+            #mainContainer:fullscreen #topStatusBar,
+            #mainContainer:fullscreen #chartCard,
+            #mainContainer:fullscreen #bottomModelBar,
+            #mainContainer:fullscreen #fullscreenBtn { display: none !important; }
+        }
 
-        #mainContainer.mobile-fullscreen-landscape {
-             padding-top: 0.375rem !important;
-             padding-bottom: 0.375rem !important;
-        }
-        
-        #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
-        #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
-        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
-             display: flex !important;
-             padding: 0.125rem 0.5rem !important;
-             margin-bottom: 0.125rem !important;
-             gap: 0.5rem 1rem !important;
-             font-size: 0.75rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape header {
-             height: 2.25rem !important;
-             margin-bottom: 0.125rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape header h1 { font-size: 1.125rem !important; }
-        #mainContainer.mobile-fullscreen-landscape header img { width: 1.75rem !important; height: 1.75rem !important; }
-        #mainContainer.mobile-fullscreen-landscape #fullscreenBtn svg { width: 1.25rem !important; height: 1.25rem !important; }
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper {
-             font-size: 0.75rem !important;
-             line-height: 1rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
-        
-        /* --- Projection & Band Table Styles (MODERNIZED) --- */
-        #projectionTable,
-        #bandLevelsTable {
-            position: absolute;
-            top: 12%;
-            z-index: 20;
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            font-size: 0.75rem;
-            line-height: 1.4; /* Reduced from 1.5 */
-            color: #334155;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            width: max-content;
-            transition: box-shadow 0.2s ease;
-        }
-        
-        #projectionTable:hover,
-        #bandLevelsTable:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        #mainContainer.mobile-fullscreen-landscape {
+             padding-top: 0.375rem !important;
+             padding-bottom: 0.375rem !important;
+        }
+        
+        #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
+        #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
+             display: flex !important;
+             padding: 0.125rem 0.5rem !important;
+             margin-bottom: 0.125rem !important;
+             gap: 0.5rem 1rem !important;
+             font-size: 0.75rem !important;
+        }
+        #mainContainer.mobile-fullscreen-landscape header {
+             height: 2.25rem !important;
+             margin-bottom: 0.125rem !important;
+        }
+        #mainContainer.mobile-fullscreen-landscape header h1 { font-size: 1.125rem !important; }
+        #mainContainer.mobile-fullscreen-landscape header img { width: 1.75rem !important; height: 1.75rem !important; }
+        #mainContainer.mobile-fullscreen-landscape #fullscreenBtn svg { width: 1.25rem !important; height: 1.25rem !important; }
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper {
+             font-size: 0.75rem !important;
+             line-height: 1rem !important;
+        }
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
+        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
+        
+        /* --- Projection & Band Table Styles (MODERNIZED) --- */
+        #projectionTable,
+        #bandLevelsTable {
+            position: absolute;
+            top: 12%;
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            line-height: 1.4; /* Reduced from 1.5 */
+            color: #334155;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            width: max-content;
+            transition: box-shadow 0.2s ease;
+        }
+        
+        #projectionTable:hover,
+        #bandLevelsTable:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
 
-        #projectionTable { left: 5%; }
-        #bandLevelsTable { left: 5%; }
+        #projectionTable { left: 5%; }
+        #bandLevelsTable { left: 5%; }
 
-        #projectionTable h3,
-        #bandLevelsTable h3 {
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 0.5rem; /* Reduced spacing */
-            border-bottom: 1px solid rgba(203, 213, 225, 0.5);
-            padding-bottom: 0.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-            user-select: none;
-            letter-spacing: -0.02em;
-        }
-        
-        #projectionTable h3:active,
-        #bandLevelsTable h3:active {
-            cursor: grabbing;
-        }
+        #projectionTable h3,
+        #bandLevelsTable h3 {
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.5rem; /* Reduced spacing */
+            border-bottom: 1px solid rgba(203, 213, 225, 0.5);
+            padding-bottom: 0.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            user-select: none;
+            letter-spacing: -0.02em;
+        }
+        
+        #projectionTable h3:active,
+        #bandLevelsTable h3:active {
+            cursor: grabbing;
+        }
 
-        /* Targeted selector to fix double line spacing in band table */
-        #projectionData > div,
-        #bandLevelsTable > div > div {
-            display: flex;
-            justify-content: space-between;
-            padding: 1px 0; /* Tight padding */
-            gap: 2rem; /* Ensure gap between label and value */
-        }
+        /* Targeted selector to fix double line spacing in band table */
+        #projectionData > div,
+        #bandLevelsTable > div > div {
+            display: flex;
+            justify-content: space-between;
+            padding: 1px 0; /* Tight padding */
+            gap: 2rem; /* Ensure gap between label and value */
+        }
 
-        #projectionData > div span:first-child,
-        #bandLevelsTable > div > div span:first-child {
-            color: #64748b;
-            font-weight: 500;
-        }
-        
-        #projectionData > div span:last-child,
-        #bandLevelsTable > div > div span:last-child {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 500;
-            color: #0f172a;
-            text-align: right;
-        }
-        
-        #projectionTable h3 button,
-        #bandLevelsTable h3 button {
-            margin-left: 0.75rem;
-            color: #94a3b8;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 2px;
-            border-radius: 4px;
-            transition: all 0.2s;
-        }
-        #projectionTable h3 button:hover,
-        #bandLevelsTable h3 button:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-        
-    </style>
+        #projectionData > div span:first-child,
+        #bandLevelsTable > div > div span:first-child {
+            color: #64748b;
+            font-weight: 500;
+        }
+        
+        #projectionData > div span:last-child,
+        #bandLevelsTable > div > div span:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            color: #0f172a;
+            text-align: right;
+        }
+        
+        #projectionTable h3 button,
+        #bandLevelsTable h3 button {
+            margin-left: 0.75rem;
+            color: #94a3b8;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 2px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        #projectionTable h3 button:hover,
+        #bandLevelsTable h3 button:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+        
+    </style>
 </head>
 <body class="text-slate-800 flex flex-col items-center h-screen p-3 sm:p-4 md:p-6 overflow-hidden bg-slate-200">
 
-    <!-- SEO text -->
-    <div class="sr-only">
-        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
-    </div>
-
-    <!-- Main application container -->
-    <div id="mainContainer" class="w-full flex-grow max-w-[1920px] max-h-[1080px] min-h-[30rem] flex flex-col bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-2xl shadow-slate-400/30 relative overflow-hidden transition-all duration-300">
-
-        <!-- Mobile Rotate Overlay -->
-        <div id="rotateOverlay" class="hidden absolute inset-0 w-full h-full bg-white/95 z-50 flex-col items-center justify-center text-center p-8 backdrop-blur-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-indigo-500 mb-4 animate-pulse">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-            </svg>
-            <h2 class="text-2xl font-semibold text-slate-800 mb-2">Please Rotate Device</h2>
-            <p class="text-slate-500">This chart is optimized for landscape mode.</p>
-        </div>
-
-        <!-- Page Header -->
-        <header class="relative h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-100 bg-white z-50">
-            <!-- Left: Logo/Links -->
-            <div class="flex items-center">
-                <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 group">
-                    <!-- Removed Purple Ring -->
-                    <div class="rounded-full group-hover:scale-105 transition-transform duration-300">
-                        <img src="decode.png" alt="decodejar" class="w-8 h-8 rounded-full bg-white border-2 border-white" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
-                    </div>
-                    <!-- Highlight color changed to Blue -->
-                    <span class="hidden sm:block font-bold text-slate-700 text-lg tracking-tight group-hover:text-blue-600 transition-colors">decodejar</span>
-                </a>
-            </div>
-
-            <!-- Center: Title -->
-            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
-                <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 tracking-tight whitespace-nowrap">
-                    TAO Tensor Law
-                    <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">by decodejar</span>
-                </h1>
-                <!-- Tooltip -->
-                <div class="group relative flex items-center">
-                     <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-indigo-500 transition-colors">?</span>
-                     <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
-                        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
-                     </div>
-                </div>
-            </div>
-
-             <!-- Right: Fullscreen -->
-            <button id="fullscreenBtn" onclick="toggleFullScreen()" class="text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-lg hover:bg-slate-50" title="Toggle Fullscreen">
-                <svg id="fsIconEnter" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
-                </svg>
-                <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
-                </svg>
-            </button>
-        </header>
-
-        <!-- Top Status Bar -->
-        <!-- Added font-mono to ensure JetBrains Mono for all items -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50 font-mono">
-             <!-- Left Group: Price & Status -->
-             <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
-                 <!-- Price (First) -->
-                 <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
-                 <!-- Data Status (Second) -->
-                 <div id="dataStatusDiv" class="flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                     <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
-                 </div>
-             </div>
-             
-             <!-- Right Group: Rating & Toggle -->
-             <div class="flex items-center gap-4 text-xs sm:text-sm">
-                 <!-- Zone (Moved here) -->
-                 <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
-
-                 <!-- Bands Toggle -->
-                 <div id="showBandsContainer" class="flex items-center hidden group">
-                     <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
-                         <div class="relative">
-                             <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
-                             <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
-                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
-                             <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                         </div>
-                         <!-- Changed hover text to blue-600 -->
-                         <span class="ml-3 text-xs font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Bands</span>
-                     </label>
-                 </div>
-             </div>
-        </div>
-
-        <!-- Chart Area -->
-        <div id="chartCard" class="relative flex-grow min-h-0 w-full p-0 bg-white">
-            <!-- Loading Spinner -->
-            <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
-                <div class="loader"></div>
-                <p class="text-xs font-mono text-slate-400 animate-pulse uppercase tracking-widest">Initializing Model</p>
-            </div>
-            
-            <!-- Canvas Wrapper -->
-            <div id="chartWrapper" class="relative w-full h-full bg-white">
-                
-                <!-- Draggable Tables (Hidden by default, structure preserved) -->
-                <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="projectionHeader">
-                        <span>Fair Value</span>
-                        <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </h3>
-                    <!-- Removed gap-1 class to tighten spacing -->
-                    <div id="projectionData" class="flex flex-col pt-1"></div>
-                </div>
-
-                <div id="bandLevelsTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="bandsHeader">
-                        <span>Valuation Bands (Current)</span>
-                        <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </h3>
-                    <div class="flex flex-col pt-1">
-                        <div id="bandLevelBubble">
-                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 shadow-sm"></span>Bubble</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
-                        </div>
-                        <div id="bandLevelExpensive">
-                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Expensive</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
-                        </div>
-                        <div id="bandLevelValue">
-                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></span>Value</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
-                        </div>
-                        <div id="bandLevelDiscount">
-                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-sm"></span>Discount</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- The Canvas -->
-                <canvas id="powerLawChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Bottom Model Info Bar -->
-        <!-- Added font-mono to ensure JetBrains Mono for all items -->
-        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500 font-mono">
-            <!-- Order: Offset, Toggle, Exponent, Fit -->
-            <div id="modelParamDiv" class="text-slate-600"></div>
-            
-            <!-- Model Toggle (Updated to Switch) -->
-             <div class="flex items-center group">
-                 <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
-                     <span class="mr-3 text-xs font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
-                     <div class="relative">
-                         <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
-                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
-                         <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                     </div>
-                 </label>
-             </div>
-            
-            <div id="growthExponentDiv" class="text-slate-600"></div>
-            <div id="modelFitDiv" class="flex items-center"></div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="py-3 px-4 text-center space-y-1 w-full">
-        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed">Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
-        <p class="text-slate-500 text-[10px] tracking-wide"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com</p>
-    </footer>
-
-
-    <script>
-        /*
-         * TAO Tensor Law Model — by decodejar
-         * Copyright (c) 2025 TAOTENSORLAW.COM. All Rights Reserved.
-         * * NOTE: Original logic preserved 100%.
-         */
-
-        // --- SECTION: GLOBAL ELEMENT REFERENCES ---
-        const mainContainer = document.getElementById('mainContainer');
-        const headerElement = document.querySelector('header');
-        const topBarElement = document.getElementById('topStatusBar');
-        const bottomBarElement = document.getElementById('bottomModelBar');
-        const chartCardElement = document.getElementById('chartCard');
-        const fsIconEnter = document.getElementById('fsIconEnter');
-        const fsIconExit = document.getElementById('fsIconExit');
-        const fullscreenBtn = document.getElementById('fullscreenBtn');
-        const growthExponentDiv = document.getElementById('growthExponentDiv');
-        const modelFitDiv = document.getElementById('modelFitDiv');
-        const loader = document.getElementById('loader');
-        const dataStatusDiv = document.getElementById('dataStatusDiv');
-        const lastPriceDiv = document.getElementById('lastPriceDiv');
-        const priceZoneDiv = document.getElementById('priceZoneDiv');
-        const ctx = document.getElementById('powerLawChart').getContext('2d');
-        const modelParamDiv = document.getElementById('modelParamDiv');
-        const showBandsContainer = document.getElementById('showBandsContainer');
-        const showBandsCheckbox = document.getElementById('showBandsCheckbox');
-        const projectionTable = document.getElementById('projectionTable');
-        const projectionData = document.getElementById('projectionData');
-        const bandLevelsTable = document.getElementById('bandLevelsTable');
-        const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
-
-        // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
-
-        const HARDCODED_OFFSET = 74;
-        const MAX_OFFSET_SEARCH_LIMIT = 730;    
-        const X_AXIS_PROJECTION_PADDING = 0.33; 
-        const Y_AXIS_BOTTOM_PADDING = 0.1;
-        const Y_AXIS_TOP_PADDING_MIN = 0.1;
-        const Y_AXIS_TOP_PADDING_MAX = 0.33;
-        
-        let chart; 
-        let baseData = []; 
-        let priceData = []; 
-        let activeModelParams = {}; 
-        
-        // Zoom & Pan State
-        let originalExtendedMinDay = 1;
-        let originalExtendedMaxDay = 1000;
-        const ZOOM_FACTOR = 0.1;
-        let isPanning = false;
-        let panStartX = 0;
-        let panStartMin = 0;
-        let panStartLogRange = 0;
-
-        // Band Fill Colors (Updated to match new theme slightly better, but logic same)
-        const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
-        const greenFillColor = 'rgba(74, 222, 128, 0.15)'; // Green-400
-        const yellowFillColor = 'rgba(250, 204, 21, 0.15)'; // Yellow-400
-        const redFillColor = 'rgba(248, 113, 113, 0.15)';   // Red-400
-
-        // Reusable Line Styles (Updated colors for slate theme)
-        const grayLineStyle = { borderColor: 'rgba(148, 163, 184, 0.7)', borderWidth: 1, borderDash: [] }; // Slate-400
-        const orangeLineStyle = { borderColor: '#f97316', borderWidth: 2, borderDash: [] }; // Orange-500
-        const grayDashedLineStyle = { borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderDash: [4, 4] };
-        const grayFineLineStyle = { borderColor: 'rgba(203, 213, 225, 0.8)', borderWidth: 0.5, borderDash: [] }; // Slate-300
-
-        /**
-         * Chart.js plugin to add a watermark to the background.
-         */
-        const watermarkPlugin = {
-            id: 'watermark',
-            afterDraw: (chart, args, options) => {
-                const { ctx, chartArea: { top, right, bottom, left, width, height } } = chart;
-                
-                if (width <= 0 || height <= 0) return; 
-
-                ctx.save();
-                const text = 'taotensorlaw.com';
-                
-                const baseFontSize = Math.max(30, Math.min(80, width / 12)); 
-                ctx.font = `bold ${baseFontSize.toFixed(0)}px Inter, sans-serif`;
-                // Watermark opacity set to 0.075 as requested
-                ctx.fillStyle = 'rgba(15, 23, 42, 0.075)'; 
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const centerX = left + width / 2;
-                const centerY = top + height / 2;
-                ctx.fillText(text, centerX, centerY);
-                
-                ctx.restore();
-            }
-        };
-        Chart.register(watermarkPlugin);
-
-        // --- SECTION: DATA & REGRESSION LOGIC ---
-
-        async function loadPriceData() {
-            try {
-                // In a production environment, this path might need adjustment based on where 'price_data.json' is hosted.
-                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
-                const data = await response.json();
-                if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
-                // Assuming data is in format [[timestamp_s, price], ...]
-                baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
-                return baseData;
-            } catch (error) {
-                console.error("Error loading price data:", error);
-                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
-                loader.style.display = 'none';
-                return null;
-            }
-        }
-
-        function linearRegression(data) {
-            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            const n = validData.length;
-            if (n < 2) return { slope: 0, intercept: 0 }; 
-            
-            for (const { x, y } of validData) {
-                const logX = Math.log10(x);
-                const logY = Math.log10(y);
-                sumX += logX; sumY += logY; sumXY += logX * logY; sumX2 += logX * logX;
-            }
-
-            const denominator = (n * sumX2 - sumX * sumX);
-            if (denominator === 0) return { slope: 0, intercept: 0 }; 
-            
-            const slope = (n * sumXY - sumX * sumY) / denominator;
-            const intercept = (sumY - slope * sumX) / n;
-            return { slope, intercept };
-        }
-
-        function calculateResiduals(data, slope, intercept) {
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            if (validData.length === 0) return [];
-            return validData.map(p => {
-                const logX = Math.log10(p.x);
-                const logY = Math.log10(p.y);
-                const predictedLogY = slope * logX + intercept;
-                return logY - predictedLogY;
-            }).sort((a, b) => a - b); 
-        }
-
-        function getPercentile(sortedResiduals, percentile) {
-            if (!sortedResiduals || sortedResiduals.length === 0) return 0;
-            const index = (percentile / 100) * (sortedResiduals.length - 1);
-            const lowerIndex = Math.floor(index);
-            const upperIndex = Math.ceil(index);
-            
-            if (lowerIndex === upperIndex) {
-                return sortedResiduals[lowerIndex];
-            } else {
-                const weight = index - lowerIndex;
-                return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
-            }
-        }
-
-        function findOptimalOffset(baseData, minOffset = 1, maxOffset) {
-            let bestOffset = -1;
-            let bestRSquared = -Infinity;
-
-            if (baseData.length < 2) return { optimalOffset: -1, bestFit: 0 };
-            if (typeof maxOffset === 'undefined' || maxOffset < minOffset) maxOffset = baseData.length; 
-
-            for (let offset = minOffset; offset <= maxOffset; offset++) {
-                const offsetData = baseData.map(p => ({ x: p.dayIndex + offset, y: p.y }));
-                const { slope, intercept } = linearRegression(offsetData);
-                if (slope === 0 && intercept === 0 && offsetData.length > 1) continue; 
-                
-                const rSquared = calculateRSquared(offsetData, slope, intercept);
-                if (rSquared > bestRSquared) {
-                    bestRSquared = rSquared;
-                    bestOffset = offset;
-                }
-            }
-            return { optimalOffset: bestOffset, bestFit: bestRSquared };
-        }
-
-        function calculateRSquared(data, slope, intercept) {
-            let ss_tot = 0, ss_res = 0, y_mean = 0;
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            if (validData.length < 2) return 0;
-
-            validData.forEach(p => y_mean += Math.log10(p.y));
-            y_mean /= validData.length;
-
-            validData.forEach(p => {
-                const logY = Math.log10(p.y);
-                const logX = Math.log10(p.x);
-                const predictedLogY = slope * logX + intercept;
-                ss_tot += Math.pow(logY - y_mean, 2);
-                ss_res += Math.pow(logY - predictedLogY, 2);
-            });
-            return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
-        }
-
-
-        // --- SECTION: CORE APPLICATION LOGIC ---
-
-        async function createOrUpdateChart() {
-            loader.style.display = 'flex';
-            
-            if (baseData.length === 0) {
-                await loadPriceData();
-            }
-
-            if (!baseData || baseData.length === 0) {
-                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('Demo')) { 
-                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
-                }
-                growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
-                modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
-                modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
-                if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
-                showBandsContainer.classList.add('hidden');
-                loader.style.display = 'none';
-                return;
-            }
-
-            const useOptimal = useOptimalOffsetCheckbox.checked;
-            let slope, meanIntercept, rSquared;
-            let activeDayOffset;
-            
-            const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
-            
-            if (useOptimal) {
-                activeDayOffset = optimalOffset;
-                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + optimalOffset }));
-                const regression = linearRegression(priceData);
-                slope = regression.slope;
-                meanIntercept = regression.intercept;
-                rSquared = optimalOffsetRSquared; 
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${optimalOffset}</span>`;
-            } else {
-                activeDayOffset = HARDCODED_OFFSET;
-                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
-                const regression = linearRegression(priceData);
-                slope = regression.slope;
-                meanIntercept = regression.intercept;
-                rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
-                } else {
-                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
-                }
-            }
-            
-            activeModelParams = {
-                modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
-                activeDayOffset: activeDayOffset,
-                slope: slope,
-                meanIntercept: meanIntercept
-            };
-
-            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
-            
-            const lastBaseDataPoint = baseData[baseData.length - 1]; 
-            const lastTimestamp = lastBaseDataPoint.time; 
-            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-
-            const now = new Date().getTime();
-            const diffMs = now - lastTimestamp;
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            const sevenDaysMs = 7 * oneDayMs;
-
-            let dotColor = "bg-red-500"; 
-            if (diffMs < oneDayMs) {
-                dotColor = "bg-green-500"; 
-            } else if (diffMs < sevenDaysMs) {
-                dotColor = "bg-yellow-400"; 
-            }
-            
-            // Only update status if not in Demo mode (to preserve the yellow demo text)
-            if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span>${lastUpdateDate}</span>`;
-            }
-
-            lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
-            lastPriceDiv.classList.remove('hidden');
-
-            const chartPrices = priceData.map(p => p.y);
-            const minPrice = Math.min(...chartPrices);
-            const maxPrice = Math.max(...chartPrices);
-
-            const firstDayNum = priceData[0].x;
-            const lastDayNum = priceData[priceData.length - 1].x; 
-
-            const logMinDay = Math.log10(firstDayNum);
-            const logMaxDay = Math.log10(lastDayNum);
-            const logDayRange = logMaxDay - logMinDay;
-
-            const extendedMinDay = firstDayNum;
-            let extendedMaxDay;
-
-            if (logDayRange > 0) {
-                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
-                extendedMaxDay = Math.pow(10, extendedLogMaxDay);
-            } else {
-                extendedMaxDay = lastDayNum * 1.4; 
-            }
-
-            originalExtendedMinDay = extendedMinDay;
-            originalExtendedMaxDay = extendedMaxDay;
-
-            const logMinPrice = Math.log10(minPrice);
-            const logMaxPrice = Math.log10(maxPrice);
-            const logPriceRange = logMaxPrice - logMinPrice;
-            const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9; 
-            const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4; 
-
-            const lastModelDataPoint = priceData[priceData.length - 1];
-            const sortedResiduals = calculateResiduals(priceData, slope, meanIntercept);
-
-            const medianResidual = getPercentile(sortedResiduals, 50);
-            const p1Residual = getPercentile(sortedResiduals, 1);
-            const p99Residual = getPercentile(sortedResiduals, 99);
-            const p20Residual = getPercentile(sortedResiduals, 20);
-            const p80Residual = getPercentile(sortedResiduals, 80);
-
-            const lastLogX = Math.log10(lastModelDataPoint.x);
-            const lastLogY = Math.log10(lastModelDataPoint.y);
-            const predictedLastLogY = slope * lastLogX + meanIntercept;
-            const lastResidual = lastLogY - predictedLastLogY;
-
-            let priceZone = "";
-            let priceZoneColor = "";
-            if (lastResidual > p80Residual) { priceZone = "Bubble"; priceZoneColor = "bg-red-500"; }
-            else if (lastResidual > medianResidual) { priceZone = "Expensive"; priceZoneColor = "bg-yellow-400"; }
-            else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
-            else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
-
-            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium text-slate-600">${priceZone}</span>`;
-            priceZoneDiv.classList.remove('hidden');
-
-            const medianIntercept = meanIntercept + medianResidual;
-            const p1Intercept = meanIntercept + p1Residual;
-            const p99Intercept = meanIntercept + p99Residual;
-            const p20Intercept = meanIntercept + p20Residual;
-            const p80Intercept = meanIntercept + p80Residual;
-
-            if (bandLevelsTable) {
-                const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
-                const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
-                const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
-                const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
-                const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
-
-                const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
-                const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
-                const valueEl = document.querySelector('#bandLevelsTable #bandLevelValue > span:last-child');
-                const discountEl = document.querySelector('#bandLevelsTable #bandLevelDiscount > span:last-child');
-
-                if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
-                if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                // NOTE: Value band is P20-P50, but the HTML mock had P20-P20. Correcting here to P20-P50 boundary prices.
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
-                if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
-            }
-            
-            calculateProjections(baseData, activeModelParams, projectionData);
-
-            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold text-slate-800">${slope.toFixed(3)}</span>`;
-            
-            let fitColorClass = "";
-            if (rSquared >= 0.9) fitColorClass = "bg-blue-400";
-            else if (rSquared >= 0.7) fitColorClass = "bg-green-500";
-            else if (rSquared >= 0.5) fitColorClass = "bg-yellow-400";
-            else fitColorClass = "bg-red-500";
-            
-            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²):&nbsp;<span class="font-bold text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
-            
-            const startIndex = extendedMinDay;
-            const endIndex = extendedMaxDay;
-            const calculateLinePoints = (intercept) => {
-                 const safeStartIndex = Math.max(startIndex, 1); 
-                 const safeEndIndex = Math.max(endIndex, 1);
-                 return [
-                     { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
-                     { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
-                 ];
-            };
-            const medianLineData = calculateLinePoints(medianIntercept);
-            const p1LineData = calculateLinePoints(p1Intercept);
-            const p99LineData = calculateLinePoints(p99Intercept);
-            const p20LineData = calculateLinePoints(p20Intercept);
-            const p80LineData = calculateLinePoints(p80Intercept);
-
-            const chartPriceDataPoints = priceData.map(p => ({ x: p.x, y: p.y }));
-
-            loader.style.display = 'none';
-
-            const xAxisAfterBuildTicks = (axis) => {
-                 if (!priceData || priceData.length === 0 || !baseData || baseData.length === 0) return;
-                 
-                 const newTicks = [];
-                 const axisMinDay = axis.min;
-                 const axisMaxDay = axis.max;
-
-                 const { activeDayOffset } = activeModelParams;
-
-                 const firstDayIndex = baseData[0].dayIndex;
-                 const firstDayTime = baseData[0].time;
-                 const lastDayIndex = baseData[baseData.length - 1].dayIndex;
-                 const lastDayTime = baseData[baseData.length - 1].time;
-                 
-                 let maxYear;
-                 let msPerDay = (1000 * 60 * 60 * 24); 
-
-                 if (lastDayIndex > firstDayIndex) {
-                      msPerDay = (lastDayTime - firstDayTime) / (lastDayIndex - firstDayIndex);
-                      const maxDayIndexOnAxis = axisMaxDay - activeDayOffset;
-                      const projectedTime = firstDayTime + (maxDayIndexOnAxis - firstDayIndex) * msPerDay;
-                      maxYear = new Date(projectedTime).getFullYear();
-                 } else {
-                      maxYear = new Date(lastDayTime).getFullYear() + 5;
-                 }
-                 
-                 let lastYearFound = -1; 
-                 const firstDataYear = new Date(baseData[0].time).getFullYear();
-                 const lastDataYear = new Date(lastDayTime).getFullYear();
-
-                 for (let year = firstDataYear; year <= lastDataYear; year++) {
-                     const yearStartTime = new Date(year, 0, 1).getTime();
-                     const dayData = baseData.find(p => p.time >= yearStartTime);
-                     
-                     if (!dayData) continue;
-                     
-                     const actualYear = new Date(dayData.time).getFullYear();
-                     if (actualYear > year && year > firstDataYear) continue; 
-
-                     if (year > lastYearFound) {
-                          const xValue = dayData.dayIndex + activeDayOffset;
-                          if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                              newTicks.push({ value: xValue, label: year.toString() });
-                              lastYearFound = year;
-                          }
-                     }
-                 }
-
-                 for (let year = lastDataYear + 1; year <= maxYear; year++) {
-                     const yearStartTime = new Date(year, 0, 1).getTime();
-                     
-                     const diffTime = yearStartTime - firstDayTime;
-                     const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
-                     
-                     const xValue = estimatedDayIndex + activeDayOffset;
-
-                     if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                          newTicks.push({ value: xValue, label: year.toString() });
-                     }
-                 }
-                 
-                 axis.ticks.length = 0; 
-                 const validTicks = newTicks.filter(tick => !isNaN(tick.value) && tick.label);
-                 axis.ticks.push(...validTicks);
-            };
-
-            function yAxisAfterBuildTicks(axis) {
-                const newTicks = [];
-                const min = axis.min;
-                const max = axis.max;
-
-                let startingPower = Math.floor(Math.log10(min));
-                let currentMagnitude = Math.pow(10, startingPower); 
-
-                while (currentMagnitude < max) {
-                    for (let i = 1; i <= 9; i++) {
-                        const tickValue = currentMagnitude * i;
-                        if (tickValue > max) break; 
-                        if (tickValue >= min) {
-                            newTicks.push({ value: tickValue });
-                        }
-                    }
-                    currentMagnitude *= 10; 
-                }
-
-                axis.ticks.length = 0; 
-                axis.ticks.push(...newTicks);
-            }
-
-            const datasetDefaults = {
-                type: 'line', borderWidth: 1, pointRadius: 0, fill: false, pointStyle: 'line'
-            };
-            const fillDatasetDefaults = {
-                type: 'line', pointRadius: 0, borderWidth: 0, pointStyle: 'line', tension: 0.1
-            };
-
-            if (chart) {
-                // 1. Update Data Arrays for Reused Datasets
-                // The new structure requires 11 datasets total (0-10).
-                
-                // Define the data structure for the 11 layers
-                const datasetsStruct = [
-                    // --- BOUNDARY/FILL LAYERS (0-4) ---
-                    // 0: Boundary P1 (Base for Discount)
-                    { label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
-                    // 1: Discount Band (P1-P20) - Fills to 0
-                    { label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
-                    // 2: Value Band (P20-P50) - Fills to 1
-                    { label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
-                    // 3: Expensive Band (P50-P80) - Fills to 2
-                    { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
-                    // 4: Bubble Band (P80-P99) - Fills to 3
-                    { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
-
-                    // --- VISUAL LINE LAYERS (5-10) ---
-                    // 5: Price
-                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, // Slate-900
-                    // 6: Median Line (P50)
-                    { label: '50th Percentile', data: medianLineData }, 
-                    // 7: 1st Pctl
-                    { label: '1st Pctl', data: p1LineData },
-                    // 8: 99th Pctl
-                    { label: '99th Pctl', data: p99LineData },
-                    // 9: 20th Pctl
-                    { label: '20th Pctl', data: p20LineData },
-                    // 10: 80th Pctl
-                    { label: '80th Pctl', data: p80LineData },
-                ];
-
-                // Apply updates to existing chart datasets or push new ones
-                datasetsStruct.forEach((struct, i) => {
-                    if (chart.data.datasets[i]) {
-                         // Update data and core properties
-                         Object.assign(chart.data.datasets[i], struct);
-                    } else {
-                         // Create new
-                         chart.data.datasets.push({
-                             ...datasetDefaults,
-                             ...struct,
-                             // Default visibility logic handled in applyBandVisibility
-                             hidden: false
-                         });
-                    }
-                });
-
-                // Remove extra datasets if any (cleanup from old structure)
-                if (chart.data.datasets.length > datasetsStruct.length) {
-                    chart.data.datasets.splice(datasetsStruct.length, chart.data.datasets.length - datasetsStruct.length);
-                }
-
-                 applyBandVisibility(showBandsCheckbox.checked);
-
-                chart.options.scales.x.min = extendedMinDay;
-                chart.options.scales.x.max = extendedMaxDay;
-                chart.options.scales.y.min = extendedMinPrice;
-                chart.options.scales.y.max = extendedMaxPrice;
-                chart.options.scales.x.afterBuildTicks = xAxisAfterBuildTicks;
-                chart.options.scales.y.afterBuildTicks = yAxisAfterBuildTicks; 
-                chart.update();
-
-            } else {
-                chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: [
-                            // 0: Boundary P1
-                            { ...fillDatasetDefaults, label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
-                            // 1: Discount Band
-                            { ...fillDatasetDefaults, label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
-                            // 2: Value Band
-                            { ...fillDatasetDefaults, label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
-                            // 3: Expensive Band
-                            { ...fillDatasetDefaults, label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
-                            // 4: Bubble Band
-                            { ...fillDatasetDefaults, label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
-                            
-                            // 5: Price
-                            { 
-                                ...datasetDefaults, 
-                                label: 'TAO Price', 
-                                data: chartPriceDataPoints, 
-                                backgroundColor: 'rgba(0, 0, 0, 0.0)', 
-                                borderColor: '#0f172a', // Slate-900 
-                                borderWidth: 2, 
-                                tension: 0.1, 
-                                pointRadius: 0, 
-                                pointHoverRadius: 0, 
-                                pointHitRadius: 15 
-                            },
-                            // 6: Median (P50) - Initial style handled by applyBandVisibility
-                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
-                            // 7: 1st
-                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
-                            // 8: 99th
-                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData },
-                            // 9: 20th
-                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData },
-                            // 10: 80th
-                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData },
-                        ]
-                    },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                labels: {
-                                    color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
-                                    // Filter out the Band layers (0-4) and only show Price (5) and Lines (6-10)
-                                    filter: (item) => item.datasetIndex >= 5
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900
-                                titleColor: '#f8fafc',
-                                bodyColor: '#e2e8f0',
-                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
-                                bodyFont: { family: "'JetBrains Mono', monospace" },
-                                borderColor: 'rgba(255,255,255,0.1)',
-                                borderWidth: 1,
-                                padding: 10,
-                                callbacks: {
-                                    title: (tooltipItems) => {
-                                        if (tooltipItems.length > 0) {
-                                            const item = tooltipItems[0];
-                                            const dayNumber = item.parsed.x; 
-                                            
-                                            const { activeDayOffset } = activeModelParams;
-                                            let targetDayIndex = dayNumber - activeDayOffset;
-                                            
-                                            let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
-                                            
-                                            if (!dataPoint) {
-                                                dataPoint = baseData.reduce((prev, curr) => {
-                                                     return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                 });
-                                            }
-
-                                            if (dataPoint) {
-                                                const date = new Date(dataPoint.time);
-                                                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-                                            }
-
-                                            return `Day ~${targetDayIndex.toFixed(0)}`;
-                                        }
-                                        return '';
-                                    },
-                                    label: (context) => {
-                                         // Hide tooltips for the transparent band layers
-                                         if (context.datasetIndex < 5) return null;
-                                         return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
-                                title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
-                                ticks: { 
-                                    color: '#64748b', autoSkip: false, font: { family: 'Inter', size: 10 },
-                                    callback: function(value) {
-                                        const tick = this.getTicks().find(t => t.value === value);
-                                        return tick ? tick.label : null;
-                                    }
-                                },
-                                afterBuildTicks: xAxisAfterBuildTicks, 
-                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                            },
-                            y: {
-                                type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
-                                title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
-                                ticks: { 
-                                    color: '#64748b', font: { family: 'JetBrains Mono', size: 10 },
-                                    callback: function(value, index, ticks) {
-                                        const logVal = Math.log10(value);
-                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
-                                            return `$${value.toLocaleString()}`;
-                                        }
-                                        return ''; 
-                                    }
-                                },
-                                afterBuildTicks: yAxisAfterBuildTicks, 
-                                grid: { 
-                                    color: function(context) {
-                                        const value = context.tick.value;
-                                        if (value <= 0) return 'rgba(0, 0, 0, 0.05)'; 
-                                        const logVal = Math.log10(value);
-                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
-                                            return 'rgba(0, 0, 0, 0.08)'; 
-                                        } else {
-                                            return 'rgba(0, 0, 0, 0.03)';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            showBandsContainer.classList.remove('hidden');
-            showBandsCheckbox.removeEventListener('change', handleBandToggle);
-            showBandsCheckbox.addEventListener('change', handleBandToggle);
-
-            useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
-            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
-
-            applyBandVisibility(showBandsCheckbox.checked);
-            if(chart) chart.update('none'); 
-        }
-
-        function handleBandToggle() {
-             if (!chart || !bandLevelsTable) return; 
-             
-             const showBands = showBandsCheckbox.checked;
-             
-             if (showBands) {
-                 // --- START: Reset position as requested by user ---
-                 bandLevelsTable.style.top = ''; 
-                 bandLevelsTable.style.left = ''; 
-                 // --- END: Reset position ---
-
-                 bandLevelsTable.style.display = ''; 
-                 bandLevelsTable.classList.remove('hidden'); 
-             } else {
-                 bandLevelsTable.style.display = 'none'; 
-             }
-
-             applyBandVisibility(showBands);
-             chart.update();
-        }
-
-        /**
-         * Toggles visibility and styles for band datasets.
-         * Enforces strictly different "views" based on the checkbox state.
-         */
-        function applyBandVisibility(showBands) {
-             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
-                 return;
-             }
-             
-             // Helper to force visibility state
-             const setVis = (index, visible) => {
-                 chart.setDatasetVisibility(index, visible);
-                 chart.data.datasets[index].hidden = !visible; 
-             };
-
-             if (showBands) {
-                 // --- BANDS VIEW ---
-                 // 1. Show fill layers (0-4)
-                 for (let i = 0; i <= 4; i++) setVis(i, true);
-
-                 // FORCE Price Visibility (5)
-                 setVis(5, true);
-                 
-                 // 2. Enforce "Thin Solid Grey" style for ALL lines (6-10)
-                 const fineGrey = grayFineLineStyle;
-                 
-                 // Median (6)
-                 Object.assign(chart.data.datasets[6], fineGrey);
-                 setVis(6, true);
-                 // P1 (7)
-                 Object.assign(chart.data.datasets[7], fineGrey);
-                 setVis(7, true);
-                 // P99 (8)
-                 Object.assign(chart.data.datasets[8], fineGrey);
-                 setVis(8, true);
-                 // P20 (9)
-                 Object.assign(chart.data.datasets[9], fineGrey);
-                 setVis(9, true);
-                 // P80 (10)
-                 Object.assign(chart.data.datasets[10], fineGrey);
-                 setVis(10, true);
-                 
-             } else {
-                 // --- CLEAN VIEW ---
-                 // 1. Hide fill layers (0-4)
-                 for (let i = 0; i <= 4; i++) setVis(i, false);
-
-                 // FORCE Price Visibility (5)
-                 setVis(5, true);
-
-                 // 2. Reset lines to default clean view styles
-                 
-                 // P50 (Median) -> Solid Orange, Visible
-                 Object.assign(chart.data.datasets[6], orangeLineStyle);
-                 setVis(6, true);
-                 
-                 // P1 (7) -> Dashed Grey, Visible
-                 Object.assign(chart.data.datasets[7], grayDashedLineStyle);
-                 setVis(7, true);
-                 
-                 // P99 (8) -> Dashed Grey, Visible
-                 Object.assign(chart.data.datasets[8], grayDashedLineStyle);
-                 setVis(8, true);
-                 
-                 // P20 (9) -> Hidden
-                 Object.assign(chart.data.datasets[9], grayDashedLineStyle);
-                 setVis(9, false);
-                 
-                 // P80 (10) -> Hidden
-                 Object.assign(chart.data.datasets[10], grayDashedLineStyle);
-                 setVis(10, false);
-             }
-        }
-
-        /**
-         * Calculates R-squared (coefficient of determination) for the log-log regression.
-         */
-        function calculateProjections(baseData, modelParams, dataElement) {
-            const tableElement = document.getElementById('projectionTable');
-            
-            if (!baseData || baseData.length === 0 || !modelParams) {
-                if(tableElement) tableElement.classList.add('hidden');
-                return;
-            }
-
-            const { slope, meanIntercept, activeDayOffset } = modelParams;
-            const firstDataPointDate = new Date(baseData[0].time);
-            const firstDayIndex = baseData[0].dayIndex; 
-            
-            const today = new Date();
-            const currentYear = today.getFullYear();
-            const targetDates = [
-                { label: "Today", date: today },
-                { label: `${currentYear + 1}`, date: new Date(currentYear + 1, 0, 1) },
-                { label: `${currentYear + 2}`, date: new Date(currentYear + 2, 0, 1) },
-                { label: `${currentYear + 3}`, date: new Date(currentYear + 3, 0, 1) }
-            ];
-            const MS_PER_DAY = 1000 * 60 * 60 * 24;
-            const getDayIndex = (targetDate) => {
-                const diffTime = targetDate.getTime() - firstDataPointDate.getTime();
-                const diffDays = Math.round(diffTime / MS_PER_DAY);
-                return firstDayIndex + diffDays;
-            };
-
-            const calculatePrice = (targetDayIndex) => {
-                let dayForLog = targetDayIndex + activeDayOffset;
-                if (dayForLog <= 0) return NaN; 
-                const logX = Math.log10(dayForLog);
-                return Math.pow(10, slope * logX + meanIntercept);
-            };
-
-            let rowsHtml = '';
-            targetDates.forEach(item => {
-                const targetDayIndex = getDayIndex(item.date); 
-                const projectedPrice = calculatePrice(targetDayIndex);
-                const priceString = isNaN(projectedPrice) ? "N/A" : `$${projectedPrice.toFixed(2)}`;
-                rowsHtml += `
-                    <div>
-                        <span>${item.label}</span>
-                        <span>${priceString}</span>
-                    </div>
-                `;
-            });
-
-            if (dataElement) dataElement.innerHTML = rowsHtml;
-            if (tableElement) {
-                // Reset position for projection table when re-displaying it
-                tableElement.style.top = '';
-                tableElement.style.left = '';
-                
-                tableElement.style.display = ''; 
-                tableElement.classList.remove('hidden');
-            }
-        }
-
-        /**
-         * NEW: Helper to make elements draggable via their header.
-         * Supports Mouse and Touch events.
-         */
-        function makeDraggable(element, handle) {
-            if (!element || !handle) return;
-
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop;
-
-            const startDrag = (e) => {
-                // Prevent default behavior to stop text selection, etc.
-                if (e.type === 'touchstart') {
-                    // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
-                } else {
-                    e.preventDefault();
-                }
-                
-                isDragging = true;
-                
-                // Get start position (mouse or touch)
-                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-
-                startX = clientX;
-                startY = clientY;
-                
-                // Get current element position
-                // Note: element must be position:absolute/relative for offsetTop/Left to be meaningful
-                // We use offsetLeft/Top relative to the parent container (chartWrapper)
-                initialLeft = element.offsetLeft;
-                initialTop = element.offsetTop;
-
-                handle.style.cursor = 'grabbing';
-            };
-
-            const drag = (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-
-                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
-
-                const dx = clientX - startX;
-                const dy = clientY - startY;
-
-                element.style.left = `${initialLeft + dx}px`;
-                element.style.top = `${initialTop + dy}px`;
-            };
-
-            const stopDrag = () => {
-                isDragging = false;
-                handle.style.cursor = 'grab'; // Changed from 'move' to 'grab' for better UI feedback
-            };
-
-            // Attach events to handle
-            handle.addEventListener('mousedown', startDrag);
-            handle.addEventListener('touchstart', startDrag, { passive: false });
-
-            // Attach events to document/window to track movement outside the handle
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('touchmove', drag, { passive: false });
-            
-            document.addEventListener('mouseup', stopDrag);
-            document.addEventListener('touchend', stopDrag);
-        }
-
-
-        // --- SECTION: CHART INTERACTIVITY (PAN & ZOOM) ---
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (mainContainer.requestFullscreen) mainContainer.requestFullscreen().catch(err => console.error(`Error entering fullscreen: ${err.message}`));
-                else if (mainContainer.webkitRequestFullscreen) mainContainer.webkitRequestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen().catch(err => console.error(`Error exiting fullscreen: ${err.message}`));
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-        }
-
-        function handleFullscreenChange() {
-             requestAnimationFrame(() => { 
-                const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
-                const isMobile = window.innerWidth < 1024;
-                const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
-
-                if (isInFullscreen) {
-                    fsIconEnter.classList.add('hidden');
-                    fsIconExit.classList.remove('hidden');
-                    fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
-                } else {
-                    fsIconEnter.classList.remove('hidden');
-                    fsIconExit.classList.add('hidden');
-                    fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
-                }
-
-                if (isInFullscreen && isMobile && isLandscape) {
-                   mainContainer.classList.add('mobile-fullscreen-landscape');
-                } else {
-                   mainContainer.classList.remove('mobile-fullscreen-landscape');
-                }
-
-                 if (chart) {
-                     setTimeout(() => {
-                         requestAnimationFrame(() => {
-                             if (chart) chart.resize();
-                         });
-                     }, 50); 
-                 }
-             });
-        }
-
-        function refitYAxis() {
-            if (!chart || !priceData || priceData.length === 0) return;
-
-            const currentXMin = chart.options.scales.x.min;
-            const currentXMax = chart.options.scales.x.max;
-
-            const visibleData = priceData.filter(p => p.x >= currentXMin && p.x <= currentXMax);
-
-            if (visibleData.length < 2) {
-                return; 
-            }
-
-            const prices = visibleData.map(p => p.y);
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-
-            const logMinPrice = Math.log10(minPrice);
-            const logMaxPrice = Math.log10(maxPrice);
-            const logPriceRange = logMaxPrice - logMinPrice;
-
-            let extendedMinPrice, extendedMaxPrice;
-            
-            const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
-            const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
-            let zoomRatio = 1.0; 
-            if (originalLogRangeX > 0) {
-                 zoomRatio = currentLogRangeX / originalLogRangeX;
-                 if (zoomRatio > 1.0) zoomRatio = 1.0;
-                 if (zoomRatio < 0.0) zoomRatio = 0.0;
-            }
-            
-            const minTopPadding = Y_AXIS_TOP_PADDING_MIN;
-            const maxTopPadding = Y_AXIS_TOP_PADDING_MAX;
-            const dynamicTopPadding = minTopPadding + (maxTopPadding - minTopPadding) * zoomRatio;
-            const bottomPadding = Y_AXIS_BOTTOM_PADDING;
-            
-            if (logPriceRange > 0) {
-                 extendedMinPrice = Math.pow(10, logMinPrice - logPriceRange * bottomPadding);
-                 extendedMaxPrice = Math.pow(10, logMaxPrice + logPriceRange * dynamicTopPadding);
-            } else {
-                 extendedMinPrice = minPrice * 0.9;
-                 extendedMaxPrice = maxPrice * 1.1;
-            }
-
-            chart.options.scales.y.min = extendedMinPrice;
-            chart.options.scales.y.max = extendedMaxPrice;
-        }
-
-        function handleWheelZoom(event) {
-            if (!chart || !priceData || priceData.length === 0) return;
-            event.preventDefault(); 
-
-            const chartArea = chart.chartArea;
-            if (!chartArea) return;
-
-            const rect = event.target.getBoundingClientRect();
-            let cursorX = event.clientX - rect.left;
-            
-            if (cursorX < chartArea.left) cursorX = chartArea.left;
-            if (cursorX > chartArea.right) cursorX = chartArea.right;
-
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const currentLogRange = currentMaxLog - currentMinLog;
-            
-            const cursorPct = (chartArea.right - chartArea.left > 0) ? (cursorX - chartArea.left) / (chartArea.right - chartArea.left) : 0;
-            const logAtCursor = currentMinLog + (currentLogRange * cursorPct);
-
-            const zoomDirection = event.deltaY < 0 ? (1 - ZOOM_FACTOR) : (1 + ZOOM_FACTOR);
-            let newLogRange = currentLogRange * zoomDirection;
-
-            const minLogRange = 0.1; 
-            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
-            
-            if (newLogRange < minLogRange) newLogRange = minLogRange;
-            if (maxLogRange > minLogRange && newLogRange > maxLogRange) newLogRange = maxLogRange;
-
-            let newLogMin = logAtCursor - (newLogRange * cursorPct);
-            let newLogMax = newLogMin + newLogRange;
-            
-            const originalMinLog = Math.log10(originalExtendedMinDay);
-            const originalMaxLog = Math.log10(originalExtendedMaxDay);
-
-            if (newLogMin < originalMinLog) {
-                newLogMin = originalMinLog;
-                newLogMax = newLogMin + newLogRange;
-            }
-            if (newLogMax > originalMaxLog) {
-                newLogMax = originalMaxLog;
-                newLogMin = newLogMax - newLogRange;
-            }
-            if (newLogMin < originalMinLog) newLogMin = originalMinLog;
-
-            chart.options.scales.x.min = Math.pow(10, newLogMin);
-            chart.options.scales.x.max = Math.pow(10, newLogMax);
-
-            refitYAxis();
-            chart.update('none');
-        }
-
-        // Mouse Pan Logic
-        function handlePanStart(event) {
-            if (!chart) return;
-            isPanning = true;
-            panStartX = event.clientX;
-            panStartMin = chart.options.scales.x.min;
-            panStartLogRange = Math.log10(chart.options.scales.x.max) - Math.log10(panStartMin);
-            event.target.style.cursor = 'grabbing'
-        }
-
-        function handlePanMove(event) {
-            if (!chart || !isPanning) return;
-
-            const chartArea = chart.chartArea;
-            if (!chartArea) return;
-
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const logRange = currentMaxLog - currentMinLog;
-            const pixelRange = chartArea.right - chartArea.left;
-            if (pixelRange <= 0) return;
-            const logPerPixel = logRange / pixelRange;
-
-            const deltaX = event.clientX - panStartX;
-            const logDelta = deltaX * logPerPixel;
-
-            let newLogMin = Math.log10(panStartMin) - logDelta;
-            let newLogMax = newLogMin + panStartLogRange;
-            
-            if (Math.pow(10, newLogMin) < originalExtendedMinDay) {
-                newLogMin = Math.log10(originalExtendedMinDay);
-                newLogMax = newLogMin + panStartLogRange;
-            }
-            if (Math.pow(10, newLogMax) > originalExtendedMaxDay) {
-                newLogMax = Math.log10(originalExtendedMaxDay);
-                newLogMin = newLogMax - panStartLogRange;
-            }
-            
-            chart.options.scales.x.min = Math.pow(10, newLogMin);
-            chart.options.scales.x.max = Math.pow(10, newLogMax);
-
-            refitYAxis();
-            chart.update('none');
-        }
-
-        function handlePanEnd(event) {
-            if (!chart) return;
-            isPanning = false;
-            event.target.style.cursor = 'default';
-        }
-
-        // --- NEW: TOUCH EVENT HANDLERS FOR MOBILE (Pan & Zoom) ---
-        let lastTouchX = 0;
-        let lastTouchY = 0;
-        let isTouching = false;
-        let touchStartMin = 0;
-        let touchStartLogRange = 0;
-
-        function handleTouchStart(e) {
-            if (!chart) return;
-            // Only handle single touch for panning
-            if (e.touches.length !== 1) return;
-            
-            // Prevent default behavior (scrolling the page)
-            e.preventDefault();
-
-            isTouching = true;
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-            
-            // Snapshot current chart state for panning reference
-            touchStartMin = chart.options.scales.x.min;
-            const max = chart.options.scales.x.max;
-            touchStartLogRange = Math.log10(max) - Math.log10(touchStartMin);
-        }
-
-        function handleTouchMove(e) {
-            if (!chart || !isTouching || e.touches.length !== 1) return;
-            e.preventDefault(); // Stop page scroll
-
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            
-            const deltaX = currentX - lastTouchX;
-            const deltaY = currentY - lastTouchY;
-
-            // 1. PANNING LOGIC (Left/Right)
-            // We apply panning based on X movement
-            const chartArea = chart.chartArea;
-            if (chartArea) {
-                const currentMinLog = Math.log10(chart.options.scales.x.min);
-                const currentMaxLog = Math.log10(chart.options.scales.x.max);
-                const logRange = currentMaxLog - currentMinLog;
-                const pixelRange = chartArea.right - chartArea.left;
-                
-                if (pixelRange > 0) {
-                    const logPerPixel = logRange / pixelRange;
-                    const logDelta = deltaX * logPerPixel;
-
-                    let newLogMin = currentMinLog - logDelta;
-                    let newLogMax = newLogMin + logRange;
-
-                    // Boundary checks
-                    const originalMinLog = Math.log10(originalExtendedMinDay);
-                    const originalMaxLog = Math.log10(originalExtendedMaxDay);
-
-                    if (newLogMin < originalMinLog) {
-                        newLogMin = originalMinLog;
-                        newLogMax = newLogMin + logRange;
-                    }
-                    if (newLogMax > originalMaxLog) {
-                         newLogMax = originalMaxLog;
-                         newLogMin = newLogMax - logRange;
-                    }
-                    
-                    chart.options.scales.x.min = Math.pow(10, newLogMin);
-                    chart.options.scales.x.max = Math.pow(10, newLogMax);
-                }
-            }
-
-            // 2. ZOOMING LOGIC (Up/Down)
-            // Sliding UP (negative Y delta) zooms IN. Sliding DOWN (positive Y delta) zooms OUT.
-            // Sensitivity constant - smaller means smoother/slower zoom
-            const ZOOM_SENSITIVITY = 0.006; 
-            
-            // Determine zoom factor based on vertical movement
-            // deltaY < 0 (Up) => Factor < 1 (Shrink range/Zoom In)
-            // deltaY > 0 (Down) => Factor > 1 (Expand range/Zoom Out)
-            const zoomFactor = 1 + (deltaY * ZOOM_SENSITIVITY);
-
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const currentLogRange = currentMaxLog - currentMinLog;
-            
-            // Calculate new range
-            let newLogRange = currentLogRange * zoomFactor;
-
-            // Enforce Min/Max zoom levels
-            const minLogRange = 0.1; 
-            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
-
-            if (newLogRange < minLogRange) newLogRange = minLogRange;
-            if (newLogRange > maxLogRange) newLogRange = maxLogRange;
-
-            // Apply zoom centered on the current view
-            const centerLog = (currentMinLog + currentMaxLog) / 2;
-            let newLogMinZoom = centerLog - (newLogRange / 2);
-            let newLogMaxZoom = centerLog + (newLogRange / 2);
-
-            // Boundary checks for zoom
-            const originalMinLog = Math.log10(originalExtendedMinDay);
-            const originalMaxLog = Math.log10(originalExtendedMaxDay);
-
-            if (newLogMinZoom < originalMinLog) {
-                newLogMinZoom = originalMinLog;
-                newLogMaxZoom = newLogMinZoom + newLogRange;
-            }
-            if (newLogMaxZoom > originalMaxLog) {
-                newLogMaxZoom = originalMaxLog;
-                newLogMinZoom = newLogMaxZoom - newLogRange;
-            }
-            
-            // Apply Zoom results
-            chart.options.scales.x.min = Math.pow(10, newLogMinZoom);
-            chart.options.scales.x.max = Math.pow(10, newLogMaxZoom);
-
-            // Update references for next frame
-            lastTouchX = currentX;
-            lastTouchY = currentY;
-
-            // Redraw
-            refitYAxis();
-            chart.update('none');
-        }
-
-        function handleTouchEnd(e) {
-             isTouching = false;
-        }
-
-    // --- SECTION: EVENT LISTENERS ---
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
-        window.addEventListener('resize', handleFullscreenChange);
-         if (screen.orientation) {
-             screen.orientation.addEventListener('change', handleFullscreenChange);
-         } else {
-             window.addEventListener('orientationchange', handleFullscreenChange); 
-         }
-
-        // Initial load
-        window.onload = () => {
-            createOrUpdateChart();
-            
-            // Enable Dragging
-            makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
-            makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
-            
-            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
-            
-            const canvas = document.getElementById('powerLawChart');
-            if (canvas) {
-                // Mouse Events
-                canvas.addEventListener('wheel', handleWheelZoom, { passive: false });
-                canvas.addEventListener('mousedown', handlePanStart);
-                canvas.addEventListener('mousemove', handlePanMove);
-                canvas.addEventListener('mouseup', handlePanEnd);
-                canvas.addEventListener('mouseleave', handlePanEnd);
-                
-                // Touch Events (Mobile)
-                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-                canvas.addEventListener('touchend', handleTouchEnd);
-                canvas.addEventListener('touchcancel', handleTouchEnd);
-
-                canvas.style.cursor = 'default'; 
-                
-                canvas.addEventListener('mouseenter', (e) => {
-                    e.target.style.cursor = isPanning ? 'grabbing' : 'default';
-                });
-            }
-
-            setTimeout(handleFullscreenChange, 150); 
-        }
-    </script>
+    <!-- SEO text -->
+    <div class="sr-only">
+        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
+    </div>
+
+    <!-- Main application container -->
+    <div id="mainContainer" class="w-full flex-grow max-w-[1920px] max-h-[1080px] min-h-[30rem] flex flex-col bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-2xl shadow-slate-400/30 relative overflow-hidden transition-all duration-300">
+
+        <!-- Mobile Rotate Overlay -->
+        <div id="rotateOverlay" class="hidden absolute inset-0 w-full h-full bg-white/95 z-50 flex-col items-center justify-center text-center p-8 backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-indigo-500 mb-4 animate-pulse">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            <h2 class="text-2xl font-semibold text-slate-800 mb-2">Please Rotate Device</h2>
+            <p class="text-slate-500">This chart is optimized for landscape mode.</p>
+        </div>
+
+        <!-- Page Header -->
+        <header class="relative h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 border-b border-slate-100 bg-white z-50">
+            <!-- Left: Logo/Links -->
+            <div class="flex items-center">
+                <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 group">
+                    <!-- Removed Purple Ring -->
+                    <div class="rounded-full group-hover:scale-105 transition-transform duration-300">
+                        <img src="decode.png" alt="decodejar" class="w-8 h-8 rounded-full bg-white border-2 border-white" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
+                    </div>
+                    <!-- Highlight color changed to Blue -->
+                    <span class="hidden sm:block font-bold text-slate-700 text-lg tracking-tight group-hover:text-blue-600 transition-colors">decodejar</span>
+                </a>
+            </div>
+
+            <!-- Center: Title -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
+                <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 tracking-tight whitespace-nowrap">
+                    TAO Tensor Law
+                    <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">by decodejar</span>
+                </h1>
+                <!-- Tooltip -->
+                <div class="group relative flex items-center">
+                     <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-indigo-500 transition-colors">?</span>
+                     <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
+                        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
+                     </div>
+                </div>
+            </div>
+
+             <!-- Right: Fullscreen -->
+            <button id="fullscreenBtn" onclick="toggleFullScreen()" class="text-slate-400 hover:text-indigo-600 transition-colors p-2 rounded-lg hover:bg-slate-50" title="Toggle Fullscreen">
+                <svg id="fsIconEnter" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                </svg>
+                <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                </svg>
+            </button>
+        </header>
+
+        <!-- Top Status Bar -->
+        <!-- Added font-mono to ensure JetBrains Mono for all items -->
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50 font-mono">
+             <!-- Left Group: Price, Status & Rating (MOVED priceZoneDiv HERE) -->
+             <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
+                 <!-- Price (First) -->
+                 <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
+                 <!-- Data Status (Second) -->
+                 <div id="dataStatusDiv" class="flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+                     <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
+                 </div>
+                 <!-- Zone/Rating (Third - MOVED HERE) -->
+                 <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
+             </div>
+             
+             <!-- Right Group: Toggle -->
+             <div class="flex items-center gap-4 text-xs sm:text-sm">
+                 <!-- Bands Toggle (UPDATED: Renamed label, swapped label/switch position, retained font style) -->
+                 <div id="showBandsContainer" class="flex items-center hidden group">
+                     <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
+                         <!-- Label moved to the left and updated text -->
+                         <span class="mr-3 text-xs font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Show Bands</span>
+                         <!-- Switch element itself -->
+                         <div class="relative">
+                             <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
+                             <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
+                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                             <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                         </div>
+                     </label>
+                 </div>
+             </div>
+        </div>
+
+        <!-- Chart Area -->
+        <div id="chartCard" class="relative flex-grow min-h-0 w-full p-0 bg-white">
+            <!-- Loading Spinner -->
+            <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
+                <div class="loader"></div>
+                <p class="text-xs font-mono text-slate-400 animate-pulse uppercase tracking-widest">Initializing Model</p>
+            </div>
+            
+            <!-- Canvas Wrapper -->
+            <div id="chartWrapper" class="relative w-full h-full bg-white">
+                
+                <!-- Draggable Tables (Hidden by default, structure preserved) -->
+                <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
+                    <h3 id="projectionHeader">
+                        <span>Fair Value</span>
+                        <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </h3>
+                    <!-- Removed gap-1 class to tighten spacing -->
+                    <div id="projectionData" class="flex flex-col pt-1"></div>
+                </div>
+
+                <div id="bandLevelsTable" class="hidden transform transition-transform active:scale-[1.02]">
+                    <h3 id="bandsHeader">
+                        <span>Valuation Bands (Current)</span>
+                        <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </h3>
+                    <div class="flex flex-col pt-1">
+                        <div id="bandLevelBubble">
+                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 shadow-sm"></span>Bubble</span>
+                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                        </div>
+                        <div id="bandLevelExpensive">
+                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Expensive</span>
+                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                        </div>
+                        <div id="bandLevelValue">
+                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></span>Value</span>
+                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                        </div>
+                        <div id="bandLevelDiscount">
+                            <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-sm"></span>Discount</span>
+                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- The Canvas -->
+                <canvas id="powerLawChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Bottom Model Info Bar -->
+        <!-- Added font-mono to ensure JetBrains Mono for all items -->
+        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500 font-mono">
+            <!-- Order: Offset, Toggle, Exponent, Fit -->
+            <div id="modelParamDiv" class="text-slate-600"></div>
+            
+            <!-- Model Toggle (Updated to Switch) -->
+             <div class="flex items-center group">
+                 <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
+                     <span class="mr-3 text-xs font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
+                     <div class="relative">
+                         <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
+                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                         <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                     </div>
+                 </label>
+             </div>
+            
+            <div id="growthExponentDiv" class="text-slate-600"></div>
+            <!-- UPDATED: Added text-slate-600 class to match "Optimise" label font color -->
+            <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-3 px-4 text-center space-y-1 w-full">
+        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed">Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
+        <p class="text-slate-500 text-[10px] tracking-wide"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com</p>
+    </footer>
+
+
+    <script>
+        /*
+         * TAO Tensor Law Model — by decodejar
+         * Copyright (c) 2025 TAOTENSORLAW.COM. All Rights Reserved.
+         * * NOTE: Original logic preserved 100%.
+         */
+
+        // --- SECTION: GLOBAL ELEMENT REFERENCES ---
+        const mainContainer = document.getElementById('mainContainer');
+        const headerElement = document.querySelector('header');
+        const topBarElement = document.getElementById('topStatusBar');
+        const bottomBarElement = document.getElementById('bottomModelBar');
+        const chartCardElement = document.getElementById('chartCard');
+        const fsIconEnter = document.getElementById('fsIconEnter');
+        const fsIconExit = document.getElementById('fsIconExit');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const growthExponentDiv = document.getElementById('growthExponentDiv');
+        const modelFitDiv = document.getElementById('modelFitDiv');
+        const loader = document.getElementById('loader');
+        const dataStatusDiv = document.getElementById('dataStatusDiv');
+        const lastPriceDiv = document.getElementById('lastPriceDiv');
+        const priceZoneDiv = document.getElementById('priceZoneDiv');
+        const ctx = document.getElementById('powerLawChart').getContext('2d');
+        const modelParamDiv = document.getElementById('modelParamDiv');
+        const showBandsContainer = document.getElementById('showBandsContainer');
+        const showBandsCheckbox = document.getElementById('showBandsCheckbox');
+        const projectionTable = document.getElementById('projectionTable');
+        const projectionData = document.getElementById('projectionData');
+        const bandLevelsTable = document.getElementById('bandLevelsTable');
+        const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
+
+        // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
+
+        const HARDCODED_OFFSET = 74;
+        const MAX_OFFSET_SEARCH_LIMIT = 730;    
+        const X_AXIS_PROJECTION_PADDING = 0.33; 
+        const Y_AXIS_BOTTOM_PADDING = 0.1;
+        const Y_AXIS_TOP_PADDING_MIN = 0.1;
+        const Y_AXIS_TOP_PADDING_MAX = 0.33;
+        
+        let chart; 
+        let baseData = []; 
+        let priceData = []; 
+        let activeModelParams = {}; 
+        
+        // Zoom & Pan State
+        let originalExtendedMinDay = 1;
+        let originalExtendedMaxDay = 1000;
+        const ZOOM_FACTOR = 0.1;
+        let isPanning = false;
+        let panStartX = 0;
+        let panStartMin = 0;
+        let panStartLogRange = 0;
+
+        // Band Fill Colors (Updated to match new theme slightly better, but logic same)
+        const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
+        const greenFillColor = 'rgba(74, 222, 128, 0.15)'; // Green-400
+        const yellowFillColor = 'rgba(250, 204, 21, 0.15)'; // Yellow-400
+        const redFillColor = 'rgba(248, 113, 113, 0.15)';   // Red-400
+
+        // Reusable Line Styles (Updated colors for slate theme)
+        const grayLineStyle = { borderColor: 'rgba(148, 163, 184, 0.7)', borderWidth: 1, borderDash: [] }; // Slate-400
+        const orangeLineStyle = { borderColor: '#f97316', borderWidth: 2, borderDash: [] }; // Orange-500
+        const grayDashedLineStyle = { borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderDash: [4, 4] };
+        const grayFineLineStyle = { borderColor: 'rgba(203, 213, 225, 0.8)', borderWidth: 0.5, borderDash: [] }; // Slate-300
+
+        /**
+         * Chart.js plugin to add a watermark to the background.
+         */
+        const watermarkPlugin = {
+            id: 'watermark',
+            afterDraw: (chart, args, options) => {
+                const { ctx, chartArea: { top, right, bottom, left, width, height } } = chart;
+                
+                if (width <= 0 || height <= 0) return; 
+
+                ctx.save();
+                const text = 'taotensorlaw.com';
+                
+                const baseFontSize = Math.max(30, Math.min(80, width / 12)); 
+                ctx.font = `bold ${baseFontSize.toFixed(0)}px Inter, sans-serif`;
+                // Watermark opacity set to 0.075 as requested
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.075)'; 
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const centerX = left + width / 2;
+                const centerY = top + height / 2;
+                ctx.fillText(text, centerX, centerY);
+                
+                ctx.restore();
+            }
+        };
+        Chart.register(watermarkPlugin);
+
+        // --- SECTION: DATA & REGRESSION LOGIC ---
+
+        async function loadPriceData() {
+            try {
+                // In a production environment, this path might need adjustment based on where 'price_data.json' is hosted.
+                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
+                const data = await response.json();
+                if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
+                // Assuming data is in format [[timestamp_s, price], ...]
+                baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
+                return baseData;
+            } catch (error) {
+                console.error("Error loading price data:", error);
+                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
+                loader.style.display = 'none';
+                return null;
+            }
+        }
+
+        function linearRegression(data) {
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            const n = validData.length;
+            if (n < 2) return { slope: 0, intercept: 0 }; 
+            
+            for (const { x, y } of validData) {
+                const logX = Math.log10(x);
+                const logY = Math.log10(y);
+                sumX += logX; sumY += logY; sumXY += logX * logY; sumX2 += logX * logX;
+            }
+
+            const denominator = (n * sumX2 - sumX * sumX);
+            if (denominator === 0) return { slope: 0, intercept: 0 }; 
+            
+            const slope = (n * sumXY - sumX * sumY) / denominator;
+            const intercept = (sumY - slope * sumX) / n;
+            return { slope, intercept };
+        }
+
+        function calculateResiduals(data, slope, intercept) {
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            if (validData.length === 0) return [];
+            return validData.map(p => {
+                const logX = Math.log10(p.x);
+                const logY = Math.log10(p.y);
+                const predictedLogY = slope * logX + intercept;
+                return logY - predictedLogY;
+            }).sort((a, b) => a - b); 
+        }
+
+        function getPercentile(sortedResiduals, percentile) {
+            if (!sortedResiduals || sortedResiduals.length === 0) return 0;
+            const index = (percentile / 100) * (sortedResiduals.length - 1);
+            const lowerIndex = Math.floor(index);
+            const upperIndex = Math.ceil(index);
+            
+            if (lowerIndex === upperIndex) {
+                return sortedResiduals[lowerIndex];
+            } else {
+                const weight = index - lowerIndex;
+                return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
+            }
+        }
+
+        function findOptimalOffset(baseData, minOffset = 1, maxOffset) {
+            let bestOffset = -1;
+            let bestRSquared = -Infinity;
+
+            if (baseData.length < 2) return { optimalOffset: -1, bestFit: 0 };
+            if (typeof maxOffset === 'undefined' || maxOffset < minOffset) maxOffset = baseData.length; 
+
+            for (let offset = minOffset; offset <= maxOffset; offset++) {
+                const offsetData = baseData.map(p => ({ x: p.dayIndex + offset, y: p.y }));
+                const { slope, intercept } = linearRegression(offsetData);
+                if (slope === 0 && intercept === 0 && offsetData.length > 1) continue; 
+                
+                const rSquared = calculateRSquared(offsetData, slope, intercept);
+                if (rSquared > bestRSquared) {
+                    bestRSquared = rSquared;
+                    bestOffset = offset;
+                }
+            }
+            return { optimalOffset: bestOffset, bestFit: bestRSquared };
+        }
+
+        function calculateRSquared(data, slope, intercept) {
+            let ss_tot = 0, ss_res = 0, y_mean = 0;
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            if (validData.length < 2) return 0;
+
+            validData.forEach(p => y_mean += Math.log10(p.y));
+            y_mean /= validData.length;
+
+            validData.forEach(p => {
+                const logY = Math.log10(p.y);
+                const logX = Math.log10(p.x);
+                const predictedLogY = slope * logX + intercept;
+                ss_tot += Math.pow(logY - y_mean, 2);
+                ss_res += Math.pow(logY - predictedLogY, 2);
+            });
+            return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
+        }
+
+
+        // --- SECTION: CORE APPLICATION LOGIC ---
+
+        async function createOrUpdateChart() {
+            loader.style.display = 'flex';
+            
+            if (baseData.length === 0) {
+                await loadPriceData();
+            }
+
+            if (!baseData || baseData.length === 0) {
+                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('Demo')) { 
+                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
+                }
+                growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
+                modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
+                modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
+                if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
+                showBandsContainer.classList.add('hidden');
+                loader.style.display = 'none';
+                return;
+            }
+
+            const useOptimal = useOptimalOffsetCheckbox.checked;
+            let slope, meanIntercept, rSquared;
+            let activeDayOffset;
+            
+            const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
+            
+            if (useOptimal) {
+                activeDayOffset = optimalOffset;
+                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + optimalOffset }));
+                const regression = linearRegression(priceData);
+                slope = regression.slope;
+                meanIntercept = regression.intercept;
+                rSquared = optimalOffsetRSquared; 
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${optimalOffset}</span>`;
+            } else {
+                activeDayOffset = HARDCODED_OFFSET;
+                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
+                const regression = linearRegression(priceData);
+                slope = regression.slope;
+                meanIntercept = regression.intercept;
+                rSquared = calculateRSquared(priceData, slope, meanIntercept);
+                if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
+                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                } else {
+                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
+                }
+            }
+            
+            activeModelParams = {
+                modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
+                activeDayOffset: activeDayOffset,
+                slope: slope,
+                meanIntercept: meanIntercept
+            };
+
+            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
+            
+            const lastBaseDataPoint = baseData[baseData.length - 1]; 
+            const lastTimestamp = lastBaseDataPoint.time; 
+            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            const now = new Date().getTime();
+            const diffMs = now - lastTimestamp;
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            const sevenDaysMs = 7 * oneDayMs;
+
+            let dotColor = "bg-red-500"; 
+            if (diffMs < oneDayMs) {
+                dotColor = "bg-green-500"; 
+            } else if (diffMs < sevenDaysMs) {
+                dotColor = "bg-yellow-400"; 
+            }
+            
+            // Only update status if not in Demo mode (to preserve the yellow demo text)
+            if(!dataStatusDiv.innerHTML.includes("Demo")) {
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span>${lastUpdateDate}</span>`;
+            }
+
+            lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.classList.remove('hidden');
+
+            const chartPrices = priceData.map(p => p.y);
+            const minPrice = Math.min(...chartPrices);
+            const maxPrice = Math.max(...chartPrices);
+
+            const firstDayNum = priceData[0].x;
+            const lastDayNum = priceData[priceData.length - 1].x; 
+
+            const logMinDay = Math.log10(firstDayNum);
+            const logMaxDay = Math.log10(lastDayNum);
+            const logDayRange = logMaxDay - logMinDay;
+
+            const extendedMinDay = firstDayNum;
+            let extendedMaxDay;
+
+            if (logDayRange > 0) {
+                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
+                extendedMaxDay = Math.pow(10, extendedLogMaxDay);
+            } else {
+                extendedMaxDay = lastDayNum * 1.4; 
+            }
+
+            originalExtendedMinDay = extendedMinDay;
+            originalExtendedMaxDay = extendedMaxDay;
+
+            const logMinPrice = Math.log10(minPrice);
+            const logMaxPrice = Math.log10(maxPrice);
+            const logPriceRange = logMaxPrice - logMinPrice;
+            const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9; 
+            const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4; 
+
+            const lastModelDataPoint = priceData[priceData.length - 1];
+            const sortedResiduals = calculateResiduals(priceData, slope, meanIntercept);
+
+            const medianResidual = getPercentile(sortedResiduals, 50);
+            const p1Residual = getPercentile(sortedResiduals, 1);
+            const p99Residual = getPercentile(sortedResiduals, 99);
+            const p20Residual = getPercentile(sortedResiduals, 20);
+            const p80Residual = getPercentile(sortedResiduals, 80);
+
+            const lastLogX = Math.log10(lastModelDataPoint.x);
+            const lastLogY = Math.log10(lastModelDataPoint.y);
+            const predictedLastLogY = slope * lastLogX + meanIntercept;
+            const lastResidual = lastLogY - predictedLastLogY;
+
+            let priceZone = "";
+            let priceZoneColor = "";
+            if (lastResidual > p80Residual) { priceZone = "Bubble"; priceZoneColor = "bg-red-500"; }
+            else if (lastResidual > medianResidual) { priceZone = "Expensive"; priceZoneColor = "bg-yellow-400"; }
+            else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
+            else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
+
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.classList.remove('hidden');
+
+            const medianIntercept = meanIntercept + medianResidual;
+            const p1Intercept = meanIntercept + p1Residual;
+            const p99Intercept = meanIntercept + p99Residual;
+            const p20Intercept = meanIntercept + p20Residual;
+            const p80Intercept = meanIntercept + p80Residual;
+
+            if (bandLevelsTable) {
+                const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
+                const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
+                const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
+                const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
+                const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
+
+                const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
+                const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
+                const valueEl = document.querySelector('#bandLevelsTable #bandLevelValue > span:last-child');
+                const discountEl = document.querySelector('#bandLevelsTable #bandLevelDiscount > span:last-child');
+
+                if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
+                if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
+                // NOTE: Value band is P20-P50, but the HTML mock had P20-P20. Correcting here to P20-P50 boundary prices.
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
+                if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+            }
+            
+            calculateProjections(baseData, activeModelParams, projectionData);
+
+            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold text-slate-800">${slope.toFixed(3)}</span>`;
+            
+            let fitColorClass = "";
+            if (rSquared >= 0.9) fitColorClass = "bg-blue-400";
+            else if (rSquared >= 0.7) fitColorClass = "bg-green-500";
+            else if (rSquared >= 0.5) fitColorClass = "bg-yellow-400";
+            else fitColorClass = "bg-red-500";
+            
+            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²):&nbsp;<span class="font-bold text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            
+            const startIndex = extendedMinDay;
+            const endIndex = extendedMaxDay;
+            const calculateLinePoints = (intercept) => {
+                 const safeStartIndex = Math.max(startIndex, 1); 
+                 const safeEndIndex = Math.max(endIndex, 1);
+                 return [
+                     { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                     { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                 ];
+            };
+            const medianLineData = calculateLinePoints(medianIntercept);
+            const p1LineData = calculateLinePoints(p1Intercept);
+            const p99LineData = calculateLinePoints(p99Intercept);
+            const p20LineData = calculateLinePoints(p20Intercept);
+            const p80LineData = calculateLinePoints(p80Intercept);
+
+            const chartPriceDataPoints = priceData.map(p => ({ x: p.x, y: p.y }));
+
+            loader.style.display = 'none';
+
+            const xAxisAfterBuildTicks = (axis) => {
+                 if (!priceData || priceData.length === 0 || !baseData || baseData.length === 0) return;
+                 
+                 const newTicks = [];
+                 const axisMinDay = axis.min;
+                 const axisMaxDay = axis.max;
+
+                 const { activeDayOffset } = activeModelParams;
+
+                 const firstDayIndex = baseData[0].dayIndex;
+                 const firstDayTime = baseData[0].time;
+                 const lastDayIndex = baseData[baseData.length - 1].dayIndex;
+                 const lastDayTime = baseData[baseData.length - 1].time;
+                 
+                 let maxYear;
+                 let msPerDay = (1000 * 60 * 60 * 24); 
+
+                 if (lastDayIndex > firstDayIndex) {
+                      msPerDay = (lastDayTime - firstDayTime) / (lastDayIndex - firstDayIndex);
+                      const maxDayIndexOnAxis = axisMaxDay - activeDayOffset;
+                      const projectedTime = firstDayTime + (maxDayIndexOnAxis - firstDayIndex) * msPerDay;
+                      maxYear = new Date(projectedTime).getFullYear();
+                 } else {
+                      maxYear = new Date(lastDayTime).getFullYear() + 5;
+                 }
+                 
+                 let lastYearFound = -1; 
+                 const firstDataYear = new Date(baseData[0].time).getFullYear();
+                 const lastDataYear = new Date(lastDayTime).getFullYear();
+
+                 for (let year = firstDataYear; year <= lastDataYear; year++) {
+                     const yearStartTime = new Date(year, 0, 1).getTime();
+                     const dayData = baseData.find(p => p.time >= yearStartTime);
+                     
+                     if (!dayData) continue;
+                     
+                     const actualYear = new Date(dayData.time).getFullYear();
+                     if (actualYear > year && year > firstDataYear) continue; 
+
+                     if (year > lastYearFound) {
+                          const xValue = dayData.dayIndex + activeDayOffset;
+                          if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                              newTicks.push({ value: xValue, label: year.toString() });
+                              lastYearFound = year;
+                          }
+                     }
+                 }
+
+                 for (let year = lastDataYear + 1; year <= maxYear; year++) {
+                     const yearStartTime = new Date(year, 0, 1).getTime();
+                     
+                     const diffTime = yearStartTime - firstDayTime;
+                     const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
+                     
+                     const xValue = estimatedDayIndex + activeDayOffset;
+
+                     if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                          newTicks.push({ value: xValue, label: year.toString() });
+                     }
+                 }
+                 
+                 axis.ticks.length = 0; 
+                 const validTicks = newTicks.filter(tick => !isNaN(tick.value) && tick.label);
+                 axis.ticks.push(...validTicks);
+            };
+
+            function yAxisAfterBuildTicks(axis) {
+                const newTicks = [];
+                const min = axis.min;
+                const max = axis.max;
+
+                let startingPower = Math.floor(Math.log10(min));
+                let currentMagnitude = Math.pow(10, startingPower); 
+
+                while (currentMagnitude < max) {
+                    for (let i = 1; i <= 9; i++) {
+                        const tickValue = currentMagnitude * i;
+                        if (tickValue > max) break; 
+                        if (tickValue >= min) {
+                            newTicks.push({ value: tickValue });
+                        }
+                    }
+                    currentMagnitude *= 10; 
+                }
+
+                axis.ticks.length = 0; 
+                axis.ticks.push(...newTicks);
+            }
+
+            const datasetDefaults = {
+                type: 'line', borderWidth: 1, pointRadius: 0, fill: false, pointStyle: 'line'
+            };
+            const fillDatasetDefaults = {
+                type: 'line', pointRadius: 0, borderWidth: 0, pointStyle: 'line', tension: 0.1
+            };
+
+            if (chart) {
+                // 1. Update Data Arrays for Reused Datasets
+                // The new structure requires 11 datasets total (0-10).
+                
+                // Define the data structure for the 11 layers
+                const datasetsStruct = [
+                    // --- BOUNDARY/FILL LAYERS (0-4) ---
+                    // 0: Boundary P1 (Base for Discount)
+                    { label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                    // 1: Discount Band (P1-P20) - Fills to 0
+                    { label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                    // 2: Value Band (P20-P50) - Fills to 1
+                    { label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                    // 3: Expensive Band (P50-P80) - Fills to 2
+                    { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                    // 4: Bubble Band (P80-P99) - Fills to 3
+                    { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
+
+                    // --- VISUAL LINE LAYERS (5-10) ---
+                    // 5: Price
+                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, // Slate-900
+                    // 6: Median Line (P50)
+                    { label: '50th Percentile', data: medianLineData }, 
+                    // 7: 1st Pctl
+                    { label: '1st Pctl', data: p1LineData },
+                    // 8: 99th Pctl
+                    { label: '99th Pctl', data: p99LineData },
+                    // 9: 20th Pctl
+                    { label: '20th Pctl', data: p20LineData },
+                    // 10: 80th Pctl
+                    { label: '80th Pctl', data: p80LineData },
+                ];
+
+                // Apply updates to existing chart datasets or push new ones
+                datasetsStruct.forEach((struct, i) => {
+                    if (chart.data.datasets[i]) {
+                         // Update data and core properties
+                         Object.assign(chart.data.datasets[i], struct);
+                    } else {
+                         // Create new
+                         chart.data.datasets.push({
+                             ...datasetDefaults,
+                             ...struct,
+                             // Default visibility logic handled in applyBandVisibility
+                             hidden: false
+                         });
+                    }
+                });
+
+                // Remove extra datasets if any (cleanup from old structure)
+                if (chart.data.datasets.length > datasetsStruct.length) {
+                    chart.data.datasets.splice(datasetsStruct.length, chart.data.datasets.length - datasetsStruct.length);
+                }
+
+                 applyBandVisibility(showBandsCheckbox.checked);
+
+                chart.options.scales.x.min = extendedMinDay;
+                chart.options.scales.x.max = extendedMaxDay;
+                chart.options.scales.y.min = extendedMinPrice;
+                chart.options.scales.y.max = extendedMaxPrice;
+                chart.options.scales.x.afterBuildTicks = xAxisAfterBuildTicks;
+                chart.options.scales.y.afterBuildTicks = yAxisAfterBuildTicks; 
+                chart.update();
+
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            // 0: Boundary P1
+                            { ...fillDatasetDefaults, label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                            // 1: Discount Band
+                            { ...fillDatasetDefaults, label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                            // 2: Value Band
+                            { ...fillDatasetDefaults, label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                            // 3: Expensive Band
+                            { ...fillDatasetDefaults, label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                            // 4: Bubble Band
+                            { ...fillDatasetDefaults, label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
+                            
+                            // 5: Price
+                            { 
+                                ...datasetDefaults, 
+                                label: 'TAO Price', 
+                                data: chartPriceDataPoints, 
+                                backgroundColor: 'rgba(0, 0, 0, 0.0)', 
+                                borderColor: '#0f172a', // Slate-900 
+                                borderWidth: 2, 
+                                tension: 0.1, 
+                                pointRadius: 0, 
+                                pointHoverRadius: 0, 
+                                pointHitRadius: 15 
+                            },
+                            // 6: Median (P50) - Initial style handled by applyBandVisibility
+                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
+                            // 7: 1st
+                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
+                            // 8: 99th
+                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData },
+                            // 9: 20th
+                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData },
+                            // 10: 80th
+                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData },
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
+                                    // Filter out the Band layers (0-4) and only show Price (5) and Lines (6-10)
+                                    filter: (item) => item.datasetIndex >= 5
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900
+                                titleColor: '#f8fafc',
+                                bodyColor: '#e2e8f0',
+                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
+                                bodyFont: { family: "'JetBrains Mono', monospace" },
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderWidth: 1,
+                                padding: 10,
+                                callbacks: {
+                                    title: (tooltipItems) => {
+                                        if (tooltipItems.length > 0) {
+                                            const item = tooltipItems[0];
+                                            const dayNumber = item.parsed.x; 
+                                            
+                                            const { activeDayOffset } = activeModelParams;
+                                            let targetDayIndex = dayNumber - activeDayOffset;
+                                            
+                                            let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
+                                            
+                                            if (!dataPoint) {
+                                                dataPoint = baseData.reduce((prev, curr) => {
+                                                     return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
+                                                 });
+                                            }
+
+                                            if (dataPoint) {
+                                                const date = new Date(dataPoint.time);
+                                                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                                            }
+
+                                            return `Day ~${targetDayIndex.toFixed(0)}`;
+                                        }
+                                        return '';
+                                    },
+                                    label: (context) => {
+                                         // Hide tooltips for the transparent band layers
+                                         if (context.datasetIndex < 5) return null;
+                                         return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
+                                title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                ticks: { 
+                                    color: '#64748b', autoSkip: false, font: { family: 'Inter', size: 10 },
+                                    callback: function(value) {
+                                        const tick = this.getTicks().find(t => t.value === value);
+                                        return tick ? tick.label : null;
+                                    }
+                                },
+                                afterBuildTicks: xAxisAfterBuildTicks, 
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            },
+                            y: {
+                                type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
+                                title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                ticks: { 
+                                    color: '#64748b', font: { family: 'JetBrains Mono', size: 10 },
+                                    callback: function(value, index, ticks) {
+                                        const logVal = Math.log10(value);
+                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                            return `$${value.toLocaleString()}`;
+                                        }
+                                        return ''; 
+                                    }
+                                },
+                                afterBuildTicks: yAxisAfterBuildTicks, 
+                                grid: { 
+                                    color: function(context) {
+                                        const value = context.tick.value;
+                                        if (value <= 0) return 'rgba(0, 0, 0, 0.05)'; 
+                                        const logVal = Math.log10(value);
+                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                            return 'rgba(0, 0, 0, 0.08)'; 
+                                        } else {
+                                            return 'rgba(0, 0, 0, 0.03)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            showBandsContainer.classList.remove('hidden');
+            showBandsCheckbox.removeEventListener('change', handleBandToggle);
+            showBandsCheckbox.addEventListener('change', handleBandToggle);
+
+            useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
+            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+
+            applyBandVisibility(showBandsCheckbox.checked);
+            if(chart) chart.update('none'); 
+        }
+
+        function handleBandToggle() {
+             if (!chart || !bandLevelsTable) return; 
+             
+             const showBands = showBandsCheckbox.checked;
+             
+             if (showBands) {
+                 // --- START: Reset position as requested by user ---
+                 bandLevelsTable.style.top = ''; 
+                 bandLevelsTable.style.left = ''; 
+                 // --- END: Reset position ---
+
+                 bandLevelsTable.style.display = ''; 
+                 bandLevelsTable.classList.remove('hidden'); 
+             } else {
+                 bandLevelsTable.style.display = 'none'; 
+             }
+
+             applyBandVisibility(showBands);
+             chart.update();
+        }
+
+        /**
+         * Toggles visibility and styles for band datasets.
+         * Enforces strictly different "views" based on the checkbox state.
+         */
+        function applyBandVisibility(showBands) {
+             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
+                 return;
+             }
+             
+             // Helper to force visibility state
+             const setVis = (index, visible) => {
+                 chart.setDatasetVisibility(index, visible);
+                 chart.data.datasets[index].hidden = !visible; 
+             };
+
+             if (showBands) {
+                 // --- BANDS VIEW ---
+                 // 1. Show fill layers (0-4)
+                 for (let i = 0; i <= 4; i++) setVis(i, true);
+
+                 // FORCE Price Visibility (5)
+                 setVis(5, true);
+                 
+                 // 2. Enforce "Thin Solid Grey" style for ALL lines (6-10)
+                 const fineGrey = grayFineLineStyle;
+                 
+                 // Median (6)
+                 Object.assign(chart.data.datasets[6], fineGrey);
+                 setVis(6, true);
+                 // P1 (7)
+                 Object.assign(chart.data.datasets[7], fineGrey);
+                 setVis(7, true);
+                 // P99 (8)
+                 Object.assign(chart.data.datasets[8], fineGrey);
+                 setVis(8, true);
+                 // P20 (9)
+                 Object.assign(chart.data.datasets[9], fineGrey);
+                 setVis(9, true);
+                 // P80 (10)
+                 Object.assign(chart.data.datasets[10], fineGrey);
+                 setVis(10, true);
+                 
+             } else {
+                 // --- CLEAN VIEW ---
+                 // 1. Hide fill layers (0-4)
+                 for (let i = 0; i <= 4; i++) setVis(i, false);
+
+                 // FORCE Price Visibility (5)
+                 setVis(5, true);
+
+                 // 2. Reset lines to default clean view styles
+                 
+                 // P50 (Median) -> Solid Orange, Visible
+                 Object.assign(chart.data.datasets[6], orangeLineStyle);
+                 setVis(6, true);
+                 
+                 // P1 (7) -> Dashed Grey, Visible
+                 Object.assign(chart.data.datasets[7], grayDashedLineStyle);
+                 setVis(7, true);
+                 
+                 // P99 (8) -> Dashed Grey, Visible
+                 Object.assign(chart.data.datasets[8], grayDashedLineStyle);
+                 setVis(8, true);
+                 
+                 // P20 (9) -> Hidden
+                 Object.assign(chart.data.datasets[9], grayDashedLineStyle);
+                 setVis(9, false);
+                 
+                 // P80 (10) -> Hidden
+                 Object.assign(chart.data.datasets[10], grayDashedLineStyle);
+                 setVis(10, false);
+             }
+        }
+
+        /**
+         * Calculates R-squared (coefficient of determination) for the log-log regression.
+         */
+        function calculateProjections(baseData, modelParams, dataElement) {
+            const tableElement = document.getElementById('projectionTable');
+            
+            if (!baseData || baseData.length === 0 || !modelParams) {
+                if(tableElement) tableElement.classList.add('hidden');
+                return;
+            }
+
+            const { slope, meanIntercept, activeDayOffset } = modelParams;
+            const firstDataPointDate = new Date(baseData[0].time);
+            const firstDayIndex = baseData[0].dayIndex; 
+            
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const targetDates = [
+                { label: "Today", date: today },
+                { label: `${currentYear + 1}`, date: new Date(currentYear + 1, 0, 1) },
+                { label: `${currentYear + 2}`, date: new Date(currentYear + 2, 0, 1) },
+                { label: `${currentYear + 3}`, date: new Date(currentYear + 3, 0, 1) }
+            ];
+            const MS_PER_DAY = 1000 * 60 * 60 * 24;
+            const getDayIndex = (targetDate) => {
+                const diffTime = targetDate.getTime() - firstDataPointDate.getTime();
+                const diffDays = Math.round(diffTime / MS_PER_DAY);
+                return firstDayIndex + diffDays;
+            };
+
+            const calculatePrice = (targetDayIndex) => {
+                let dayForLog = targetDayIndex + activeDayOffset;
+                if (dayForLog <= 0) return NaN; 
+                const logX = Math.log10(dayForLog);
+                return Math.pow(10, slope * logX + meanIntercept);
+            };
+
+            let rowsHtml = '';
+            targetDates.forEach(item => {
+                const targetDayIndex = getDayIndex(item.date); 
+                const projectedPrice = calculatePrice(targetDayIndex);
+                const priceString = isNaN(projectedPrice) ? "N/A" : `$${projectedPrice.toFixed(2)}`;
+                rowsHtml += `
+                    <div>
+                        <span>${item.label}</span>
+                        <span>${priceString}</span>
+                    </div>
+                `;
+            });
+
+            if (dataElement) dataElement.innerHTML = rowsHtml;
+            if (tableElement) {
+                // Reset position for projection table when re-displaying it
+                tableElement.style.top = '';
+                tableElement.style.left = '';
+                
+                tableElement.style.display = ''; 
+                tableElement.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * NEW: Helper to make elements draggable via their header.
+         * Supports Mouse and Touch events.
+         */
+        function makeDraggable(element, handle) {
+            if (!element || !handle) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            const startDrag = (e) => {
+                // Prevent default behavior to stop text selection, etc.
+                if (e.type === 'touchstart') {
+                    // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
+                } else {
+                    e.preventDefault();
+                }
+                
+                isDragging = true;
+                
+                // Get start position (mouse or touch)
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                
+                // Get current element position
+                // Note: element must be position:absolute/relative for offsetTop/Left to be meaningful
+                // We use offsetLeft/Top relative to the parent container (chartWrapper)
+                initialLeft = element.offsetLeft;
+                initialTop = element.offsetTop;
+
+                handle.style.cursor = 'grabbing';
+            };
+
+            const drag = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                element.style.left = `${initialLeft + dx}px`;
+                element.style.top = `${initialTop + dy}px`;
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+                handle.style.cursor = 'grab'; // Changed from 'move' to 'grab' for better UI feedback
+            };
+
+            // Attach events to handle
+            handle.addEventListener('mousedown', startDrag);
+            handle.addEventListener('touchstart', startDrag, { passive: false });
+
+            // Attach events to document/window to track movement outside the handle
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+
+        // --- SECTION: CHART INTERACTIVITY (PAN & ZOOM) ---
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (mainContainer.requestFullscreen) mainContainer.requestFullscreen().catch(err => console.error(`Error entering fullscreen: ${err.message}`));
+                else if (mainContainer.webkitRequestFullscreen) mainContainer.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(err => console.error(`Error exiting fullscreen: ${err.message}`));
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        }
+
+        function handleFullscreenChange() {
+             requestAnimationFrame(() => { 
+                const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+                const isMobile = window.innerWidth < 1024;
+                const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
+
+                if (isInFullscreen) {
+                    fsIconEnter.classList.add('hidden');
+                    fsIconExit.classList.remove('hidden');
+                    fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+                } else {
+                    fsIconEnter.classList.remove('hidden');
+                    fsIconExit.classList.add('hidden');
+                    fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
+                }
+
+                if (isInFullscreen && isMobile && isLandscape) {
+                   mainContainer.classList.add('mobile-fullscreen-landscape');
+                } else {
+                   mainContainer.classList.remove('mobile-fullscreen-landscape');
+                }
+
+                 if (chart) {
+                     setTimeout(() => {
+                         requestAnimationFrame(() => {
+                             if (chart) chart.resize();
+                         });
+                     }, 50); 
+                 }
+             });
+        }
+
+        function refitYAxis() {
+            if (!chart || !priceData || priceData.length === 0) return;
+
+            const currentXMin = chart.options.scales.x.min;
+            const currentXMax = chart.options.scales.x.max;
+
+            const visibleData = priceData.filter(p => p.x >= currentXMin && p.x <= currentXMax);
+
+            if (visibleData.length < 2) {
+                return; 
+            }
+
+            const prices = visibleData.map(p => p.y);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+
+            const logMinPrice = Math.log10(minPrice);
+            const logMaxPrice = Math.log10(maxPrice);
+            const logPriceRange = logMaxPrice - logMinPrice;
+
+            let extendedMinPrice, extendedMaxPrice;
+            
+            const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
+            const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            let zoomRatio = 1.0; 
+            if (originalLogRangeX > 0) {
+                 zoomRatio = currentLogRangeX / originalLogRangeX;
+                 if (zoomRatio > 1.0) zoomRatio = 1.0;
+                 if (zoomRatio < 0.0) zoomRatio = 0.0;
+            }
+            
+            const minTopPadding = Y_AXIS_TOP_PADDING_MIN;
+            const maxTopPadding = Y_AXIS_TOP_PADDING_MAX;
+            const dynamicTopPadding = minTopPadding + (maxTopPadding - minTopPadding) * zoomRatio;
+            const bottomPadding = Y_AXIS_BOTTOM_PADDING;
+            
+            if (logPriceRange > 0) {
+                 extendedMinPrice = Math.pow(10, logMinPrice - logPriceRange * bottomPadding);
+                 extendedMaxPrice = Math.pow(10, logMaxPrice + logPriceRange * dynamicTopPadding);
+            } else {
+                 extendedMinPrice = minPrice * 0.9;
+                 extendedMaxPrice = maxPrice * 1.1;
+            }
+
+            chart.options.scales.y.min = extendedMinPrice;
+            chart.options.scales.y.max = extendedMaxPrice;
+        }
+
+        function handleWheelZoom(event) {
+            if (!chart || !priceData || priceData.length === 0) return;
+            event.preventDefault(); 
+
+            const chartArea = chart.chartArea;
+            if (!chartArea) return;
+
+            const rect = event.target.getBoundingClientRect();
+            let cursorX = event.clientX - rect.left;
+            
+            if (cursorX < chartArea.left) cursorX = chartArea.left;
+            if (cursorX > chartArea.right) cursorX = chartArea.right;
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const currentLogRange = currentMaxLog - currentMinLog;
+            
+            const cursorPct = (chartArea.right - chartArea.left > 0) ? (cursorX - chartArea.left) / (chartArea.right - chartArea.left) : 0;
+            const logAtCursor = currentMinLog + (currentLogRange * cursorPct);
+
+            const zoomDirection = event.deltaY < 0 ? (1 - ZOOM_FACTOR) : (1 + ZOOM_FACTOR);
+            let newLogRange = currentLogRange * zoomDirection;
+
+            const minLogRange = 0.1; 
+            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            
+            if (newLogRange < minLogRange) newLogRange = minLogRange;
+            if (maxLogRange > minLogRange && newLogRange > maxLogRange) newLogRange = maxLogRange;
+
+            let newLogMin = logAtCursor - (newLogRange * cursorPct);
+            let newLogMax = newLogMin + newLogRange;
+            
+            const originalMinLog = Math.log10(originalExtendedMinDay);
+            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+            if (newLogMin < originalMinLog) {
+                newLogMin = originalMinLog;
+                newLogMax = newLogMin + newLogRange;
+            }
+            if (newLogMax > originalMaxLog) {
+                newLogMax = originalMaxLog;
+                newLogMin = newLogMax - newLogRange;
+            }
+            if (newLogMin < originalMinLog) newLogMin = originalMinLog;
+
+            chart.options.scales.x.min = Math.pow(10, newLogMin);
+            chart.options.scales.x.max = Math.pow(10, newLogMax);
+
+            refitYAxis();
+            chart.update('none');
+        }
+
+        // Mouse Pan Logic
+        function handlePanStart(event) {
+            if (!chart) return;
+            isPanning = true;
+            panStartX = event.clientX;
+            panStartMin = chart.options.scales.x.min;
+            panStartLogRange = Math.log10(chart.options.scales.x.max) - Math.log10(panStartMin);
+            event.target.style.cursor = 'grabbing'
+        }
+
+        function handlePanMove(event) {
+            if (!chart || !isPanning) return;
+
+            const chartArea = chart.chartArea;
+            if (!chartArea) return;
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const logRange = currentMaxLog - currentMinLog;
+            const pixelRange = chartArea.right - chartArea.left;
+            if (pixelRange <= 0) return;
+            const logPerPixel = logRange / pixelRange;
+
+            const deltaX = event.clientX - panStartX;
+            const logDelta = deltaX * logPerPixel;
+
+            let newLogMin = Math.log10(panStartMin) - logDelta;
+            let newLogMax = newLogMin + panStartLogRange;
+            
+            if (Math.pow(10, newLogMin) < originalExtendedMinDay) {
+                newLogMin = Math.log10(originalExtendedMinDay);
+                newLogMax = newLogMin + panStartLogRange;
+            }
+            if (Math.pow(10, newLogMax) > originalExtendedMaxDay) {
+                newLogMax = Math.log10(originalExtendedMaxDay);
+                newLogMin = newLogMax - panStartLogRange;
+            }
+            
+            chart.options.scales.x.min = Math.pow(10, newLogMin);
+            chart.options.scales.x.max = Math.pow(10, newLogMax);
+
+            refitYAxis();
+            chart.update('none');
+        }
+
+        function handlePanEnd(event) {
+            if (!chart) return;
+            isPanning = false;
+            event.target.style.cursor = 'default';
+        }
+
+        // --- NEW: TOUCH EVENT HANDLERS FOR MOBILE (Pan & Zoom) ---
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let isTouching = false;
+        let touchStartMin = 0;
+        let touchStartLogRange = 0;
+
+        function handleTouchStart(e) {
+            if (!chart) return;
+            // Only handle single touch for panning
+            if (e.touches.length !== 1) return;
+            
+            // Prevent default behavior (scrolling the page)
+            e.preventDefault();
+
+            isTouching = true;
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+            
+            // Snapshot current chart state for panning reference
+            touchStartMin = chart.options.scales.x.min;
+            const max = chart.options.scales.x.max;
+            touchStartLogRange = Math.log10(max) - Math.log10(touchStartMin);
+        }
+
+        function handleTouchMove(e) {
+            if (!chart || !isTouching || e.touches.length !== 1) return;
+            e.preventDefault(); // Stop page scroll
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            const deltaX = currentX - lastTouchX;
+            const deltaY = currentY - lastTouchY;
+
+            // 1. PANNING LOGIC (Left/Right)
+            // We apply panning based on X movement
+            const chartArea = chart.chartArea;
+            if (chartArea) {
+                const currentMinLog = Math.log10(chart.options.scales.x.min);
+                const currentMaxLog = Math.log10(chart.options.scales.x.max);
+                const logRange = currentMaxLog - currentMinLog;
+                const pixelRange = chartArea.right - chartArea.left;
+                
+                if (pixelRange > 0) {
+                    const logPerPixel = logRange / pixelRange;
+                    const logDelta = deltaX * logPerPixel;
+
+                    let newLogMin = currentMinLog - logDelta;
+                    let newLogMax = newLogMin + logRange;
+
+                    // Boundary checks
+                    const originalMinLog = Math.log10(originalExtendedMinDay);
+                    const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+                    if (newLogMin < originalMinLog) {
+                        newLogMin = originalMinLog;
+                        newLogMax = newLogMin + logRange;
+                    }
+                    if (newLogMax > originalMaxLog) {
+                         newLogMax = originalMaxLog;
+                         newLogMin = newLogMax - logRange;
+                    }
+                    
+                    chart.options.scales.x.min = Math.pow(10, newLogMin);
+                    chart.options.scales.x.max = Math.pow(10, newLogMax);
+                }
+            }
+
+            // 2. ZOOMING LOGIC (Up/Down)
+            // Sliding UP (negative Y delta) zooms IN. Sliding DOWN (positive Y delta) zooms OUT.
+            // Sensitivity constant - smaller means smoother/slower zoom
+            const ZOOM_SENSITIVITY = 0.006; 
+            
+            // Determine zoom factor based on vertical movement
+            // deltaY < 0 (Up) => Factor < 1 (Shrink range/Zoom In)
+            // deltaY > 0 (Down) => Factor > 1 (Expand range/Zoom Out)
+            const zoomFactor = 1 + (deltaY * ZOOM_SENSITIVITY);
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const currentLogRange = currentMaxLog - currentMinLog;
+            
+            // Calculate new range
+            let newLogRange = currentLogRange * zoomFactor;
+
+            // Enforce Min/Max zoom levels
+            const minLogRange = 0.1; 
+            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+
+            if (newLogRange < minLogRange) newLogRange = minLogRange;
+            if (newLogRange > maxLogRange) newLogRange = maxLogRange;
+
+            // Apply zoom centered on the current view
+            const centerLog = (currentMinLog + currentMaxLog) / 2;
+            let newLogMinZoom = centerLog - (newLogRange / 2);
+            let newLogMaxZoom = centerLog + (newLogRange / 2);
+
+            // Boundary checks for zoom
+            const originalMinLog = Math.log10(originalExtendedMinDay);
+            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+            if (newLogMinZoom < originalMinLog) {
+                newLogMinZoom = originalMinLog;
+                newLogMaxZoom = newLogMinZoom + newLogRange;
+            }
+            if (newLogMaxZoom > originalMaxLog) {
+                newLogMaxZoom = originalMaxLog;
+                newLogMinZoom = newLogMaxZoom - newLogRange;
+            }
+            
+            // Apply Zoom results
+            chart.options.scales.x.min = Math.pow(10, newLogMinZoom);
+            chart.options.scales.x.max = Math.pow(10, newLogMaxZoom);
+
+            // Update references for next frame
+            lastTouchX = currentX;
+            lastTouchY = currentY;
+
+            // Redraw
+            refitYAxis();
+            chart.update('none');
+        }
+
+        function handleTouchEnd(e) {
+             isTouching = false;
+        }
+
+    // --- SECTION: EVENT LISTENERS ---
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
+        window.addEventListener('resize', handleFullscreenChange);
+         if (screen.orientation) {
+             screen.orientation.addEventListener('change', handleFullscreenChange);
+         } else {
+             window.addEventListener('orientationchange', handleFullscreenChange); 
+         }
+
+        // Initial load
+        window.onload = () => {
+            createOrUpdateChart();
+            
+            // Enable Dragging
+            makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
+            makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
+            
+            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            
+            const canvas = document.getElementById('powerLawChart');
+            if (canvas) {
+                // Mouse Events
+                canvas.addEventListener('wheel', handleWheelZoom, { passive: false });
+                canvas.addEventListener('mousedown', handlePanStart);
+                canvas.addEventListener('mousemove', handlePanMove);
+                canvas.addEventListener('mouseup', handlePanEnd);
+                canvas.addEventListener('mouseleave', handlePanEnd);
+                
+                // Touch Events (Mobile)
+                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+                canvas.addEventListener('touchend', handleTouchEnd);
+                canvas.addEventListener('touchcancel', handleTouchEnd);
+
+                canvas.style.cursor = 'default'; 
+                
+                canvas.addEventListener('mouseenter', (e) => {
+                    e.target.style.cursor = isPanning ? 'grabbing' : 'default';
+                });
+            }
+
+            setTimeout(handleFullscreenChange, 150); 
+        }
+    </script>
 </body>
 </html>
