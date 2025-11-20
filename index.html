@@ -1104,6 +1104,9 @@
                  // --- BANDS VIEW ---
                  // 1. Show fill layers (0-4)
                  for (let i = 0; i <= 4; i++) setVis(i, true);
+
+                 // FORCE Price Visibility (5)
+                 setVis(5, true);
                  
                  // 2. Enforce "Thin Solid Grey" style for ALL lines (6-10)
                  const fineGrey = grayFineLineStyle;
@@ -1128,6 +1131,9 @@
                  // --- CLEAN VIEW ---
                  // 1. Hide fill layers (0-4)
                  for (let i = 0; i <= 4; i++) setVis(i, false);
+
+                 // FORCE Price Visibility (5)
+                 setVis(5, true);
 
                  // 2. Reset lines to default clean view styles
                  
