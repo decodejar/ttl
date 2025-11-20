@@ -530,10 +530,12 @@
 
         async function loadPriceData() {
             try {
+                // In a production environment, this path might need adjustment based on where 'price_data.json' is hosted.
                 const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
                 const data = await response.json();
-                 if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
+                if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
+                // Assuming data is in format [[timestamp_s, price], ...]
                 baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
                 return baseData;
             } catch (error) {
@@ -582,10 +584,10 @@
             const upperIndex = Math.ceil(index);
             
             if (lowerIndex === upperIndex) {
-                 return sortedResiduals[lowerIndex];
+                return sortedResiduals[lowerIndex];
             } else {
-                 const weight = index - lowerIndex;
-                 return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
+                const weight = index - lowerIndex;
+                return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
             }
         }
 
@@ -609,6 +611,25 @@
             }
             return { optimalOffset: bestOffset, bestFit: bestRSquared };
         }
+
+        function calculateRSquared(data, slope, intercept) {
+            let ss_tot = 0, ss_res = 0, y_mean = 0;
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            if (validData.length < 2) return 0;
+
+            validData.forEach(p => y_mean += Math.log10(p.y));
+            y_mean /= validData.length;
+
+            validData.forEach(p => {
+                const logY = Math.log10(p.y);
+                const logX = Math.log10(p.x);
+                const predictedLogY = slope * logX + intercept;
+                ss_tot += Math.pow(logY - y_mean, 2);
+                ss_res += Math.pow(logY - predictedLogY, 2);
+            });
+            return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
+        }
+
 
         // --- SECTION: CORE APPLICATION LOGIC ---
 
@@ -654,9 +675,9 @@
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
                 } else {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
+                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
                 }
             }
             
@@ -769,7 +790,8 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+                // NOTE: Value band is P20-P50, but the HTML mock had P20-P20. Correcting here to P20-P50 boundary prices.
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
             
@@ -836,40 +858,40 @@
                  const lastDataYear = new Date(lastDayTime).getFullYear();
 
                  for (let year = firstDataYear; year <= lastDataYear; year++) {
-                    const yearStartTime = new Date(year, 0, 1).getTime();
-                    const dayData = baseData.find(p => p.time >= yearStartTime);
-                    
-                    if (!dayData) continue;
-                    
-                    const actualYear = new Date(dayData.time).getFullYear();
-                    if (actualYear > year && year > firstDataYear) continue; 
+                     const yearStartTime = new Date(year, 0, 1).getTime();
+                     const dayData = baseData.find(p => p.time >= yearStartTime);
+                     
+                     if (!dayData) continue;
+                     
+                     const actualYear = new Date(dayData.time).getFullYear();
+                     if (actualYear > year && year > firstDataYear) continue; 
 
-                    if (year > lastYearFound) {
-                         const xValue = dayData.dayIndex + activeDayOffset;
-                         if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                             newTicks.push({ value: xValue, label: year.toString() });
-                             lastYearFound = year;
-                         }
-                    }
+                     if (year > lastYearFound) {
+                          const xValue = dayData.dayIndex + activeDayOffset;
+                          if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                              newTicks.push({ value: xValue, label: year.toString() });
+                              lastYearFound = year;
+                          }
+                     }
                  }
 
                  for (let year = lastDataYear + 1; year <= maxYear; year++) {
-                    const yearStartTime = new Date(year, 0, 1).getTime();
-                    
-                    const diffTime = yearStartTime - firstDayTime;
-                    const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
-                    
-                    const xValue = estimatedDayIndex + activeDayOffset;
+                     const yearStartTime = new Date(year, 0, 1).getTime();
+                     
+                     const diffTime = yearStartTime - firstDayTime;
+                     const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
+                     
+                     const xValue = estimatedDayIndex + activeDayOffset;
 
-                    if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                         newTicks.push({ value: xValue, label: year.toString() });
-                    }
+                     if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                          newTicks.push({ value: xValue, label: year.toString() });
+                     }
                  }
                  
                  axis.ticks.length = 0; 
                  const validTicks = newTicks.filter(tick => !isNaN(tick.value) && tick.label);
                  axis.ticks.push(...validTicks);
-             };
+            };
 
             function yAxisAfterBuildTicks(axis) {
                 const newTicks = [];
@@ -903,7 +925,6 @@
 
             if (chart) {
                 // 1. Update Data Arrays for Reused Datasets
-                // We need to ensure the chart has enough datasets slots or push new ones
                 // The new structure requires 11 datasets total (0-10).
                 
                 // Define the data structure for the 11 layers
@@ -1027,36 +1048,36 @@
                                 borderWidth: 1,
                                 padding: 10,
                                 callbacks: {
-                                     title: (tooltipItems) => {
-                                           if (tooltipItems.length > 0) {
-                                                 const item = tooltipItems[0];
-                                                 const dayNumber = item.parsed.x; 
-                                                 
-                                                 const { activeDayOffset } = activeModelParams;
-                                                 let targetDayIndex = dayNumber - activeDayOffset;
-                                                 
-                                                 let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
-                                                 
-                                                 if (!dataPoint) {
-                                                     dataPoint = baseData.reduce((prev, curr) => {
-                                                          return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                      });
-                                                 }
-
-                                                 if (dataPoint) {
-                                                     const date = new Date(dataPoint.time);
-                                                     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-                                                 }
-
-                                                 return `Day ~${targetDayIndex.toFixed(0)}`;
+                                    title: (tooltipItems) => {
+                                        if (tooltipItems.length > 0) {
+                                            const item = tooltipItems[0];
+                                            const dayNumber = item.parsed.x; 
+                                            
+                                            const { activeDayOffset } = activeModelParams;
+                                            let targetDayIndex = dayNumber - activeDayOffset;
+                                            
+                                            let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
+                                            
+                                            if (!dataPoint) {
+                                                dataPoint = baseData.reduce((prev, curr) => {
+                                                     return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
+                                                 });
                                             }
-                                            return '';
-                                      },
-                                     label: (context) => {
+
+                                            if (dataPoint) {
+                                                const date = new Date(dataPoint.time);
+                                                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                                            }
+
+                                            return `Day ~${targetDayIndex.toFixed(0)}`;
+                                        }
+                                        return '';
+                                    },
+                                    label: (context) => {
                                          // Hide tooltips for the transparent band layers
                                          if (context.datasetIndex < 5) return null;
                                          return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
-                                     }
+                                    }
                                 }
                             }
                         },
@@ -1123,6 +1144,11 @@
              const showBands = showBandsCheckbox.checked;
              
              if (showBands) {
+                 // --- START: Reset position as requested by user ---
+                 bandLevelsTable.style.top = ''; 
+                 bandLevelsTable.style.left = ''; 
+                 // --- END: Reset position ---
+
                  bandLevelsTable.style.display = ''; 
                  bandLevelsTable.classList.remove('hidden'); 
              } else {
@@ -1131,24 +1157,6 @@
 
              applyBandVisibility(showBands);
              chart.update();
-        }
-
-        function calculateRSquared(data, slope, intercept) {
-            let ss_tot = 0, ss_res = 0, y_mean = 0;
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            if (validData.length < 2) return 0;
-
-            validData.forEach(p => y_mean += Math.log10(p.y));
-            y_mean /= validData.length;
-
-            validData.forEach(p => {
-                const logY = Math.log10(p.y);
-                const logX = Math.log10(p.x);
-                const predictedLogY = slope * logX + intercept;
-                ss_tot += Math.pow(logY - y_mean, 2);
-                ss_res += Math.pow(logY - predictedLogY, 2);
-            });
-             return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
         }
 
         /**
@@ -1277,6 +1285,10 @@
 
             if (dataElement) dataElement.innerHTML = rowsHtml;
             if (tableElement) {
+                // Reset position for projection table when re-displaying it
+                tableElement.style.top = '';
+                tableElement.style.left = '';
+                
                 tableElement.style.display = ''; 
                 tableElement.classList.remove('hidden');
             }
@@ -1295,9 +1307,9 @@
             const startDrag = (e) => {
                 // Prevent default behavior to stop text selection, etc.
                 if (e.type === 'touchstart') {
-                     // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
+                    // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
                 } else {
-                     e.preventDefault();
+                    e.preventDefault();
                 }
                 
                 isDragging = true;
@@ -1310,9 +1322,8 @@
                 startY = clientY;
                 
                 // Get current element position
-                const rect = element.getBoundingClientRect();
-                
-                // We use offsetLeft/Top relative to the parent container
+                // Note: element must be position:absolute/relative for offsetTop/Left to be meaningful
+                // We use offsetLeft/Top relative to the parent container (chartWrapper)
                 initialLeft = element.offsetLeft;
                 initialTop = element.offsetTop;
 
@@ -1555,7 +1566,7 @@
 
         function handleTouchStart(e) {
             if (!chart) return;
-            // Only handle single touch to avoid conflicts if user accidentally taps with 2 fingers
+            // Only handle single touch for panning
             if (e.touches.length !== 1) return;
             
             // Prevent default behavior (scrolling the page)
