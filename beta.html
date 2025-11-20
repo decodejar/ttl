@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAO Tensor Law Model — by decodejar</title>
+    <title>TAO Tensor Law — Bittensor Price Model — by decodejar</title>
     
     <!-- ===== FAVICON TAGS (NEW) ===== -->
-    <!-- These tags tell browsers and search engines to use 'decode.png' as the site icon -->
-    <link rel="icon" href="/decode.png" type="image/png">
-    <link rel="shortcut icon" href="/decode.png" type="image/png">
-    <link rel="apple-touch-icon" href="/decode.png">
+    <!-- These tags tell browsers and search engines to use 'decode-favicon.png' as the site icon -->
+    <link rel="icon" href="/decode-favicon.png" type="image/png">
+    <link rel="shortcut icon" href="/decode-favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/decode-favicon.png">
     <!-- ===== END FAVICON TAGS ===== -->    
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EXV4MXZNHJ"></script>
@@ -253,7 +253,7 @@
 
     <!-- SEO text -->
     <div class="sr-only">
-        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
+        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
     </div>
 
     <!-- Main application container -->
@@ -292,7 +292,7 @@
                 <div class="group relative flex items-center">
                      <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-indigo-500 transition-colors">?</span>
                      <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
-                        This interactive chart models the price history of TAO (Bittensor) against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (x.com/decodejar, decodejar.com).
+                        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
                      </div>
                 </div>
             </div>
@@ -370,7 +370,7 @@
 
                 <div id="bandLevelsTable" class="hidden transform transition-transform active:scale-[1.02]">
                     <h3 id="bandsHeader">
-                        <span>Valuation Bands (Current)</span>
+                        <span>Valuation Bands</span>
                         <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -428,15 +428,14 @@
 
     <!-- Footer -->
     <footer class="py-3 px-4 text-center space-y-1 w-full">
-        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed">Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
-        <p class="text-slate-500 text-[10px] tracking-wide"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com</p>
+        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com. Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
     </footer>
 
 
     <script>
         /*
          * TAO Tensor Law Model — by decodejar
-         * Copyright (c) 2025 TAOTENSORLAW.COM. All Rights Reserved.
+         * Copyright (c) 2025 taotensorlaw.com. All Rights Reserved.
          * * NOTE: Original logic preserved 100%.
          */
 
@@ -715,7 +714,7 @@
                 dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span>${lastUpdateDate}</span>`;
             }
 
-            lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
             lastPriceDiv.classList.remove('hidden');
 
             const chartPrices = priceData.map(p => p.y);
