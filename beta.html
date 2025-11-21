@@ -730,4 +730,974 @@
             }
             
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
+            }
+
+            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.classList.remove('hidden');
+
+            const chartPrices = priceData.map(p => p.y);
+            const minPrice = Math.min(...chartPrices);
+            const maxPrice = Math.max(...chartPrices);
+
+            const firstDayNum = priceData[0].x;
+            const lastDayNum = priceData[priceData.length - 1].x; 
+
+            const logMinDay = Math.log10(firstDayNum);
+            const logMaxDay = Math.log10(lastDayNum);
+            const logDayRange = logMaxDay - logMinDay;
+
+            const extendedMinDay = firstDayNum;
+            let extendedMaxDay;
+
+            if (logDayRange > 0) {
+                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
+                extendedMaxDay = Math.pow(10, extendedLogMaxDay);
+            } else {
+                extendedMaxDay = lastDayNum * 1.4; 
+            }
+
+            originalExtendedMinDay = extendedMinDay;
+            originalExtendedMaxDay = extendedMaxDay;
+
+            const logMinPrice = Math.log10(minPrice);
+            const logMaxPrice = Math.log10(maxPrice);
+            const logPriceRange = logMaxPrice - logMinPrice;
+            const extendedMinPrice = logPriceRange > 0 ? Math.pow(10, logMinPrice - logPriceRange * Y_AXIS_BOTTOM_PADDING) : minPrice * 0.9; 
+            const extendedMaxPrice = logPriceRange > 0 ? Math.pow(10, logMaxPrice + logPriceRange * Y_AXIS_TOP_PADDING_MAX) : maxPrice * 1.4; 
+
+            const lastModelDataPoint = priceData[priceData.length - 1];
+            const sortedResiduals = calculateResiduals(priceData, slope, meanIntercept);
+
+            const medianResidual = getPercentile(sortedResiduals, 50);
+            const p1Residual = getPercentile(sortedResiduals, 1);
+            const p99Residual = getPercentile(sortedResiduals, 99);
+            const p20Residual = getPercentile(sortedResiduals, 20);
+            const p80Residual = getPercentile(sortedResiduals, 80);
+
+            const lastLogX = Math.log10(lastModelDataPoint.x);
+            const lastLogY = Math.log10(lastModelDataPoint.y);
+            const predictedLastLogY = slope * lastLogX + meanIntercept;
+            const lastResidual = lastLogY - predictedLastLogY;
+
+            let priceZone = "";
+            let priceZoneColor = "";
+            if (lastResidual > p80Residual) { priceZone = "Bubble"; priceZoneColor = "bg-red-500"; }
+            else if (lastResidual > medianResidual) { priceZone = "Expensive"; priceZoneColor = "bg-yellow-400"; }
+            else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
+            else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
+
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-mono text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.classList.remove('hidden');
+
+            const medianIntercept = meanIntercept + medianResidual;
+            const p1Intercept = meanIntercept + p1Residual;
+            const p99Intercept = meanIntercept + p99Residual;
+            const p20Intercept = meanIntercept + p20Residual;
+            const p80Intercept = meanIntercept + p80Residual;
+
+            if (bandLevelsTable) {
+                const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
+                const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
+                const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
+                const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
+                const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
+
+                const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
+                const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
+                const valueEl = document.querySelector('#bandLevelsTable #bandLevelValue > span:last-child');
+                const discountEl = document.querySelector('#bandLevelsTable #bandLevelDiscount > span:last-child');
+
+                if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
+                if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+                if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+            }
+            
+            calculateProjections(baseData, activeModelParams, projectionData);
+
+            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold font-mono text-slate-800">${slope.toFixed(3)}</span>`;
+            
+            let fitColorClass = "";
+            if (rSquared >= 0.9) fitColorClass = "bg-blue-400";
+            else if (rSquared >= 0.7) fitColorClass = "bg-green-500";
+            else if (rSquared >= 0.5) fitColorClass = "bg-yellow-400";
+            else fitColorClass = "bg-red-500";
+            
+            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            
+            const startIndex = extendedMinDay;
+            const endIndex = extendedMaxDay;
+            const calculateLinePoints = (intercept) => {
+                  const safeStartIndex = Math.max(startIndex, 1); 
+                  const safeEndIndex = Math.max(endIndex, 1);
+                  return [
+                      { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                      { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                  ];
+            };
+            const medianLineData = calculateLinePoints(medianIntercept);
+            const p1LineData = calculateLinePoints(p1Intercept);
+            const p99LineData = calculateLinePoints(p99Intercept);
+            const p20LineData = calculateLinePoints(p20Intercept);
+            const p80LineData = calculateLinePoints(p80Intercept);
+
+            const chartPriceDataPoints = priceData.map(p => ({ x: p.x, y: p.y }));
+
+            loader.style.display = 'none';
+
+            const xAxisAfterBuildTicks = (axis) => {
+                 if (!priceData || priceData.length === 0 || !baseData || baseData.length === 0) return;
+                 
+                 const newTicks = [];
+                 const axisMinDay = axis.min;
+                 const axisMaxDay = axis.max;
+
+                 const { activeDayOffset } = activeModelParams;
+
+                 const firstDayIndex = baseData[0].dayIndex;
+                 const firstDayTime = baseData[0].time;
+                 const lastDayIndex = baseData[baseData.length - 1].dayIndex;
+                 const lastDayTime = baseData[baseData.length - 1].time;
+                 
+                 let maxYear;
+                 let msPerDay = (1000 * 60 * 60 * 24); 
+
+                 if (lastDayIndex > firstDayIndex) {
+                      msPerDay = (lastDayTime - firstDayTime) / (lastDayIndex - firstDayIndex);
+                      const maxDayIndexOnAxis = axisMaxDay - activeDayOffset;
+                      const projectedTime = firstDayTime + (maxDayIndexOnAxis - firstDayIndex) * msPerDay;
+                      maxYear = new Date(projectedTime).getFullYear();
+                 } else {
+                      maxYear = new Date(lastDayTime).getFullYear() + 5;
+                 }
+                 
+                 let lastYearFound = -1; 
+                 const firstDataYear = new Date(baseData[0].time).getFullYear();
+                 const lastDataYear = new Date(lastDayTime).getFullYear();
+
+                 for (let year = firstDataYear; year <= lastDataYear; year++) {
+                      const yearStartTime = new Date(year, 0, 1).getTime();
+                      const dayData = baseData.find(p => p.time >= yearStartTime);
+                      
+                      if (!dayData) continue;
+                      
+                      const actualYear = new Date(dayData.time).getFullYear();
+                      if (actualYear > year && year > firstDataYear) continue; 
+
+                      if (year > lastYearFound) {
+                           const xValue = dayData.dayIndex + activeDayOffset;
+                           if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                               newTicks.push({ value: xValue, label: year.toString() });
+                               lastYearFound = year;
+                           }
+                      }
+                 }
+
+                 for (let year = lastDataYear + 1; year <= maxYear; year++) {
+                      const yearStartTime = new Date(year, 0, 1).getTime();
+                      
+                      const diffTime = yearStartTime - firstDayTime;
+                      const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
+                      
+                      const xValue = estimatedDayIndex + activeDayOffset;
+
+                      if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                           newTicks.push({ value: xValue, label: year.toString() });
+                      }
+                 }
+                 
+                 axis.ticks.length = 0; 
+                 const validTicks = newTicks.filter(tick => !isNaN(tick.value) && tick.label);
+                 axis.ticks.push(...validTicks);
+            };
+
+            function yAxisAfterBuildTicks(axis) {
+                const newTicks = [];
+                const min = axis.min;
+                const max = axis.max;
+
+                let startingPower = Math.floor(Math.log10(min));
+                let currentMagnitude = Math.pow(10, startingPower); 
+
+                while (currentMagnitude < max) {
+                    for (let i = 1; i <= 9; i++) {
+                        const tickValue = currentMagnitude * i;
+                        if (tickValue > max) break; 
+                        if (tickValue >= min) {
+                            newTicks.push({ value: tickValue });
+                        }
+                    }
+                    currentMagnitude *= 10; 
+                }
+
+                axis.ticks.length = 0; 
+                axis.ticks.push(...newTicks);
+            }
+
+            const datasetDefaults = {
+                type: 'line', borderWidth: 1, pointRadius: 0, fill: false, pointStyle: 'line'
+            };
+            const fillDatasetDefaults = {
+                type: 'line', pointRadius: 0, borderWidth: 0, pointStyle: 'line', tension: 0.1
+            };
+
+            if (chart) {
+                // 1. Update Data Arrays for Reused Datasets
+                const datasetsStruct = [
+                    // --- BOUNDARY/FILL LAYERS (0-4) ---
+                    { label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                    { label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                    { label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                    { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                    { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
+
+                    // --- VISUAL LINE LAYERS (5-10) ---
+                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
+                    { label: '50th Percentile', data: medianLineData }, 
+                    { label: '1st Pctl', data: p1LineData },
+                    { label: '99th Pctl', data: p99LineData },
+                    { label: '20th Pctl', data: p20LineData },
+                    { label: '80th Pctl', data: p80LineData },
+                ];
+
+                // Apply updates to existing chart datasets or push new ones
+                datasetsStruct.forEach((struct, i) => {
+                    if (chart.data.datasets[i]) {
+                         Object.assign(chart.data.datasets[i], struct);
+                    } else {
+                         chart.data.datasets.push({
+                             ...datasetDefaults,
+                             ...struct,
+                             hidden: false
+                         });
+                    }
+                });
+
+                if (chart.data.datasets.length > datasetsStruct.length) {
+                    chart.data.datasets.splice(datasetsStruct.length, chart.data.datasets.length - datasetsStruct.length);
+                }
+
+                 applyBandVisibility(showBandsCheckbox.checked);
+
+                chart.options.scales.x.min = extendedMinDay;
+                chart.options.scales.x.max = extendedMaxDay;
+                chart.options.scales.y.min = extendedMinPrice;
+                chart.options.scales.y.max = extendedMaxPrice;
+                chart.options.scales.x.afterBuildTicks = xAxisAfterBuildTicks;
+                chart.options.scales.y.afterBuildTicks = yAxisAfterBuildTicks; 
+                chart.update();
+
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            // 0: Boundary P1
+                            { ...fillDatasetDefaults, label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
+                            // 1: Discount Band
+                            { ...fillDatasetDefaults, label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
+                            // 2: Value Band
+                            { ...fillDatasetDefaults, label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
+                            // 3: Expensive Band
+                            { ...fillDatasetDefaults, label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
+                            // 4: Bubble Band
+                            { ...fillDatasetDefaults, label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
+                            
+                            // 5: Price
+                            { 
+                                ...datasetDefaults, 
+                                label: 'TAO Price', 
+                                data: chartPriceDataPoints, 
+                                backgroundColor: 'rgba(0, 0, 0, 0.0)', 
+                                borderColor: '#0f172a', 
+                                borderWidth: 2, 
+                                tension: 0.1, 
+                                pointRadius: 0, 
+                                pointHoverRadius: 0, 
+                                pointHitRadius: 15 
+                            },
+                            // 6: Median (P50)
+                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
+                            // 7: 1st
+                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
+                            // 8: 99th
+                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData },
+                            // 9: 20th
+                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData },
+                            // 10: 80th
+                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData },
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
+                                    filter: (item) => item.datasetIndex >= 5
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                                titleColor: '#f8fafc',
+                                bodyColor: '#e2e8f0',
+                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 },
+                                bodyFont: { family: "'JetBrains Mono', monospace" },
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderWidth: 1,
+                                padding: 10,
+                                displayColors: false,
+                                callbacks: {
+                                    title: (tooltipItems) => {
+                                        if (tooltipItems.length > 0) {
+                                            const item = tooltipItems[0];
+                                            const dayNumber = item.parsed.x; 
+                                            
+                                            const { activeDayOffset } = activeModelParams;
+                                            let targetDayIndex = dayNumber - activeDayOffset;
+                                            
+                                            let dataPoint = baseData.find(p => p.dayIndex === Math.round(targetDayIndex));
+                                            
+                                            if (!dataPoint) {
+                                                dataPoint = baseData.reduce((prev, curr) => {
+                                                     return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
+                                                });
+                                            }
+
+                                            if (dataPoint) {
+                                                const date = new Date(dataPoint.time);
+                                                return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+                                            }
+
+                                            return `Day ~${targetDayIndex.toFixed(0)}`;
+                                        }
+                                        return '';
+                                    },
+                                    label: (context) => {
+                                         if (context.datasetIndex < 5) return null;
+                                         return `$${context.parsed.y.toFixed(2)}`;
+                                    },
+                                    // NEW: Add third line for hardcoded offset modes
+                                    afterLabel: (context) => {
+                                        if (context.datasetIndex < 5) return null;
+                                        if (currentOffsetMode !== 'optimal') {
+                                            return `Model Day: ${Math.round(context.parsed.x)}`;
+                                        }
+                                        return null;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
+                                title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                ticks: { 
+                                    color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
+                                    callback: function(value) {
+                                        const tick = this.getTicks().find(t => t.value === value);
+                                        return tick ? tick.label : null;
+                                    }
+                                },
+                                afterBuildTicks: xAxisAfterBuildTicks, 
+                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                            },
+                            y: {
+                                type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
+                                title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                ticks: { 
+                                    color: '#64748b', font: { family: "'Inter', sans-serif", size: 10 }, 
+                                    callback: function(value, index, ticks) {
+                                        const logVal = Math.log10(value);
+                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                            return `$${value.toLocaleString()}`;
+                                        }
+                                        return ''; 
+                                    }
+                                },
+                                afterBuildTicks: yAxisAfterBuildTicks, 
+                                grid: { 
+                                    color: function(context) {
+                                        const value = context.tick.value;
+                                        if (value <= 0) return 'rgba(0, 0, 0, 0.05)'; 
+                                        const logVal = Math.log10(value);
+                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                            return 'rgba(0, 0, 0, 0.08)'; 
+                                        } else {
+                                            return 'rgba(0, 0, 0, 0.03)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            showBandsContainer.classList.remove('hidden');
+            showBandsCheckbox.removeEventListener('change', handleBandToggle);
+            showBandsCheckbox.addEventListener('change', handleBandToggle);
+
+            // Removed checkbox event listener as element is removed
+            // useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+
+            applyBandVisibility(showBandsCheckbox.checked);
+            if(chart) chart.update('none'); 
+        }
+
+        function handleBandToggle() {
+             if (!chart || !bandLevelsTable) return; 
+             
+             const showBands = showBandsCheckbox.checked;
+             
+             if (showBands) {
+                 bandLevelsTable.style.top = ''; 
+                 bandLevelsTable.style.left = ''; 
+                 
+                 bandLevelsTable.style.display = ''; 
+                 bandLevelsTable.classList.remove('hidden'); 
+             } else {
+                 bandLevelsTable.style.display = 'none'; 
+             }
+
+             applyBandVisibility(showBands);
+             chart.update();
+        }
+
+        function applyBandVisibility(showBands) {
+             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
+                 return;
+             }
+             
+             const setVis = (index, visible) => {
+                 chart.setDatasetVisibility(index, visible);
+                 chart.data.datasets[index].hidden = !visible; 
+             };
+
+             if (showBands) {
+                 for (let i = 0; i <= 4; i++) setVis(i, true);
+                 setVis(5, true);
+                 
+                 const fineGrey = grayFineLineStyle;
+                 
+                 Object.assign(chart.data.datasets[6], fineGrey);
+                 setVis(6, true);
+                 Object.assign(chart.data.datasets[7], fineGrey);
+                 setVis(7, true);
+                 Object.assign(chart.data.datasets[8], fineGrey);
+                 setVis(8, true);
+                 Object.assign(chart.data.datasets[9], fineGrey);
+                 setVis(9, true);
+                 Object.assign(chart.data.datasets[10], fineGrey);
+                 setVis(10, true);
+                 
+             } else {
+                 for (let i = 0; i <= 4; i++) setVis(i, false);
+                 setVis(5, true);
+
+                 Object.assign(chart.data.datasets[6], orangeLineStyle);
+                 setVis(6, true);
+                 
+                 Object.assign(chart.data.datasets[7], grayDashedLineStyle);
+                 setVis(7, true);
+                 
+                 Object.assign(chart.data.datasets[8], grayDashedLineStyle);
+                 setVis(8, true);
+                 
+                 Object.assign(chart.data.datasets[9], grayDashedLineStyle);
+                 setVis(9, false);
+                 
+                 Object.assign(chart.data.datasets[10], grayDashedLineStyle);
+                 setVis(10, false);
+             }
+        }
+
+        function calculateProjections(baseData, modelParams, dataElement) {
+            const tableElement = document.getElementById('projectionTable');
+            
+            if (!baseData || baseData.length === 0 || !modelParams) {
+                if(tableElement) tableElement.classList.add('hidden');
+                return;
+            }
+
+            const { slope, meanIntercept, activeDayOffset } = modelParams;
+            const firstDataPointDate = new Date(baseData[0].time);
+            const firstDayIndex = baseData[0].dayIndex; 
+            
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const targetDates = [
+                { label: "Today", date: today },
+                { label: `${currentYear + 1}`, date: new Date(currentYear + 1, 0, 1) },
+                { label: `${currentYear + 2}`, date: new Date(currentYear + 2, 0, 1) },
+                { label: `${currentYear + 3}`, date: new Date(currentYear + 3, 0, 1) }
+            ];
+            const MS_PER_DAY = 1000 * 60 * 60 * 24;
+            const getDayIndex = (targetDate) => {
+                const diffTime = targetDate.getTime() - firstDataPointDate.getTime();
+                const diffDays = Math.round(diffTime / MS_PER_DAY);
+                return firstDayIndex + diffDays;
+            };
+
+            const calculatePrice = (targetDayIndex) => {
+                let dayForLog = targetDayIndex + activeDayOffset;
+                if (dayForLog <= 0) return NaN; 
+                const logX = Math.log10(dayForLog);
+                return Math.pow(10, slope * logX + meanIntercept);
+            };
+
+            let rowsHtml = '';
+            targetDates.forEach(item => {
+                const targetDayIndex = getDayIndex(item.date); 
+                const projectedPrice = calculatePrice(targetDayIndex);
+                const priceString = isNaN(projectedPrice) ? "N/A" : `$${projectedPrice.toFixed(2)}`;
+                rowsHtml += `
+                    <div>
+                        <span>${item.label}</span>
+                        <span class="font-mono">${priceString}</span>
+                    </div>
+                `;
+            });
+
+            if (dataElement) dataElement.innerHTML = rowsHtml;
+            if (tableElement) {
+                tableElement.style.top = '';
+                tableElement.style.left = '';
+                
+                tableElement.style.display = ''; 
+                tableElement.classList.remove('hidden');
+            }
+        }
+
+        function makeDraggable(element, handle) {
+            if (!element || !handle) return;
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            const startDrag = (e) => {
+                if (e.type === 'touchstart') {
+                } else {
+                    e.preventDefault();
+                }
+                
+                isDragging = true;
+                
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                startX = clientX;
+                startY = clientY;
+                
+                initialLeft = element.offsetLeft;
+                initialTop = element.offsetTop;
+
+                handle.style.cursor = 'grabbing';
+            };
+
+            const drag = (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                const dx = clientX - startX;
+                const dy = clientY - startY;
+
+                element.style.left = `${initialLeft + dx}px`;
+                element.style.top = `${initialTop + dy}px`;
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+                handle.style.cursor = 'grab'; 
+            };
+
+            handle.addEventListener('mousedown', startDrag);
+            handle.addEventListener('touchstart', startDrag, { passive: false });
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            
+            document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchend', stopDrag);
+        }
+
+
+        // --- SECTION: CHART INTERACTIVITY (PAN & ZOOM) ---
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (mainContainer.requestFullscreen) mainContainer.requestFullscreen().catch(err => console.error(`Error entering fullscreen: ${err.message}`));
+                else if (mainContainer.webkitRequestFullscreen) mainContainer.webkitRequestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(err => console.error(`Error exiting fullscreen: ${err.message}`));
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            }
+        }
+
+        function handleFullscreenChange() {
+             requestAnimationFrame(() => { 
+                const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
+                const isMobile = window.innerWidth < 1024;
+                const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
+
+                if (isInFullscreen) {
+                    fsIconEnter.classList.add('hidden');
+                    fsIconExit.classList.remove('hidden');
+                    fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+                } else {
+                    fsIconEnter.classList.remove('hidden');
+                    fsIconExit.classList.add('hidden');
+                    fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
+                }
+
+                if (isInFullscreen && isMobile && isLandscape) {
+                   mainContainer.classList.add('mobile-fullscreen-landscape');
+                } else {
+                   mainContainer.classList.remove('mobile-fullscreen-landscape');
+                }
+
+                 if (chart) {
+                     setTimeout(() => {
+                         requestAnimationFrame(() => {
+                             if (chart) chart.resize();
+                         });
+                     }, 50); 
+                 }
+             });
+        }
+
+        function refitYAxis() {
+            if (!chart || !priceData || priceData.length === 0) return;
+
+            const currentXMin = chart.options.scales.x.min;
+            const currentXMax = chart.options.scales.x.max;
+
+            const visibleData = priceData.filter(p => p.x >= currentXMin && p.x <= currentXMax);
+
+            if (visibleData.length < 2) {
+                return; 
+            }
+
+            const prices = visibleData.map(p => p.y);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+
+            const logMinPrice = Math.log10(minPrice);
+            const logMaxPrice = Math.log10(maxPrice);
+            const logPriceRange = logMaxPrice - logMinPrice;
+
+            let extendedMinPrice, extendedMaxPrice;
+            
+            const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
+            const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            let zoomRatio = 1.0; 
+            if (originalLogRangeX > 0) {
+                 zoomRatio = currentLogRangeX / originalLogRangeX;
+                 if (zoomRatio > 1.0) zoomRatio = 1.0;
+                 if (zoomRatio < 0.0) zoomRatio = 0.0;
+            }
+            
+            const minTopPadding = Y_AXIS_TOP_PADDING_MIN;
+            const maxTopPadding = Y_AXIS_TOP_PADDING_MAX;
+            const dynamicTopPadding = minTopPadding + (maxTopPadding - minTopPadding) * zoomRatio;
+            const bottomPadding = Y_AXIS_BOTTOM_PADDING;
+            
+            if (logPriceRange > 0) {
+                 extendedMinPrice = Math.pow(10, logMinPrice - logPriceRange * bottomPadding);
+                 extendedMaxPrice = Math.pow(10, logMaxPrice + logPriceRange * dynamicTopPadding);
+            } else {
+                 extendedMinPrice = minPrice * 0.9;
+                 extendedMaxPrice = maxPrice * 1.1;
+            }
+
+            chart.options.scales.y.min = extendedMinPrice;
+            chart.options.scales.y.max = extendedMaxPrice;
+        }
+
+        function handleWheelZoom(event) {
+            if (!chart || !priceData || priceData.length === 0) return;
+            event.preventDefault(); 
+
+            const chartArea = chart.chartArea;
+            if (!chartArea) return;
+
+            const rect = event.target.getBoundingClientRect();
+            let cursorX = event.clientX - rect.left;
+            
+            if (cursorX < chartArea.left) cursorX = chartArea.left;
+            if (cursorX > chartArea.right) cursorX = chartArea.right;
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const currentLogRange = currentMaxLog - currentMinLog;
+            
+            const cursorPct = (chartArea.right - chartArea.left > 0) ? (cursorX - chartArea.left) / (chartArea.right - chartArea.left) : 0;
+            const logAtCursor = currentMinLog + (currentLogRange * cursorPct);
+
+            const zoomDirection = event.deltaY < 0 ? (1 - ZOOM_FACTOR) : (1 + ZOOM_FACTOR);
+            let newLogRange = currentLogRange * zoomDirection;
+
+            const minLogRange = 0.1; 
+            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            
+            if (newLogRange < minLogRange) newLogRange = minLogRange;
+            if (maxLogRange > minLogRange && newLogRange > maxLogRange) newLogRange = maxLogRange;
+
+            let newLogMin = logAtCursor - (newLogRange * cursorPct);
+            let newLogMax = newLogMin + newLogRange;
+            
+            const originalMinLog = Math.log10(originalExtendedMinDay);
+            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+            if (newLogMin < originalMinLog) {
+                newLogMin = originalMinLog;
+                newLogMax = newLogMin + newLogRange;
+            }
+            if (newLogMax > originalMaxLog) {
+                newLogMax = originalMaxLog;
+                newLogMin = newLogMax - newLogRange;
+            }
+            if (newLogMin < originalMinLog) newLogMin = originalMinLog;
+
+            chart.options.scales.x.min = Math.pow(10, newLogMin);
+            chart.options.scales.x.max = Math.pow(10, newLogMax);
+
+            refitYAxis();
+            chart.update('none');
+        }
+
+        // Mouse Pan Logic
+        function handlePanStart(event) {
+            if (!chart) return;
+            isPanning = true;
+            panStartX = event.clientX;
+            panStartMin = chart.options.scales.x.min;
+            panStartLogRange = Math.log10(chart.options.scales.x.max) - Math.log10(panStartMin);
+            event.target.style.cursor = 'grabbing'
+        }
+
+        function handlePanMove(event) {
+            if (!chart || !isPanning) return;
+
+            const chartArea = chart.chartArea;
+            if (!chartArea) return;
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const logRange = currentMaxLog - currentMinLog;
+            const pixelRange = chartArea.right - chartArea.left;
+            if (pixelRange <= 0) return;
+            const logPerPixel = logRange / pixelRange;
+
+            const deltaX = event.clientX - panStartX;
+            const logDelta = deltaX * logPerPixel;
+
+            let newLogMin = Math.log10(panStartMin) - logDelta;
+            let newLogMax = newLogMin + panStartLogRange;
+            
+            if (Math.pow(10, newLogMin) < originalExtendedMinDay) {
+                newLogMin = Math.log10(originalExtendedMinDay);
+                newLogMax = newLogMin + panStartLogRange;
+            }
+            if (Math.pow(10, newLogMax) > originalExtendedMaxDay) {
+                newLogMax = Math.log10(originalExtendedMaxDay);
+                newLogMin = newLogMax - panStartLogRange;
+            }
+            
+            chart.options.scales.x.min = Math.pow(10, newLogMin);
+            chart.options.scales.x.max = Math.pow(10, newLogMax);
+
+            refitYAxis();
+            chart.update('none');
+        }
+
+        function handlePanEnd(event) {
+            if (!chart) return;
+            isPanning = false;
+            event.target.style.cursor = 'default';
+        }
+
+        // --- NEW: TOUCH EVENT HANDLERS FOR MOBILE (Pan & Zoom) ---
+        let lastTouchX = 0;
+        let lastTouchY = 0;
+        let isTouching = false;
+        let touchStartMin = 0;
+        let touchStartLogRange = 0;
+
+        function handleTouchStart(e) {
+            if (!chart) return;
+            // Only handle single touch for panning
+            if (e.touches.length !== 1) return;
+            
+            // Prevent default behavior (scrolling the page)
+            e.preventDefault();
+
+            isTouching = true;
+            lastTouchX = e.touches[0].clientX;
+            lastTouchY = e.touches[0].clientY;
+            
+            // Snapshot current chart state for panning reference
+            touchStartMin = chart.options.scales.x.min;
+            const max = chart.options.scales.x.max;
+            touchStartLogRange = Math.log10(max) - Math.log10(touchStartMin);
+        }
+
+        function handleTouchMove(e) {
+            if (!chart || !isTouching || e.touches.length !== 1) return;
+            e.preventDefault(); // Stop page scroll
+
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            
+            const deltaX = currentX - lastTouchX;
+            const deltaY = currentY - lastTouchY;
+
+            // 1. PANNING LOGIC (Left/Right)
+            // We apply panning based on X movement
+            const chartArea = chart.chartArea;
+            if (chartArea) {
+                const currentMinLog = Math.log10(chart.options.scales.x.min);
+                const currentMaxLog = Math.log10(chart.options.scales.x.max);
+                const logRange = currentMaxLog - currentMinLog;
+                const pixelRange = chartArea.right - chartArea.left;
+                
+                if (pixelRange > 0) {
+                    const logPerPixel = logRange / pixelRange;
+                    const logDelta = deltaX * logPerPixel;
+
+                    let newLogMin = currentMinLog - logDelta;
+                    let newLogMax = newLogMin + logRange;
+
+                    // Boundary checks
+                    const originalMinLog = Math.log10(originalExtendedMinDay);
+                    const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+                    if (newLogMin < originalMinLog) {
+                        newLogMin = originalMinLog;
+                        newLogMax = newLogMin + logRange;
+                    }
+                    if (newLogMax > originalMaxLog) {
+                         newLogMax = originalMaxLog;
+                         newLogMin = newLogMax - logRange;
+                    }
+                    
+                    chart.options.scales.x.min = Math.pow(10, newLogMin);
+                    chart.options.scales.x.max = Math.pow(10, newLogMax);
+                }
+            }
+
+            // 2. ZOOMING LOGIC (Up/Down)
+            // Sliding UP (negative Y delta) zooms IN. Sliding DOWN (positive Y delta) zooms OUT.
+            // Sensitivity constant - smaller means smoother/slower zoom
+            const ZOOM_SENSITIVITY = 0.006; 
+            
+            // Determine zoom factor based on vertical movement
+            // deltaY < 0 (Up) => Factor < 1 (Shrink range/Zoom In)
+            // deltaY > 0 (Down) => Factor > 1 (Expand range/Zoom Out)
+            const zoomFactor = 1 + (deltaY * ZOOM_SENSITIVITY);
+
+            const currentMinLog = Math.log10(chart.options.scales.x.min);
+            const currentMaxLog = Math.log10(chart.options.scales.x.max);
+            const currentLogRange = currentMaxLog - currentMinLog;
+            
+            // Calculate new range
+            let newLogRange = currentLogRange * zoomFactor;
+
+            // Enforce Min/Max zoom levels
+            const minLogRange = 0.1; 
+            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+
+            if (newLogRange < minLogRange) newLogRange = minLogRange;
+            if (newLogRange > maxLogRange) newLogRange = maxLogRange;
+
+            // Apply zoom centered on the current view
+            const centerLog = (currentMinLog + currentMaxLog) / 2;
+            let newLogMinZoom = centerLog - (newLogRange / 2);
+            let newLogMaxZoom = centerLog + (newLogRange / 2);
+
+            // Boundary checks for zoom
+            const originalMinLog = Math.log10(originalExtendedMinDay);
+            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+
+            if (newLogMinZoom < originalMinLog) {
+                newLogMinZoom = originalMinLog;
+                newLogMaxZoom = newLogMinZoom + newLogRange;
+            }
+            if (newLogMaxZoom > originalMaxLog) {
+                newLogMaxZoom = originalMaxLog;
+                newLogMinZoom = newLogMaxZoom - newLogRange;
+            }
+            
+            // Apply Zoom results
+            chart.options.scales.x.min = Math.pow(10, newLogMinZoom);
+            chart.options.scales.x.max = Math.pow(10, newLogMaxZoom);
+
+            // Update references for next frame
+            lastTouchX = currentX;
+            lastTouchY = currentY;
+
+            // Redraw
+            refitYAxis();
+            chart.update('none');
+        }
+
+        function handleTouchEnd(e) {
+             isTouching = false;
+        }
+
+    // --- SECTION: EVENT LISTENERS ---
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
+        window.addEventListener('resize', handleFullscreenChange);
+         if (screen.orientation) {
+             screen.orientation.addEventListener('change', handleFullscreenChange);
+         } else {
+             window.addEventListener('orientationchange', handleFullscreenChange); 
+         }
+
+        // Initial load
+        window.onload = () => {
+            // New: Update button text with constant values
+            btn74.innerText = HARDCODED_OFFSET_1;
+            btn232.innerText = HARDCODED_OFFSET_2;
+
+            createOrUpdateChart();
+            
+            // Enable Dragging
+            makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
+            makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
+            
+            // REMOVE THIS LINE: useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            
+            const canvas = document.getElementById('powerLawChart');
+            if (canvas) {
+                // Mouse Events
+                canvas.addEventListener('wheel', handleWheelZoom, { passive: false });
+                canvas.addEventListener('mousedown', handlePanStart);
+                canvas.addEventListener('mousemove', handlePanMove);
+                canvas.addEventListener('mouseup', handlePanEnd);
+                canvas.addEventListener('mouseleave', handlePanEnd);
+                
+                // Touch Events (Mobile)
+                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+                canvas.addEventListener('touchend', handleTouchEnd);
+                canvas.addEventListener('touchcancel', handleTouchEnd);
+
+                canvas.style.cursor = 'default'; 
+                
+                canvas.addEventListener('mouseenter', (e) => {
+                    e.target.style.cursor = isPanning ? 'grabbing' : 'default';
+                });
+            }
+
+            setTimeout(handleFullscreenChange, 150); 
+        }
+    </script>
+</body>
+</html>
