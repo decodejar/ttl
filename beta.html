@@ -423,9 +423,9 @@
                  <!-- UPDATED: Added Tooltip next to switch -->
                  <div class="group/tooltip relative flex items-center ml-1">
                       <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
-                      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 bg-slate-800 text-white text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-center">
-                        <strong>Optimise:</strong> Best statistical fit.<br>
-                        <strong>Off (Nakamoto):</strong> Fundamental age (486 days).
+                      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 bg-slate-800 text-white text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-left">
+                        <strong>Optimise On:</strong> Find best statistical fit between Nakamoto fork and dataset start.<br>
+                        <strong>Optimise Off:</strong> Use fundamental age from Nakamoto fork (486 days before dataset start).
                       </div>
                 </div>
              </div>
@@ -653,7 +653,7 @@
                     dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
                 }
                 growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
-                modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
+                modelParamDiv.innerHTML = '<strong>Offset:</strong> N/A';
                 modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
                 if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
                 showBandsContainer.classList.add('hidden');
@@ -674,7 +674,8 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = optimalOffsetRSquared; 
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
+                // UPDATED: Changed "Day Offset:" to "Offset:"
+                modelParamDiv.innerHTML = `Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
                 activeDayOffset = HARDCODED_OFFSET;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
@@ -682,8 +683,8 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                // UPDATED: Displays "Model: Nakamoto" for hardcoded offset
-                modelParamDiv.innerHTML = `Model: <span class="font-bold font-mono text-slate-800">Nakamoto</span>`;
+                // UPDATED: Changed "Model:" to "Offset:"
+                modelParamDiv.innerHTML = `Offset: <span class="font-bold font-mono text-slate-800">Nakamoto</span>`;
             }
             
             activeModelParams = {
