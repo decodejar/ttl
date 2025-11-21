@@ -29,7 +29,7 @@
     <!-- Importing Inter, Courgette, and JetBrains Mono -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Courgette&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind Configuration for Custom Fonts/Colours -->
+    <!-- Tailwind Configuration for Custom Fonts/Colors -->
     <script>
         tailwind.config = {
             theme: {
@@ -73,7 +73,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Coloured status dot */
+        /* Colored status dot */
         .status-dot {
             height: 8px;
             width: 8px;
@@ -261,7 +261,7 @@
 
     <!-- SEO text -->
     <div class="sr-only">
-        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualise TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
+        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
     </div>
 
     <!-- Main application container -->
@@ -273,7 +273,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
             <h2 class="text-2xl font-semibold text-slate-800 mb-2">Please Rotate Device</h2>
-            <p class="text-slate-500">This chart is optimized for landscape mode.</p>
+            <!-- UPDATED: Removed paragraph text and added Cancel button -->
+            <button onclick="toggleFullScreen()" class="mt-6 px-4 py-2 bg-white border border-slate-200 text-blue-600 font-semibold rounded-lg shadow-md hover:bg-slate-50 transition-colors">Cancel</button>
         </div>
 
         <!-- Page Header -->
@@ -300,7 +301,7 @@
                 <div class="group relative flex items-center">
                       <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
                       <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
-                        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualise TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
+                        TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
                       </div>
                 </div>
             </div>
@@ -311,7 +312,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -424,7 +425,8 @@
 
     <!-- Footer -->
     <footer class="py-3 px-4 text-center space-y-1 w-full">
-        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com. Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
+        <!-- UPDATED: Added "All Rights Reserved." -->
+        <p class="text-slate-500 text-[10px] mx-auto leading-relaxed"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com. All Rights Reserved. Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
     </footer>
 
 
@@ -487,7 +489,7 @@
         let panStartMin = 0;
         let panStartLogRange = 0;
 
-        // Band Fill Colours
+        // Band Fill Colors
         const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
         const greenFillColor = 'rgba(74, 222, 128, 0.15)'; // Green-400
         const yellowFillColor = 'rgba(250, 204, 21, 0.15)'; // Yellow-400
@@ -1338,6 +1340,9 @@
             }
         }
 
+        // UPDATED: Added auto-exit fullscreen logic on rotation from landscape to portrait
+        let wasInLandscapeFullscreen = false;
+
         function handleFullscreenChange() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -1348,10 +1353,23 @@
                     fsIconEnter.classList.add('hidden');
                     fsIconExit.classList.remove('hidden');
                     fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+
+                    // Auto-exit logic
+                    if (isLandscape) {
+                        wasInLandscapeFullscreen = true;
+                    } else if (wasInLandscapeFullscreen) {
+                        // User rotated back to portrait after being in landscape fullscreen -> Exit
+                        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                        wasInLandscapeFullscreen = false;
+                        return; 
+                    }
+
                 } else {
                     fsIconEnter.classList.remove('hidden');
                     fsIconExit.classList.add('hidden');
                     fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
+                    wasInLandscapeFullscreen = false;
                 }
 
                 if (isInFullscreen && isMobile && isLandscape) {
