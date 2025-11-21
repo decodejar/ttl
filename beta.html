@@ -141,19 +141,8 @@
         #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
         #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
         
-        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
-             display: flex !important;
-             padding: 0.125rem 0.5rem !important;
-             margin-bottom: 0.125rem !important;
-             gap: 0.5rem 1rem !important;
-        }
-
-        /* Force child text elements to 12px (text-xs) in mobile landscape fullscreen */
-        #mainContainer.mobile-fullscreen-landscape #topStatusBar,
-        #mainContainer.mobile-fullscreen-landscape #topStatusBar * {
-             font-size: 0.75rem !important; /* 12px */
-             line-height: 1rem !important;
-        }
+        /* REMOVED CUSTOM TOP STATUS BAR STYLES FOR MOBILE LANDSCAPE 
+           to allow it to match normal view behavior */
 
         #mainContainer.mobile-fullscreen-landscape header {
              height: 2.25rem !important;
