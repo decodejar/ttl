@@ -1524,13 +1524,31 @@
         let touchStartMin = 0;
         let touchStartLogRange = 0;
 
-        function handleTouchStart(e) {
+function handleTouchStart(e) {
             if (!chart) return;
+
+            // --- FIX: Legend Hit Detection ---
+            // Calculate touch position relative to canvas
+            const rect = e.target.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            const touchY = e.touches[0].clientY - rect.top;
+
+            // If the chart has a legend and we are touching inside it...
+            if (chart.legend && chart.legend.fit) {
+                const l = chart.legend;
+                if (touchX >= l.left && touchX <= l.right && 
+                    touchY >= l.top && touchY <= l.bottom) {
+                    // Allow default behavior (Chart.js toggle) and exit panning logic
+                    return; 
+                }
+            }
+            // ---------------------------------
+
             // Only handle single touch for panning
             if (e.touches.length !== 1) return;
             
             // Prevent default behavior (scrolling the page)
-            e.preventDefault();
+            if (e.cancelable) e.preventDefault();
 
             isTouching = true;
             lastTouchX = e.touches[0].clientX;
