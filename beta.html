@@ -411,10 +411,10 @@
             <div id="modelParamDiv" class="text-slate-600"></div>
             
             <!-- Model Toggle Switch (New Segmented Control) -->
-            <!-- UPDATED: IDs changed to match values 0 and 467 -->
+            <!-- UPDATED: IDs and onclick handlers made generic (1 and 2) -->
             <div class="flex items-center bg-slate-200 rounded-lg p-1 gap-1 select-none" id="offsetControl">
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('0')" id="btn-0">0</button>
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('467')" id="btn-467">467</button>
+                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('1')" id="btn-1">0</button>
+                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('2')" id="btn-2">467</button>
                 <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all bg-white text-blue-600 shadow-sm" onclick="setOffsetMode('optimal')" id="btn-optimal">Auto</button>
             </div>
             
@@ -459,14 +459,14 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         
-        // UPDATED: Buttons for 0 and 467
-        const btn0 = document.getElementById('btn-0');
-        const btn467 = document.getElementById('btn-467');
+        // UPDATED: Corrected button references to match HTML IDs
+        const btn1 = document.getElementById('btn-1');
+        const btn2 = document.getElementById('btn-2');
         const btnOptimal = document.getElementById('btn-optimal');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        // UPDATED: Constants set to 0 and 467
+        // UPDATED: Configurable constants
         const HARDCODED_OFFSET_1 = 0;
         const HARDCODED_OFFSET_2 = 467;
         const MAX_OFFSET_SEARCH_LIMIT = 730;      
@@ -479,7 +479,7 @@
         let baseData = []; 
         let priceData = []; 
         let activeModelParams = {}; 
-        let currentOffsetMode = 'optimal'; 
+        let currentOffsetMode = 'optimal'; // '1', '2', 'optimal'
         
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -532,69 +532,6 @@
 
         // --- SECTION: DATA & REGRESSION LOGIC ---
 
-        async function loadPriceData() {
-            try {
-                // In a production environment, this path might need adjustment based on where 'price_data.json' is hosted.
-                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
-                const data = await response.json();
-                if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
-                // Assuming data is in format [[timestamp_s, price], ...]
-                baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
-                return baseData;
-            } catch (error) {
-                console.error("Error loading price data:", error);
-                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
-                loader.style.display = 'none';
-                return null;
-            }
-        }
-
-        function linearRegression(data) {
-            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            const n = validData.length;
-            if (n < 2) return { slope: 0, intercept: 0 }; 
-            
-            for (const { x, y } of validData) {
-                const logX = Math.log10(x);
-                const logY = Math.log10(y);
-                sumX += logX; sumY += logY; sumXY += logX * logY; sumX2 += logX * logX;
-            }
-
-            const denominator = (n * sumX2 - sumX * sumX);
-            if (denominator === 0) return { slope: 0, intercept: 0 }; 
-            
-            const slope = (n * sumXY - sumX * sumY) / denominator;
-            const intercept = (sumY - slope * sumX) / n;
-            return { slope, intercept };
-        }
-
-        function calculateResiduals(data, slope, intercept) {
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            if (validData.length === 0) return [];
-            return validData.map(p => {
-                const logX = Math.log10(p.x);
-                const logY = Math.log10(p.y);
-                const predictedLogY = slope * logX + intercept;
-                return logY - predictedLogY;
-            }).sort((a, b) => a - b); 
-        }
-
-        function getPercentile(sortedResiduals, percentile) {
-            if (!sortedResiduals || sortedResiduals.length === 0) return 0;
-            const index = (percentile / 100) * (sortedResiduals.length - 1);
-            const lowerIndex = Math.floor(index);
-            const upperIndex = Math.ceil(index);
-            
-            if (lowerIndex === upperIndex) {
-                return sortedResiduals[lowerIndex];
-            } else {
-                const weight = index - lowerIndex;
-                return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
-            }
-        }
-
         function findOptimalOffset(baseData, minOffset = 1, maxOffset) {
             let bestOffset = -1;
             let bestRSquared = -Infinity;
@@ -616,25 +553,6 @@
             return { optimalOffset: bestOffset, bestFit: bestRSquared };
         }
 
-        function calculateRSquared(data, slope, intercept) {
-            let ss_tot = 0, ss_res = 0, y_mean = 0;
-            const validData = data.filter(p => p.y > 0 && p.x > 0);
-            if (validData.length < 2) return 0;
-
-            validData.forEach(p => y_mean += Math.log10(p.y));
-            y_mean /= validData.length;
-
-            validData.forEach(p => {
-                const logY = Math.log10(p.y);
-                const logX = Math.log10(p.x);
-                const predictedLogY = slope * logX + intercept;
-                ss_tot += Math.pow(logY - y_mean, 2);
-                ss_res += Math.pow(logY - predictedLogY, 2);
-            });
-            return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
-        }
-
-
         // --- SECTION: CORE APPLICATION LOGIC ---
 
         function setOffsetMode(mode) {
@@ -644,19 +562,18 @@
             const activeClass = "bg-white text-blue-600 shadow-sm";
             const inactiveClass = "text-slate-500 hover:text-slate-700 hover:bg-white/50";
             
-            // Reset all
-            [btn0, btn467, btnOptimal].forEach(btn => {
-                btn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${inactiveClass}`;
+            // Reset all (UPDATED: using correct variable names)
+            [btn1, btn2, btnOptimal].forEach(btn => {
+                if(btn) btn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${inactiveClass}`;
             });
             
             // Set active
             let activeBtn;
-            // UPDATED: Logic for new IDs
-            if(mode === '0') activeBtn = btn0;
-            else if(mode === '467') activeBtn = btn467;
+            if(mode === '1') activeBtn = btn1;
+            else if(mode === '2') activeBtn = btn2;
             else activeBtn = btnOptimal;
             
-            activeBtn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeClass}`;
+            if(activeBtn) activeBtn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeClass}`;
             
             createOrUpdateChart();
         }
@@ -695,8 +612,8 @@
                 rSquared = optimalOffsetRSquared; 
                 modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
-                // UPDATED: offset logic
-                const fixedOffset = (currentOffsetMode === '0') ? HARDCODED_OFFSET_1 : HARDCODED_OFFSET_2;
+                // UPDATED: Dynamic selection based on constants
+                const fixedOffset = (currentOffsetMode === '1') ? HARDCODED_OFFSET_1 : HARDCODED_OFFSET_2;
                 activeDayOffset = fixedOffset;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + fixedOffset }));
                 const regression = linearRegression(priceData);
@@ -1082,16 +999,15 @@
                                          if (context.datasetIndex < 5) return null;
                                          return `$${context.parsed.y.toFixed(2)}`;
                                     },
-                                    // NEW: Add third line for hardcoded offset modes
-                                    // Also updated: Add "Day Offset" description
+                                    // UPDATED: Check generic mode IDs for tooltip labels
                                     afterLabel: (context) => {
                                         if (context.datasetIndex < 5) return null;
                                         
                                         const modelDay = Math.round(context.parsed.x);
                                         
-                                        if (currentOffsetMode === '0') {
+                                        if (currentOffsetMode === '1') {
                                              return [`Model Day: ${modelDay}`, `(Finney Era)`];
-                                        } else if (currentOffsetMode === '467') {
+                                        } else if (currentOffsetMode === '2') {
                                              return [`Model Day: ${modelDay}`, `(Nakamoto Era)`];
                                         }
                                         return null;
@@ -1688,9 +1604,9 @@
 
         // Initial load
         window.onload = () => {
-            // New: Update button text with constant values
-            btn74.innerText = HARDCODED_OFFSET_1;
-            btn232.innerText = HARDCODED_OFFSET_2;
+            // UPDATED: Set button text from constants dynamically using correct variables
+            if(btn1) btn1.innerText = HARDCODED_OFFSET_1;
+            if(btn2) btn2.innerText = HARDCODED_OFFSET_2;
 
             createOrUpdateChart();
             
