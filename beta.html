@@ -311,7 +311,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -532,6 +532,69 @@
 
         // --- SECTION: DATA & REGRESSION LOGIC ---
 
+        async function loadPriceData() {
+            try {
+                // In a production environment, this path might need adjustment based on where 'price_data.json' is hosted.
+                const response = await fetch(`./price_data.json?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`Failed to load data file: ${response.statusText}`);
+                const data = await response.json();
+                if (!Array.isArray(data)) throw new Error("Invalid data format in JSON file");
+                // Assuming data is in format [[timestamp_s, price], ...]
+                baseData = data.map((p, i) => ({ time: p[0] * 1000, dayIndex: i + 1, y: p[1] })).filter(p => p.y > 0);
+                return baseData;
+            } catch (error) {
+                console.error("Error loading price data:", error);
+                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
+                loader.style.display = 'none';
+                return null;
+            }
+        }
+
+        function linearRegression(data) {
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            const n = validData.length;
+            if (n < 2) return { slope: 0, intercept: 0 }; 
+            
+            for (const { x, y } of validData) {
+                const logX = Math.log10(x);
+                const logY = Math.log10(y);
+                sumX += logX; sumY += logY; sumXY += logX * logY; sumX2 += logX * logX;
+            }
+
+            const denominator = (n * sumX2 - sumX * sumX);
+            if (denominator === 0) return { slope: 0, intercept: 0 }; 
+            
+            const slope = (n * sumXY - sumX * sumY) / denominator;
+            const intercept = (sumY - slope * sumX) / n;
+            return { slope, intercept };
+        }
+
+        function calculateResiduals(data, slope, intercept) {
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            if (validData.length === 0) return [];
+            return validData.map(p => {
+                const logX = Math.log10(p.x);
+                const logY = Math.log10(p.y);
+                const predictedLogY = slope * logX + intercept;
+                return logY - predictedLogY;
+            }).sort((a, b) => a - b); 
+        }
+
+        function getPercentile(sortedResiduals, percentile) {
+            if (!sortedResiduals || sortedResiduals.length === 0) return 0;
+            const index = (percentile / 100) * (sortedResiduals.length - 1);
+            const lowerIndex = Math.floor(index);
+            const upperIndex = Math.ceil(index);
+            
+            if (lowerIndex === upperIndex) {
+                return sortedResiduals[lowerIndex];
+            } else {
+                const weight = index - lowerIndex;
+                return sortedResiduals[lowerIndex] * (1 - weight) + sortedResiduals[upperIndex] * weight;
+            }
+        }
+
         function findOptimalOffset(baseData, minOffset = 1, maxOffset) {
             let bestOffset = -1;
             let bestRSquared = -Infinity;
@@ -552,6 +615,25 @@
             }
             return { optimalOffset: bestOffset, bestFit: bestRSquared };
         }
+
+        function calculateRSquared(data, slope, intercept) {
+            let ss_tot = 0, ss_res = 0, y_mean = 0;
+            const validData = data.filter(p => p.y > 0 && p.x > 0);
+            if (validData.length < 2) return 0;
+
+            validData.forEach(p => y_mean += Math.log10(p.y));
+            y_mean /= validData.length;
+
+            validData.forEach(p => {
+                const logY = Math.log10(p.y);
+                const logX = Math.log10(p.x);
+                const predictedLogY = slope * logX + intercept;
+                ss_tot += Math.pow(logY - y_mean, 2);
+                ss_res += Math.pow(logY - predictedLogY, 2);
+            });
+            return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
+        }
+
 
         // --- SECTION: CORE APPLICATION LOGIC ---
 
@@ -962,9 +1044,9 @@
                             tooltip: {
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)', 
                                 titleColor: '#f8fafc',
-                                bodyColor: '#e2e8f0',
+                                bodyColor: '#f8fafc', // Unified white color for price
                                 titleFont: { family: "'JetBrains Mono', monospace", weight: 600 },
-                                bodyFont: { family: "'JetBrains Mono', monospace" },
+                                bodyFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Unified bold weight
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
                                 padding: 10,
@@ -998,20 +1080,8 @@
                                     label: (context) => {
                                          if (context.datasetIndex < 5) return null;
                                          return `$${context.parsed.y.toFixed(2)}`;
-                                    },
-                                    // UPDATED: Check generic mode IDs for tooltip labels
-                                    afterLabel: (context) => {
-                                        if (context.datasetIndex < 5) return null;
-                                        
-                                        const modelDay = Math.round(context.parsed.x);
-                                        
-                                        if (currentOffsetMode === '1') {
-                                             return [`Model Day: ${modelDay}`, `(Finney Era)`];
-                                        } else if (currentOffsetMode === '2') {
-                                             return [`Model Day: ${modelDay}`, `(Nakamoto Era)`];
-                                        }
-                                        return null;
                                     }
+                                    // Removed afterLabel as requested
                                 }
                             }
                         },
@@ -1604,9 +1674,9 @@
 
         // Initial load
         window.onload = () => {
-            // UPDATED: Set button text from constants dynamically using correct variables
-            if(btn1) btn1.innerText = HARDCODED_OFFSET_1;
-            if(btn2) btn2.innerText = HARDCODED_OFFSET_2;
+            // New: Update button text with constant values
+            btn1.innerText = HARDCODED_OFFSET_1;
+            btn2.innerText = HARDCODED_OFFSET_2;
 
             createOrUpdateChart();
             
