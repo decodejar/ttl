@@ -273,7 +273,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
             <h2 class="text-2xl font-semibold text-slate-800 mb-2">Please Rotate Device</h2>
-            <!-- UPDATED: Removed paragraph text and added Cancel button -->
             <button onclick="toggleFullScreen()" class="mt-6 px-4 py-2 bg-white border border-slate-200 text-blue-600 font-semibold rounded-lg shadow-md hover:bg-slate-50 transition-colors">Cancel</button>
         </div>
 
@@ -312,7 +311,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -412,9 +411,10 @@
             <div id="modelParamDiv" class="text-slate-600"></div>
             
             <!-- Model Toggle Switch (New Segmented Control) -->
+            <!-- UPDATED: IDs changed to match values 0 and 467 -->
             <div class="flex items-center bg-slate-200 rounded-lg p-1 gap-1 select-none" id="offsetControl">
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('74')" id="btn-74">74</button>
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('232')" id="btn-232">232</button>
+                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('0')" id="btn-0">0</button>
+                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('467')" id="btn-467">467</button>
                 <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all bg-white text-blue-600 shadow-sm" onclick="setOffsetMode('optimal')" id="btn-optimal">Auto</button>
             </div>
             
@@ -459,15 +459,16 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         
-        // New buttons
-        const btn74 = document.getElementById('btn-74');
-        const btn232 = document.getElementById('btn-232');
+        // UPDATED: Buttons for 0 and 467
+        const btn0 = document.getElementById('btn-0');
+        const btn467 = document.getElementById('btn-467');
         const btnOptimal = document.getElementById('btn-optimal');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        const HARDCODED_OFFSET_1 = 74;
-        const HARDCODED_OFFSET_2 = 232;
+        // UPDATED: Constants set to 0 and 467
+        const HARDCODED_OFFSET_1 = 0;
+        const HARDCODED_OFFSET_2 = 467;
         const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
@@ -478,7 +479,7 @@
         let baseData = []; 
         let priceData = []; 
         let activeModelParams = {}; 
-        let currentOffsetMode = 'optimal'; // '74', '232', 'optimal'
+        let currentOffsetMode = 'optimal'; 
         
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -640,19 +641,19 @@
             currentOffsetMode = mode;
             
             // Update button styles
-            // UPDATED: changed text-indigo-600 to text-blue-600
             const activeClass = "bg-white text-blue-600 shadow-sm";
             const inactiveClass = "text-slate-500 hover:text-slate-700 hover:bg-white/50";
             
             // Reset all
-            [btn74, btn232, btnOptimal].forEach(btn => {
+            [btn0, btn467, btnOptimal].forEach(btn => {
                 btn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${inactiveClass}`;
             });
             
             // Set active
             let activeBtn;
-            if(mode === '74') activeBtn = btn74;
-            else if(mode === '232') activeBtn = btn232;
+            // UPDATED: Logic for new IDs
+            if(mode === '0') activeBtn = btn0;
+            else if(mode === '467') activeBtn = btn467;
             else activeBtn = btnOptimal;
             
             activeBtn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeClass}`;
@@ -694,7 +695,8 @@
                 rSquared = optimalOffsetRSquared; 
                 modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
-                const fixedOffset = (currentOffsetMode === '74') ? HARDCODED_OFFSET_1 : HARDCODED_OFFSET_2;
+                // UPDATED: offset logic
+                const fixedOffset = (currentOffsetMode === '0') ? HARDCODED_OFFSET_1 : HARDCODED_OFFSET_2;
                 activeDayOffset = fixedOffset;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + fixedOffset }));
                 const regression = linearRegression(priceData);
@@ -1081,10 +1083,16 @@
                                          return `$${context.parsed.y.toFixed(2)}`;
                                     },
                                     // NEW: Add third line for hardcoded offset modes
+                                    // Also updated: Add "Day Offset" description
                                     afterLabel: (context) => {
                                         if (context.datasetIndex < 5) return null;
-                                        if (currentOffsetMode !== 'optimal') {
-                                            return `Model Day: ${Math.round(context.parsed.x)}`;
+                                        
+                                        const modelDay = Math.round(context.parsed.x);
+                                        
+                                        if (currentOffsetMode === '0') {
+                                             return [`Model Day: ${modelDay}`, `(Finney Era)`];
+                                        } else if (currentOffsetMode === '467') {
+                                             return [`Model Day: ${modelDay}`, `(Nakamoto Era)`];
                                         }
                                         return null;
                                     }
