@@ -158,6 +158,18 @@
         }
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
+
+        /* Top Status Bar Adjustments for Mobile Landscape Fullscreen */
+        /* Forces the "step down" size (text-xs / py-2) regardless of screen resolution */
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
+             padding-top: 0.5rem !important;    /* py-2 */
+             padding-bottom: 0.5rem !important; /* py-2 */
+        }
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar,
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar * {
+             font-size: 0.75rem !important; /* text-xs */
+             line-height: 1rem !important;
+        }
         
         /* --- Projection & Band Table Styles --- */
         #projectionTable,
