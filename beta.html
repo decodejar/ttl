@@ -141,7 +141,6 @@
         /* Only zeroing vertical padding to maximize space. */
         #mainContainer.mobile-fullscreen-landscape #chartCard { 
             padding-top: 0 !important;
-            /* UPDATED: Increased bottom padding to 0.5rem */
             padding-bottom: 0.5rem !important; 
         }
         
@@ -701,12 +700,8 @@
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 
-                // Display format: Fixed (Opt: Optimal)
-                if (optimalOffset !== -1 && optimalOffset !== fixedOffset) {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${fixedOffset}</span> (Opt: ${optimalOffset})`;
-                } else {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${fixedOffset}</span>`;
-                }
+                // Display format: Fixed only (Opt part removed as requested)
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${fixedOffset}</span>`;
             }
             
             activeModelParams = {
