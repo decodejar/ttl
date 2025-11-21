@@ -136,7 +136,13 @@
         }
         
         #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
-        #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
+        
+        /* Fixed: Removed padding:0 to allow horizontal padding classes to work. 
+           Only zeroing vertical padding to maximize space. */
+        #mainContainer.mobile-fullscreen-landscape #chartCard { 
+            padding-top: 0 !important;
+            padding-bottom: 0 !important; 
+        }
         
         /* Header Adjustments for Mobile Landscape Fullscreen */
         #mainContainer.mobile-fullscreen-landscape header {
