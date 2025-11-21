@@ -676,26 +676,26 @@
                 const regression = linearRegression(priceData);
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
-            };
-
-            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
+                rSquared = optimalOffsetRSquared; 
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${optimalOffset}</span>`;
+            } else {
+                activeDayOffset = HARDCODED_OFFSET;
+                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
+                const regression = linearRegression(priceData);
+                slope = regression.slope;
+                meanIntercept = regression.intercept;
+                rSquared = calculateRSquared(priceData, slope, meanIntercept);
+                if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                } else {
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
+                }
+            }
             
-            const lastBaseDataPoint = baseData[baseData.length - 1]; 
-            const lastTimestamp = lastBaseDataPoint.time; 
-            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-
-            const now = new Date().getTime();
-            const diffMs = now - lastTimestamp;
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            const sevenDaysMs = 7 * oneDayMs;
-
-            let dotColor = "bg-red-500"; 
-            if (diffMs < oneDayMs) {
-                dotColor = "bg-green-500"; 
-            } else if (diffMs < sevenDaysMs) {
-                dotColor = "bg-yellow-400"; 
+            activeModelParams = {
+                modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
+                activeDayOffset: activeDayOffset,
+                slope: slope,
             }
             
             // Only update status if not in Demo mode (to preserve the yellow demo text)
