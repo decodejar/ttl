@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TAO Tensor Law — Bittensor Price Model — by decodejar</title>
     
     <!-- ===== FAVICON TAGS ===== -->
@@ -88,7 +88,7 @@
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* --- Fullscreen CSS Logic (PRESERVED) --- */
+        /* --- Fullscreen CSS Logic --- */
         
         body:has(#mainContainer:fullscreen) { display: block; background: white; }
 
@@ -100,7 +100,7 @@
             border: none !important;
             display: flex;
             flex-direction: column;
-            padding: 1rem !important;
+            padding: 0 !important; /* Reset padding for landscape */
             background: white;
         }
 
@@ -120,7 +120,9 @@
 
         body:has(#mainContainer:fullscreen) footer { display: none; }
 
-        /* --- Mobile Fullscreen Optimizations --- */
+        /* --- Mobile Fullscreen & Landscape Optimizations --- */
+        
+        /* Force rotate message on Portrait Mobile */
         @media (max-width: 639px) and (orientation: portrait) {
             #mainContainer:fullscreen #rotateOverlay { display: flex !important; }
             #mainContainer:fullscreen header,
@@ -130,35 +132,41 @@
             #mainContainer:fullscreen #fullscreenBtn { display: none !important; }
         }
 
+        /* Specific Landscape Optimizations */
         #mainContainer.mobile-fullscreen-landscape {
-             padding-top: 0.375rem !important;
-             padding-bottom: 0.375rem !important;
+             padding: 0 !important;
         }
         
+        /* In landscape fullscreen, hide the main header and bottom bar to save vertical space */
+        #mainContainer.mobile-fullscreen-landscape header { display: none !important; }
         #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
-        #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
-        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
-             display: flex !important;
-             padding: 0.125rem 0.5rem !important;
-             margin-bottom: 0.125rem !important;
-             gap: 0.5rem 1rem !important;
-             font-size: 0.75rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape header {
-             height: 2.25rem !important;
-             margin-bottom: 0.125rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape header h1 { font-size: 1.125rem !important; }
-        #mainContainer.mobile-fullscreen-landscape header img { width: 1.75rem !important; height: 1.75rem !important; }
-        #mainContainer.mobile-fullscreen-landscape #fullscreenBtn svg { width: 1.25rem !important; height: 1.25rem !important; }
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper {
-             font-size: 0.75rem !important;
-             line-height: 1rem !important;
-        }
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
-        #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
         
-        /* --- Projection & Band Table Styles (MODERNIZED) --- */
+        /* Optimize the Top Status Bar for Landscape */
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar {
+             position: absolute;
+             top: 0;
+             left: 0;
+             right: 0;
+             z-index: 50;
+             background: rgba(255, 255, 255, 0.9);
+             backdrop-filter: blur(4px);
+             height: 36px; /* Fixed small height */
+             padding: 0 1rem !important;
+             border-bottom: 1px solid #e2e8f0;
+             justify-content: space-between !important;
+        }
+
+        /* Show the hidden mobile landscape controls */
+        #mainContainer.mobile-fullscreen-landscape #mobileLandscapeControls {
+            display: flex !important;
+        }
+
+        /* Add padding to chart to account for absolute top bar */
+        #mainContainer.mobile-fullscreen-landscape #chartCard { 
+            padding: 36px 0 0 0 !important; /* Top padding = status bar height */
+        }
+
+        /* --- Projection & Band Table Styles --- */
         #projectionTable,
         #bandLevelsTable {
             position: absolute;
@@ -170,12 +178,15 @@
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             font-size: 0.75rem;
-            line-height: 1.4; /* Reduced from 1.5 */
+            line-height: 1.4; 
             color: #334155;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.6);
             width: max-content;
             transition: box-shadow 0.2s ease;
+            /* Ensure tables don't overflow vertically on small screens */
+            max-height: 80vh; 
+            overflow-y: auto;
         }
         
         #projectionTable:hover,
@@ -190,7 +201,7 @@
         #bandLevelsTable h3 {
             font-weight: 600;
             color: #0f172a;
-            margin-bottom: 0.5rem; /* Reduced spacing */
+            margin-bottom: 0.5rem; 
             border-bottom: 1px solid rgba(203, 213, 225, 0.5);
             padding-bottom: 0.25rem;
             display: flex;
@@ -199,6 +210,9 @@
             cursor: grab;
             user-select: none;
             letter-spacing: -0.02em;
+            position: sticky;
+            top: 0;
+            background: inherit; /* Matches blur */
         }
         
         #projectionTable h3:active,
@@ -206,13 +220,12 @@
             cursor: grabbing;
         }
 
-        /* Targeted selector to fix double line spacing in band table */
         #projectionData > div,
         #bandLevelsTable > div > div {
             display: flex;
             justify-content: space-between;
-            padding: 1px 0; /* Tight padding */
-            gap: 2rem; /* Ensure gap between label and value */
+            padding: 1px 0; 
+            gap: 2rem; 
         }
 
         #projectionData > div span:first-child,
@@ -223,7 +236,6 @@
         
         #projectionData > div span:last-child,
         #bandLevelsTable > div > div span:last-child {
-            /* Force JetBrains Mono for data values */
             font-family: 'JetBrains Mono', monospace; 
             font-weight: 500;
             color: #0f172a;
@@ -270,11 +282,9 @@
             <!-- Left: Logo/Links -->
             <div class="flex items-center">
                 <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 group">
-                    <!-- Removed Purple Ring -->
                     <div class="rounded-full group-hover:scale-105 transition-transform duration-300">
                         <img src="decode.png" alt="decodejar" class="w-8 h-8 rounded-full bg-white border-2 border-white" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                     </div>
-                    <!-- Highlight color changed to Blue -->
                     <span class="hidden sm:block font-sans font-bold text-black text-lg tracking-tight group-hover:text-blue-600 transition-colors">decodejar</span>
                 </a>
             </div>
@@ -283,7 +293,6 @@
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
                     TAO Tensor Law
-                    <!-- Reverted to font-handwriting for this specific element -->
                     <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">Bittensor Price Model</span>
                 </h1>
                 <!-- Tooltip -->
@@ -307,34 +316,49 @@
         </header>
 
         <!-- Top Status Bar -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50">
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-2 sm:gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
-             <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
+             <div class="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
                  <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
                  <!-- Data Status (Second) -->
-                 <div id="dataStatusDiv" class="flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
+                 <div id="dataStatusDiv" class="flex items-center bg-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border border-slate-200 shadow-sm">
                      <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
                  </div>
              </div>
              
              <!-- Right Group: Rating & Toggle -->
-             <div class="flex items-center gap-4 text-xs sm:text-sm">
-                 <!-- Zone (Moved here) -->
+             <div class="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                 <!-- Zone -->
                  <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
 
                  <!-- Bands Toggle -->
                  <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
-                          <!-- Label moved to left, styled to match Price: label -->
-                          <span class="mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
-                          <div class="relative">
-                             <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
-                             <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
-                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
-                             <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                          </div>
+                         <span class="mr-2 sm:mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
+                         <div class="relative">
+                            <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
+                            <div class="block h-5 w-8 sm:h-6 sm:w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                            <div class="absolute left-1 top-1 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-white transition-transform peer-checked:translate-x-3 sm:peer-checked:translate-x-4"></div>
+                         </div>
                      </label>
+                 </div>
+
+                 <!-- Hidden Controls for Mobile Landscape (Shows when Header/Footer are hidden) -->
+                 <div id="mobileLandscapeControls" class="hidden items-center gap-4 border-l border-slate-200 pl-4 ml-2">
+                    <!-- Optimise Toggle Duplicate -->
+                    <div class="flex items-center group">
+                        <label for="useOptimalOffsetCheckboxMobile" class="flex items-center cursor-pointer select-none">
+                            <span class="mr-2 text-xs font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Optimise</span>
+                            <div class="relative">
+                                <input type="checkbox" id="useOptimalOffsetCheckboxMobile" class="peer sr-only" checked>
+                                <div class="block h-5 w-8 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                                <div class="absolute left-1 top-1 h-3 w-3 rounded-full bg-white transition-transform peer-checked:translate-x-3"></div>
+                            </div>
+                        </label>
+                    </div>
+                    <!-- Fit Stats Duplicate -->
+                    <div id="mobileFitDiv" class="text-xs font-mono text-slate-600"></div>
                  </div>
              </div>
         </div>
@@ -352,7 +376,7 @@
             <!-- Canvas Wrapper -->
             <div id="chartWrapper" class="relative w-full h-full bg-white">
                 
-                <!-- Draggable Tables (Hidden by default, structure preserved) -->
+                <!-- Draggable Tables -->
                 <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
                     <h3 id="projectionHeader">
                         <span>Fair Value</span>
@@ -448,6 +472,7 @@
         const fullscreenBtn = document.getElementById('fullscreenBtn');
         const growthExponentDiv = document.getElementById('growthExponentDiv');
         const modelFitDiv = document.getElementById('modelFitDiv');
+        const mobileFitDiv = document.getElementById('mobileFitDiv'); // New Mobile duplicate
         const loader = document.getElementById('loader');
         const dataStatusDiv = document.getElementById('dataStatusDiv');
         const lastPriceDiv = document.getElementById('lastPriceDiv');
@@ -460,6 +485,7 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
+        const useOptimalOffsetCheckboxMobile = document.getElementById('useOptimalOffsetCheckboxMobile'); // New Mobile duplicate
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
@@ -805,7 +831,9 @@
             else fitColorClass = "bg-red-500";
             
             // Replaced &nbsp; with a standard space
-            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            const fitHtml = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            modelFitDiv.innerHTML = fitHtml;
+            if (mobileFitDiv) mobileFitDiv.innerHTML = `R²: ${rSquared.toFixed(3)}`;
             
             const startIndex = extendedMinDay;
             const endIndex = extendedMaxDay;
@@ -1062,7 +1090,7 @@
                                             if (!dataPoint) {
                                                 dataPoint = baseData.reduce((prev, curr) => {
                                                      return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                 });
+                                                });
                                             }
 
                                             if (dataPoint) {
@@ -1134,9 +1162,23 @@
 
             useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            
+            // Sync for mobile landscape checkbox
+            if (useOptimalOffsetCheckboxMobile) {
+                useOptimalOffsetCheckboxMobile.removeEventListener('change', handleMobileOptimiseToggle);
+                useOptimalOffsetCheckboxMobile.addEventListener('change', handleMobileOptimiseToggle);
+            }
 
             applyBandVisibility(showBandsCheckbox.checked);
             if(chart) chart.update('none'); 
+        }
+
+        // Sync function for the duplicate mobile checkbox
+        function handleMobileOptimiseToggle(e) {
+            // Mirror state to main checkbox
+            useOptimalOffsetCheckbox.checked = e.target.checked;
+            // Trigger main update
+            createOrUpdateChart();
         }
 
         function handleBandToggle() {
@@ -1393,6 +1435,8 @@
 
                 if (isInFullscreen && isMobile && isLandscape) {
                    mainContainer.classList.add('mobile-fullscreen-landscape');
+                   // Sync checkboxes just in case
+                   if (useOptimalOffsetCheckboxMobile) useOptimalOffsetCheckboxMobile.checked = useOptimalOffsetCheckbox.checked;
                 } else {
                    mainContainer.classList.remove('mobile-fullscreen-landscape');
                 }
