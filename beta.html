@@ -311,7 +311,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -410,7 +410,7 @@
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
-            <!-- Model Toggle (Reverted to Single Switch) -->
+            <!-- Model Toggle -->
              <div class="flex items-center group">
                  <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
@@ -465,7 +465,6 @@
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        // UPDATED: Single hardcoded offset for "OFF" state
         const HARDCODED_OFFSET = 467;
         const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
@@ -675,9 +674,11 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                
-                // Display format: Fixed only (Nakamoto Era implied by 467)
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
+                if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                } else {
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
+                }
             }
             
             activeModelParams = {
@@ -1113,7 +1114,6 @@
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
 
-            useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
@@ -1312,6 +1312,9 @@
             }
         }
 
+        // UPDATED: Added auto-exit fullscreen logic on rotation from landscape to portrait
+        let wasInLandscapeFullscreen = false;
+
         function handleFullscreenChange() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -1322,10 +1325,23 @@
                     fsIconEnter.classList.add('hidden');
                     fsIconExit.classList.remove('hidden');
                     fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
+
+                    // Auto-exit logic
+                    if (isLandscape) {
+                        wasInLandscapeFullscreen = true;
+                    } else if (wasInLandscapeFullscreen) {
+                        // User rotated back to portrait after being in landscape fullscreen -> Exit
+                        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                        wasInLandscapeFullscreen = false;
+                        return; 
+                    }
+
                 } else {
                     fsIconEnter.classList.remove('hidden');
                     fsIconExit.classList.add('hidden');
                     fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
+                    wasInLandscapeFullscreen = false;
                 }
 
                 if (isInFullscreen && isMobile && isLandscape) {
@@ -1636,16 +1652,13 @@
 
         // Initial load
         window.onload = () => {
-            // New: Update button text with constant values
-            // FIX: Use correct variable names matching HTML IDs
-            if(btn1) btn1.innerText = HARDCODED_OFFSET_1;
-            if(btn2) btn2.innerText = HARDCODED_OFFSET_2;
-
             createOrUpdateChart();
             
             // Enable Dragging
             makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
             makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
+            
+            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
             
             const canvas = document.getElementById('powerLawChart');
             if (canvas) {
