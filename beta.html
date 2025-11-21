@@ -57,15 +57,15 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            /* UPDATED: Continuous neutral mid-gray background, gradient removed */
-            background-color: #d4d4d4; 
+            /* RESTORED: Blue-themed gradient background */
+            background-color: #f1f5f9; /* slate-100 */
+            background-image: radial-gradient(at 0% 0%, hsla(215,30%,15%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(200,50%,25%,0) 0, transparent 50%);
         }
         
         /* Loader animation */
         .loader {
             border: 3px solid rgba(226, 232, 240, 0.3); /* slate-200 equivalent */
-            /* UPDATED: Changed from indigo-600 (#4f46e5) to blue-600 (#2563eb) */
-            border-left-color: #2563eb; 
+            border-left-color: #2563eb; /* blue-600 */
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -101,7 +101,7 @@
             border: none !important;
             display: flex;
             flex-direction: column;
-            padding: 0 !important; /* Fixed: Removed 1rem padding to remove white border */
+            padding: 0 !important;
             background: white;
         }
 
@@ -138,8 +138,7 @@
         
         #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
         
-        /* Fixed: Removed padding:0 to allow horizontal padding classes to work. 
-           Only zeroing vertical padding to maximize space. */
+        /* Only zeroing vertical padding to maximize space. */
         #mainContainer.mobile-fullscreen-landscape #chartCard { 
             padding-top: 0 !important;
             padding-bottom: 0 !important; 
@@ -161,10 +160,10 @@
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
 
         /* Top Status Bar Adjustments for Mobile Landscape Fullscreen */
-        /* Forces the "step down" size (text-xs / py-2) regardless of screen resolution */
+        /* UPDATED: Reduced vertical padding further to 0.25rem (4px) */
         #mainContainer.mobile-fullscreen-landscape #topStatusBar {
-             padding-top: 0.5rem !important;    /* py-2 */
-             padding-bottom: 0.5rem !important; /* py-2 */
+             padding-top: 0.25rem !important;    /* py-1 */
+             padding-bottom: 0.25rem !important; /* py-1 */
         }
         #mainContainer.mobile-fullscreen-landscape #topStatusBar,
         #mainContainer.mobile-fullscreen-landscape #topStatusBar * {
@@ -258,8 +257,8 @@
         
     </style>
 </head>
-<!-- UPDATED: Changed bg-slate-200 to bg-neutral-300 for solid mid-gray -->
-<body class="text-slate-800 flex flex-col items-center h-screen p-3 sm:p-4 md:p-6 overflow-hidden bg-neutral-300">
+<!-- UPDATED: Restored bg-slate-200 -->
+<body class="text-slate-800 flex flex-col items-center h-screen p-3 sm:p-4 md:p-6 overflow-hidden bg-slate-200">
 
     <!-- SEO text -->
     <div class="sr-only">
@@ -271,7 +270,6 @@
 
         <!-- Mobile Rotate Overlay -->
         <div id="rotateOverlay" class="hidden absolute inset-0 w-full h-full bg-white/95 z-50 flex-col items-center justify-center text-center p-8 backdrop-blur-sm">
-            <!-- UPDATED: text-indigo-500 to text-blue-500 -->
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 text-blue-500 mb-4 animate-pulse">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
             </svg>
@@ -289,7 +287,6 @@
                         <img src="decode.png" alt="decodejar" class="w-8 h-8 rounded-full bg-white border-2 border-white" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                     </div>
                     <!-- Text -->
-                    <!-- UPDATED: hover:text-blue-600 (was already blue, kept consistency) -->
                     <span class="hidden sm:block font-sans font-bold text-black text-lg tracking-tight group-hover:text-blue-600 transition-colors">decodejar</span>
                 </a>
             </div>
@@ -298,12 +295,10 @@
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
                     TAO Tensor Law
-                    <!-- UPDATED: text-indigo-500/80 to text-blue-500/80 -->
                     <span class="hidden md:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-blue-500/80">Bittensor Price Model</span>
                 </h1>
                 <!-- Tooltip -->
                 <div class="group relative flex items-center">
-                      <!-- UPDATED: hover:text-indigo-500 to hover:text-blue-500 -->
                       <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
                       <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
                         TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
@@ -312,7 +307,6 @@
             </div>
 
              <!-- Right: Fullscreen -->
-            <!-- UPDATED: hover:text-indigo-600 to hover:text-blue-600 -->
             <button id="fullscreenBtn" onclick="toggleFullScreen()" class="text-slate-400 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-slate-50" title="Toggle Fullscreen">
                 <svg id="fsIconEnter" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
@@ -324,7 +318,6 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
         <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-4 sm:px-6 py-2 md:py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
@@ -344,7 +337,6 @@
                  <!-- Bands Toggle -->
                  <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
-                          <!-- UPDATED: group-hover:text-blue-600 (was already blue, kept consistency) -->
                           <span class="mr-3 text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
@@ -357,7 +349,6 @@
         </div>
 
         <!-- Chart Area -->
-        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
         <div id="chartCard" class="relative flex-grow min-h-0 w-full px-4 sm:px-6 pb-4 bg-white">
             <!-- Loading Spinner -->
             <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
@@ -416,7 +407,6 @@
         </div>
 
         <!-- Bottom Model Info Bar -->
-        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
@@ -425,7 +415,6 @@
             <div class="flex items-center bg-slate-200 rounded-lg p-1 gap-1 select-none" id="offsetControl">
                 <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('74')" id="btn-74">74</button>
                 <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('232')" id="btn-232">232</button>
-                <!-- UPDATED: text-indigo-600 to text-blue-600 -->
                 <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all bg-white text-blue-600 shadow-sm" onclick="setOffsetMode('optimal')" id="btn-optimal">Auto</button>
             </div>
             
@@ -1351,13 +1340,6 @@
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
                 const isMobile = window.innerWidth < 1024;
                 const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
-
-                // NEW: Auto-exit fullscreen if rotating to portrait on mobile
-                if (isInFullscreen && isMobile && !isLandscape) {
-                     if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                     return; // Exit function, the fullscreenchange event will fire again
-                }
 
                 if (isInFullscreen) {
                     fsIconEnter.classList.add('hidden');
