@@ -307,10 +307,11 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Changed gap-4 to gap-x-4 gap-y-2 to reduce vertical spacing on wrap -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
+        <!-- Changed sm:justify-between to md:justify-between to match header breakpoint -->
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center md:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
-             <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
+             <!-- Changed sm:text-sm to md:text-sm -->
+             <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
                  <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
                  <!-- Data Status (Second) -->
@@ -320,7 +321,8 @@
              </div>
              
              <!-- Right Group: Rating & Toggle -->
-             <div class="flex items-center gap-4 text-xs sm:text-sm">
+             <!-- Changed sm:text-sm to md:text-sm -->
+             <div class="flex items-center gap-4 text-xs md:text-sm">
                  <!-- Zone (Moved here) -->
                  <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
 
@@ -328,7 +330,8 @@
                  <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
                           <!-- Label moved to left, styled to match Price: label -->
-                          <span class="mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
+                          <!-- Changed sm:text-sm to md:text-sm -->
+                          <span class="mr-3 text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
                              <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
