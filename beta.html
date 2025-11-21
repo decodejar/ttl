@@ -831,7 +831,7 @@
 
             loader.style.display = 'none';
 
-const xAxisAfterBuildTicks = (axis) => {
+            const xAxisAfterBuildTicks = (axis) => {
                  if (!priceData || priceData.length === 0 || !baseData || baseData.length === 0) return;
                  
                  const newTicks = [];
@@ -872,16 +872,10 @@ const xAxisAfterBuildTicks = (axis) => {
 
                       if (year > lastYearFound) {
                            const xValue = dayData.dayIndex + activeDayOffset;
-                           
-                           // --- FIX START ---
-                           // Use a buffer (0.8x and 1.2x) to allow ticks slightly off-screen
-                           // This ensures the leftmost tick (2023) persists even if the view 
-                           // cuts off the first few pixels of the axis.
-                           if (xValue >= axisMinDay * 0.8 && xValue <= axisMaxDay * 1.2) {
+                           if (xValue >= axisMinDay && xValue <= axisMaxDay) {
                                newTicks.push({ value: xValue, label: year.toString() });
                                lastYearFound = year;
                            }
-                           // --- FIX END ---
                       }
                  }
 
@@ -893,12 +887,9 @@ const xAxisAfterBuildTicks = (axis) => {
                       
                       const xValue = estimatedDayIndex + activeDayOffset;
 
-                      // --- FIX START ---
-                      // Apply the same buffer here for projected years
-                      if (xValue >= axisMinDay * 0.8 && xValue <= axisMaxDay * 1.2) {
+                      if (xValue >= axisMinDay && xValue <= axisMaxDay) {
                            newTicks.push({ value: xValue, label: year.toString() });
                       }
-                      // --- FIX END ---
                  }
                  
                  axis.ticks.length = 0; 
