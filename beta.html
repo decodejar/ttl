@@ -1352,6 +1352,13 @@
                 const isMobile = window.innerWidth < 1024;
                 const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
 
+                // NEW: Auto-exit fullscreen if rotating to portrait on mobile
+                if (isInFullscreen && isMobile && !isLandscape) {
+                     if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                     return; // Exit function, the fullscreenchange event will fire again
+                }
+
                 if (isInFullscreen) {
                     fsIconEnter.classList.add('hidden');
                     fsIconExit.classList.remove('hidden');
