@@ -26,8 +26,8 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Importing Inter and Courgette -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Courgette&display=swap" rel="stylesheet">
+    <!-- Importing Inter, Courgette, and JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Courgette&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind Configuration for Custom Fonts/Colors -->
     <script>
@@ -37,6 +37,7 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         handwriting: ['Courgette', 'cursive'],
+                        mono: ['JetBrains Mono', 'monospace'], 
                     },
                     colors: {
                         slate: {
@@ -222,8 +223,8 @@
         
         #projectionData > div span:last-child,
         #bandLevelsTable > div > div span:last-child {
-            /* Force Inter for data values */
-            font-family: 'Inter', sans-serif; 
+            /* Force JetBrains Mono for data values */
+            font-family: 'JetBrains Mono', monospace; 
             font-weight: 500;
             color: #0f172a;
             text-align: right;
@@ -306,7 +307,6 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Removed font-mono to use default Sans -->
         <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
              <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
@@ -378,19 +378,19 @@
                     <div class="flex flex-col pt-1">
                         <div id="bandLevelBubble">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 shadow-sm"></span>Bubble</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelExpensive">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Expensive</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelValue">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></span>Value</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelDiscount">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-sm"></span>Discount</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                     </div>
                 </div>
@@ -464,7 +464,7 @@
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
         const HARDCODED_OFFSET = 74;
-        const MAX_OFFSET_SEARCH_LIMIT = 730;     
+        const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
         const Y_AXIS_TOP_PADDING_MIN = 0.1;
@@ -665,7 +665,7 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = optimalOffsetRSquared; 
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${optimalOffset}</span>`;
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
                 activeDayOffset = HARDCODED_OFFSET;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
@@ -674,9 +674,9 @@
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
                 } else {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
                 }
             }
             
@@ -709,10 +709,10 @@
             
             // Only update status if not in Demo mode (to preserve the yellow demo text)
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span>${lastUpdateDate}</span>`;
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
             }
 
-            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
             lastPriceDiv.classList.remove('hidden');
 
             const chartPrices = priceData.map(p => p.y);
@@ -766,7 +766,7 @@
             else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
             else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
 
-            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-mono text-slate-600">${priceZone}</span>`;
             priceZoneDiv.classList.remove('hidden');
 
             const medianIntercept = meanIntercept + medianResidual;
@@ -796,7 +796,7 @@
             
             calculateProjections(baseData, activeModelParams, projectionData);
 
-            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold text-slate-800">${slope.toFixed(3)}</span>`;
+            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold font-mono text-slate-800">${slope.toFixed(3)}</span>`;
             
             let fitColorClass = "";
             if (rSquared >= 0.9) fitColorClass = "bg-blue-400";
@@ -805,17 +805,17 @@
             else fitColorClass = "bg-red-500";
             
             // Replaced &nbsp; with a standard space
-            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
             
             const startIndex = extendedMinDay;
             const endIndex = extendedMaxDay;
             const calculateLinePoints = (intercept) => {
-                 const safeStartIndex = Math.max(startIndex, 1); 
-                 const safeEndIndex = Math.max(endIndex, 1);
-                 return [
-                     { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
-                     { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
-                 ];
+                  const safeStartIndex = Math.max(startIndex, 1); 
+                  const safeEndIndex = Math.max(endIndex, 1);
+                  return [
+                      { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                      { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                  ];
             };
             const medianLineData = calculateLinePoints(medianIntercept);
             const p1LineData = calculateLinePoints(p1Intercept);
@@ -1042,9 +1042,8 @@
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900
                                 titleColor: '#f8fafc',
                                 bodyColor: '#e2e8f0',
-                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
-                                // Changed bodyFont to Inter
-                                bodyFont: { family: "'Inter', sans-serif" },
+                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Font updated
+                                bodyFont: { family: "'JetBrains Mono', monospace" }, // Font updated
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
                                 padding: 10,
@@ -1062,7 +1061,7 @@
                                             if (!dataPoint) {
                                                 dataPoint = baseData.reduce((prev, curr) => {
                                                      return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                });
+                                                 });
                                             }
 
                                             if (dataPoint) {
@@ -1087,7 +1086,7 @@
                                 type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
                                 title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    color: '#64748b', autoSkip: false, font: { family: 'Inter', size: 10 },
+                                    color: '#64748b', autoSkip: false, font: { family: "'JetBrains Mono', monospace", size: 10 }, // Font updated
                                     callback: function(value) {
                                         const tick = this.getTicks().find(t => t.value === value);
                                         return tick ? tick.label : null;
@@ -1100,8 +1099,8 @@
                                 type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
                                 title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    // Changed font family to Inter
-                                    color: '#64748b', font: { family: 'Inter', size: 10 },
+                                    // Changed font family to JetBrains Mono
+                                    color: '#64748b', font: { family: "'JetBrains Mono', monospace", size: 10 }, 
                                     callback: function(value, index, ticks) {
                                         const logVal = Math.log10(value);
                                         if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
@@ -1280,7 +1279,7 @@
                 rowsHtml += `
                     <div>
                         <span>${item.label}</span>
-                        <span>${priceString}</span>
+                        <span class="font-mono">${priceString}</span>
                     </div>
                 `;
             });
