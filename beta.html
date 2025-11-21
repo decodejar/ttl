@@ -142,7 +142,6 @@
         #mainContainer.mobile-fullscreen-landscape header {
              height: 2.5rem !important; /* Keep slightly compact */
              margin-bottom: 0 !important; /* Remove gap (extra line) */
-             /* Note: We removed padding overrides here, so it uses the default px-4 (1rem) */
         }
         #mainContainer.mobile-fullscreen-landscape header h1 { font-size: 1.125rem !important; }
         #mainContainer.mobile-fullscreen-landscape header img { width: 1.75rem !important; height: 1.75rem !important; }
@@ -300,7 +299,8 @@
         </header>
 
         <!-- Top Status Bar -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
+        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-4 sm:px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
@@ -331,7 +331,8 @@
         </div>
 
         <!-- Chart Area -->
-        <div id="chartCard" class="relative flex-grow min-h-0 w-full px-4 pb-4 bg-white">
+        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
+        <div id="chartCard" class="relative flex-grow min-h-0 w-full px-4 sm:px-6 pb-4 bg-white">
             <!-- Loading Spinner -->
             <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
                 <div class="loader"></div>
@@ -389,7 +390,8 @@
         </div>
 
         <!-- Bottom Model Info Bar -->
-        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
+        <!-- Updated padding to match Header consistency (px-4 sm:px-6) -->
+        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
