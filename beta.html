@@ -311,7 +311,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -410,13 +410,17 @@
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
-            <!-- Model Toggle Switch (New Segmented Control) -->
-            <!-- UPDATED: IDs and onclick handlers made generic (1 and 2) -->
-            <div class="flex items-center bg-slate-200 rounded-lg p-1 gap-1 select-none" id="offsetControl">
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('1')" id="btn-1">0</button>
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50" onclick="setOffsetMode('2')" id="btn-2">467</button>
-                <button class="px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all bg-white text-blue-600 shadow-sm" onclick="setOffsetMode('optimal')" id="btn-optimal">Auto</button>
-            </div>
+            <!-- Model Toggle (Reverted to Single Switch) -->
+             <div class="flex items-center group">
+                 <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
+                     <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
+                     <div class="relative">
+                         <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
+                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                         <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                     </div>
+                 </label>
+             </div>
             
             <div id="growthExponentDiv" class="text-slate-600"></div>
             <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
@@ -425,7 +429,6 @@
 
     <!-- Footer -->
     <footer class="py-3 px-4 text-center space-y-1 w-full">
-        <!-- UPDATED: Added "All Rights Reserved." -->
         <p class="text-slate-500 text-[10px] mx-auto leading-relaxed"><span class="font-sans">&copy;</span> 2025 taotensorlaw.com. All Rights Reserved. Disclaimer: This content is for informational and research purposes only, reflects the author's opinion, and is not financial, investment or trading advice. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
     </footer>
 
@@ -458,17 +461,12 @@
         const projectionTable = document.getElementById('projectionTable');
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
-        
-        // UPDATED: Corrected button references to match HTML IDs
-        const btn1 = document.getElementById('btn-1');
-        const btn2 = document.getElementById('btn-2');
-        const btnOptimal = document.getElementById('btn-optimal');
+        const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        // UPDATED: Configurable constants
-        const HARDCODED_OFFSET_1 = 0;
-        const HARDCODED_OFFSET_2 = 467;
+        // UPDATED: Single hardcoded offset for "OFF" state
+        const HARDCODED_OFFSET = 467;
         const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
@@ -479,7 +477,6 @@
         let baseData = []; 
         let priceData = []; 
         let activeModelParams = {}; 
-        let currentOffsetMode = 'optimal'; // '1', '2', 'optimal'
         
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -637,29 +634,6 @@
 
         // --- SECTION: CORE APPLICATION LOGIC ---
 
-        function setOffsetMode(mode) {
-            currentOffsetMode = mode;
-            
-            // Update button styles
-            const activeClass = "bg-white text-blue-600 shadow-sm";
-            const inactiveClass = "text-slate-500 hover:text-slate-700 hover:bg-white/50";
-            
-            // Reset all (UPDATED: using correct variable names)
-            [btn1, btn2, btnOptimal].forEach(btn => {
-                if(btn) btn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${inactiveClass}`;
-            });
-            
-            // Set active
-            let activeBtn;
-            if(mode === '1') activeBtn = btn1;
-            else if(mode === '2') activeBtn = btn2;
-            else activeBtn = btnOptimal;
-            
-            if(activeBtn) activeBtn.className = `px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-bold transition-all ${activeClass}`;
-            
-            createOrUpdateChart();
-        }
-
         async function createOrUpdateChart() {
             loader.style.display = 'flex';
             
@@ -674,18 +648,19 @@
                 growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
                 modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
                 modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
+                if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
                 showBandsContainer.classList.add('hidden');
                 loader.style.display = 'none';
                 return;
             }
 
+            const useOptimal = useOptimalOffsetCheckbox.checked;
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
             
-            // Find optimal first as we might display it in text even if not selected
             const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
             
-            if (currentOffsetMode === 'optimal') {
+            if (useOptimal) {
                 activeDayOffset = optimalOffset;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + optimalOffset }));
                 const regression = linearRegression(priceData);
@@ -694,25 +669,25 @@
                 rSquared = optimalOffsetRSquared; 
                 modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
-                // UPDATED: Dynamic selection based on constants
-                const fixedOffset = (currentOffsetMode === '1') ? HARDCODED_OFFSET_1 : HARDCODED_OFFSET_2;
-                activeDayOffset = fixedOffset;
-                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + fixedOffset }));
+                activeDayOffset = HARDCODED_OFFSET;
+                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
                 const regression = linearRegression(priceData);
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 
-                // Display format: Fixed only (Opt part removed as requested)
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${fixedOffset}</span>`;
+                // Display format: Fixed only (Nakamoto Era implied by 467)
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
             }
             
             activeModelParams = {
-                modelType: currentOffsetMode,
+                modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
                 activeDayOffset: activeDayOffset,
                 slope: slope,
                 meanIntercept: meanIntercept
             };
+
+            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
             
             const lastBaseDataPoint = baseData[baseData.length - 1]; 
             const lastTimestamp = lastBaseDataPoint.time; 
@@ -1080,8 +1055,11 @@
                                     label: (context) => {
                                          if (context.datasetIndex < 5) return null;
                                          return `$${context.parsed.y.toFixed(2)}`;
+                                    },
+                                    // REVERTED: Remove third line as requested
+                                    afterLabel: (context) => {
+                                        return null;
                                     }
-                                    // Removed afterLabel as requested
                                 }
                             }
                         },
@@ -1135,8 +1113,8 @@
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
 
-            // Removed checkbox event listener as element is removed
-            // useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
+            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
             if(chart) chart.update('none'); 
@@ -1334,9 +1312,6 @@
             }
         }
 
-        // UPDATED: Added auto-exit fullscreen logic on rotation from landscape to portrait
-        let wasInLandscapeFullscreen = false;
-
         function handleFullscreenChange() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -1347,23 +1322,10 @@
                     fsIconEnter.classList.add('hidden');
                     fsIconExit.classList.remove('hidden');
                     fullscreenBtn.setAttribute('title', 'Exit Fullscreen');
-
-                    // Auto-exit logic
-                    if (isLandscape) {
-                        wasInLandscapeFullscreen = true;
-                    } else if (wasInLandscapeFullscreen) {
-                        // User rotated back to portrait after being in landscape fullscreen -> Exit
-                        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
-                        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-                        wasInLandscapeFullscreen = false;
-                        return; 
-                    }
-
                 } else {
                     fsIconEnter.classList.remove('hidden');
                     fsIconExit.classList.add('hidden');
                     fullscreenBtn.setAttribute('title', 'Enter Fullscreen');
-                    wasInLandscapeFullscreen = false;
                 }
 
                 if (isInFullscreen && isMobile && isLandscape) {
@@ -1675,16 +1637,15 @@
         // Initial load
         window.onload = () => {
             // New: Update button text with constant values
-            btn1.innerText = HARDCODED_OFFSET_1;
-            btn2.innerText = HARDCODED_OFFSET_2;
+            // FIX: Use correct variable names matching HTML IDs
+            if(btn1) btn1.innerText = HARDCODED_OFFSET_1;
+            if(btn2) btn2.innerText = HARDCODED_OFFSET_2;
 
             createOrUpdateChart();
             
             // Enable Dragging
             makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
             makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
-            
-            // REMOVE THIS LINE: useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
             
             const canvas = document.getElementById('powerLawChart');
             if (canvas) {
