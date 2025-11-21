@@ -141,7 +141,8 @@
         /* Only zeroing vertical padding to maximize space. */
         #mainContainer.mobile-fullscreen-landscape #chartCard { 
             padding-top: 0 !important;
-            padding-bottom: 0 !important; 
+            /* UPDATED: Increased bottom padding to 0.5rem */
+            padding-bottom: 0.5rem !important; 
         }
         
         /* Header Adjustments for Mobile Landscape Fullscreen */
@@ -160,7 +161,7 @@
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
 
         /* Top Status Bar Adjustments for Mobile Landscape Fullscreen */
-        /* UPDATED: Changed vertical padding to 0.4rem as requested */
+        /* Forces the "step down" size (text-xs / py-2) regardless of screen resolution */
         #mainContainer.mobile-fullscreen-landscape #topStatusBar {
              padding-top: 0.4rem !important;
              padding-bottom: 0.4rem !important;
