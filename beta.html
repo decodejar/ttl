@@ -311,7 +311,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m4.5 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
                 </svg>
                 <svg id="fsIconExit" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 hidden">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L3.75 3.75M9 9h4.5m-4.5 0v4.5m0-4.5L3.75 3.75M9 15l-5.25 5.25M9 15h4.5m-4.5 0v-4.5m0 4.5l-5.25 5.25M15 9l5.25-5.25M15 9h-4.5m4.5 0v-4.5m0-4.5l5.25-5.25M15 15l5.25 5.25M15 15h-4.5m4.5 0v-4.5m0 4.5l5.25 5.25" />
                 </svg>
             </button>
         </header>
@@ -420,6 +420,14 @@
                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                      </div>
                  </label>
+                 <!-- UPDATED: Added Tooltip next to switch -->
+                 <div class="group/tooltip relative flex items-center ml-1">
+                      <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
+                      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 bg-slate-800 text-white text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-center">
+                        <strong>Optimise:</strong> Best statistical fit.<br>
+                        <strong>Off (Nakamoto):</strong> Fundamental age (486 days).
+                      </div>
+                </div>
              </div>
             
             <div id="growthExponentDiv" class="text-slate-600"></div>
@@ -465,7 +473,7 @@
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        const HARDCODED_OFFSET = 467;
+        const HARDCODED_OFFSET = 486; // UPDATED
         const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
@@ -674,11 +682,8 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
-                } else {
-                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
-                }
+                // UPDATED: Displays "Model: Nakamoto" for hardcoded offset
+                modelParamDiv.innerHTML = `Model: <span class="font-bold font-mono text-slate-800">Nakamoto</span>`;
             }
             
             activeModelParams = {
