@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TAO Tensor Law — Bittensor Price Model — by decodejar</title>
     
-    <!-- ===== FAVICON TAGS (NEW) ===== -->
-    <!-- These tags tell browsers and search engines to use 'decode-favicon.png' as the site icon -->
+    <!-- ===== FAVICON TAGS ===== -->
     <link rel="icon" href="/decode-favicon.png" type="image/png">
     <link rel="shortcut icon" href="/decode-favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/decode-favicon.png">
@@ -27,8 +26,8 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Added JetBrains Mono for technical data display -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Courgette&display=swap" rel="stylesheet">
+    <!-- Importing Inter, Courgette, and JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Courgette&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Tailwind Configuration for Custom Fonts/Colors -->
     <script>
@@ -37,8 +36,8 @@
                 extend: {
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
                         handwriting: ['Courgette', 'cursive'],
+                        mono: ['JetBrains Mono', 'monospace'], 
                     },
                     colors: {
                         slate: {
@@ -58,12 +57,9 @@
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
-            /* Darkened background as requested -> Now Lightened to slate-100 */
             background-color: #f1f5f9; /* slate-100 */
             background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
         }
-        
-        .font-mono-data { font-family: 'JetBrains Mono', monospace; }
         
         /* Loader animation */
         .loader {
@@ -227,7 +223,8 @@
         
         #projectionData > div span:last-child,
         #bandLevelsTable > div > div span:last-child {
-            font-family: 'JetBrains Mono', monospace;
+            /* Force JetBrains Mono for data values */
+            font-family: 'JetBrains Mono', monospace; 
             font-weight: 500;
             color: #0f172a;
             text-align: right;
@@ -286,15 +283,15 @@
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 tracking-tight whitespace-nowrap">
                     TAO Tensor Law
+                    <!-- Reverted to font-handwriting for this specific element -->
                     <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">Bittensor Price Model</span>
-                    <!--  <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">by decodejar</span>  -->
                 </h1>
                 <!-- Tooltip -->
                 <div class="group relative flex items-center">
-                     <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-indigo-500 transition-colors">?</span>
-                     <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
+                      <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-indigo-500 transition-colors">?</span>
+                      <div class="absolute top-6 left-1/2 -translate-x-1/2 w-72 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed">
                         TAO Tensor Law is a Bittensor price model. This interactive chart models the price history of TAO against a logarithmic power law regression (Price = C * (Time + Offset)^α). With an optimal time offset for best fit, it calculates the 'fair value' trend line and price rating bands (discount, value, expensive, bubble) to help visualize TAO's historical valuation. The tool includes features to toggle bands, pan, zoom, and see future price projections based on this long-term model. The TAO Tensor Law Model was created by decodejar (decodejar.com, x.com/decodejar).
-                     </div>
+                      </div>
                 </div>
             </div>
 
@@ -310,8 +307,7 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Added font-mono to ensure JetBrains Mono for all items -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50 font-mono">
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
              <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
@@ -330,14 +326,14 @@
                  <!-- Bands Toggle -->
                  <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
-                         <!-- Label moved to left, styled to match Price: label -->
-                         <span class="mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
-                         <div class="relative">
+                          <!-- Label moved to left, styled to match Price: label -->
+                          <span class="mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
+                          <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
                              <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
                              <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
                              <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                         </div>
+                          </div>
                      </label>
                  </div>
              </div>
@@ -349,7 +345,8 @@
             <!-- Loading Spinner -->
             <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
                 <div class="loader"></div>
-                <p class="text-xs font-mono text-slate-400 animate-pulse uppercase tracking-widest">Initializing Model</p>
+                <!-- Removed font-mono -->
+                <p class="text-xs text-slate-400 animate-pulse uppercase tracking-widest">Initializing Model</p>
             </div>
             
             <!-- Canvas Wrapper -->
@@ -381,19 +378,19 @@
                     <div class="flex flex-col pt-1">
                         <div id="bandLevelBubble">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 shadow-sm"></span>Bubble</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelExpensive">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Expensive</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelValue">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></span>Value</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                         <div id="bandLevelDiscount">
                             <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-sm"></span>Discount</span>
-                            <span class="whitespace-nowrap text-slate-700">$N/A</span>
+                            <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                         </div>
                     </div>
                 </div>
@@ -404,8 +401,8 @@
         </div>
 
         <!-- Bottom Model Info Bar -->
-        <!-- Added font-mono to ensure JetBrains Mono for all items -->
-        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500 font-mono">
+        <!-- Removed font-mono to use default Sans -->
+        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-6 text-xs font-medium text-slate-500">
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
@@ -467,7 +464,7 @@
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
         const HARDCODED_OFFSET = 74;
-        const MAX_OFFSET_SEARCH_LIMIT = 730;    
+        const MAX_OFFSET_SEARCH_LIMIT = 730;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
         const Y_AXIS_TOP_PADDING_MIN = 0.1;
@@ -668,7 +665,7 @@
                 slope = regression.slope;
                 meanIntercept = regression.intercept;
                 rSquared = optimalOffsetRSquared; 
-                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${optimalOffset}</span>`;
+                modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
             } else {
                 activeDayOffset = HARDCODED_OFFSET;
                 priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
@@ -677,9 +674,9 @@
                 meanIntercept = regression.intercept;
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
                 if (optimalOffset !== -1 && optimalOffset !== HARDCODED_OFFSET) {
-                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span> (Opt: ${optimalOffset})`;
                 } else {
-                     modelParamDiv.innerHTML = `Day Offset: <span class="font-bold text-slate-800">${HARDCODED_OFFSET}</span>`;
+                      modelParamDiv.innerHTML = `Day Offset: <span class="font-bold font-mono text-slate-800">${HARDCODED_OFFSET}</span>`;
                 }
             }
             
@@ -712,10 +709,10 @@
             
             // Only update status if not in Demo mode (to preserve the yellow demo text)
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span>${lastUpdateDate}</span>`;
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
             }
 
-            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
             lastPriceDiv.classList.remove('hidden');
 
             const chartPrices = priceData.map(p => p.y);
@@ -769,7 +766,7 @@
             else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
             else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
 
-            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-mono text-slate-600">${priceZone}</span>`;
             priceZoneDiv.classList.remove('hidden');
 
             const medianIntercept = meanIntercept + medianResidual;
@@ -799,7 +796,7 @@
             
             calculateProjections(baseData, activeModelParams, projectionData);
 
-            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold text-slate-800">${slope.toFixed(3)}</span>`;
+            growthExponentDiv.innerHTML = `Exponent (α): <span class="font-bold font-mono text-slate-800">${slope.toFixed(3)}</span>`;
             
             let fitColorClass = "";
             if (rSquared >= 0.9) fitColorClass = "bg-blue-400";
@@ -807,17 +804,18 @@
             else if (rSquared >= 0.5) fitColorClass = "bg-yellow-400";
             else fitColorClass = "bg-red-500";
             
-            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²):&nbsp;<span class="font-bold text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
+            // Replaced &nbsp; with a standard space
+            modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
             
             const startIndex = extendedMinDay;
             const endIndex = extendedMaxDay;
             const calculateLinePoints = (intercept) => {
-                 const safeStartIndex = Math.max(startIndex, 1); 
-                 const safeEndIndex = Math.max(endIndex, 1);
-                 return [
-                     { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
-                     { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
-                 ];
+                  const safeStartIndex = Math.max(startIndex, 1); 
+                  const safeEndIndex = Math.max(endIndex, 1);
+                  return [
+                      { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                      { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                  ];
             };
             const medianLineData = calculateLinePoints(medianIntercept);
             const p1LineData = calculateLinePoints(p1Intercept);
@@ -860,34 +858,34 @@
                  const lastDataYear = new Date(lastDayTime).getFullYear();
 
                  for (let year = firstDataYear; year <= lastDataYear; year++) {
-                     const yearStartTime = new Date(year, 0, 1).getTime();
-                     const dayData = baseData.find(p => p.time >= yearStartTime);
-                     
-                     if (!dayData) continue;
-                     
-                     const actualYear = new Date(dayData.time).getFullYear();
-                     if (actualYear > year && year > firstDataYear) continue; 
+                      const yearStartTime = new Date(year, 0, 1).getTime();
+                      const dayData = baseData.find(p => p.time >= yearStartTime);
+                      
+                      if (!dayData) continue;
+                      
+                      const actualYear = new Date(dayData.time).getFullYear();
+                      if (actualYear > year && year > firstDataYear) continue; 
 
-                     if (year > lastYearFound) {
-                          const xValue = dayData.dayIndex + activeDayOffset;
-                          if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                              newTicks.push({ value: xValue, label: year.toString() });
-                              lastYearFound = year;
-                          }
-                     }
+                      if (year > lastYearFound) {
+                           const xValue = dayData.dayIndex + activeDayOffset;
+                           if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                               newTicks.push({ value: xValue, label: year.toString() });
+                               lastYearFound = year;
+                           }
+                      }
                  }
 
                  for (let year = lastDataYear + 1; year <= maxYear; year++) {
-                     const yearStartTime = new Date(year, 0, 1).getTime();
-                     
-                     const diffTime = yearStartTime - firstDayTime;
-                     const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
-                     
-                     const xValue = estimatedDayIndex + activeDayOffset;
+                      const yearStartTime = new Date(year, 0, 1).getTime();
+                      
+                      const diffTime = yearStartTime - firstDayTime;
+                      const estimatedDayIndex = firstDayIndex + (diffTime / msPerDay);
+                      
+                      const xValue = estimatedDayIndex + activeDayOffset;
 
-                     if (xValue >= axisMinDay && xValue <= axisMaxDay) {
-                          newTicks.push({ value: xValue, label: year.toString() });
-                     }
+                      if (xValue >= axisMinDay && xValue <= axisMaxDay) {
+                           newTicks.push({ value: xValue, label: year.toString() });
+                      }
                  }
                  
                  axis.ticks.length = 0; 
@@ -1018,7 +1016,7 @@
                                 pointHoverRadius: 0, 
                                 pointHitRadius: 15 
                             },
-                            // 6: Median (P50) - Initial style handled by applyBandVisibility
+                            // 6: Median (P50) - Initial style handled in applyBandVisibility
                             { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
                             // 7: 1st
                             { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
@@ -1044,11 +1042,12 @@
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900
                                 titleColor: '#f8fafc',
                                 bodyColor: '#e2e8f0',
-                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
-                                bodyFont: { family: "'JetBrains Mono', monospace" },
+                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Font updated
+                                bodyFont: { family: "'JetBrains Mono', monospace" }, // Font updated
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
                                 padding: 10,
+                                displayColors: false,
                                 callbacks: {
                                     title: (tooltipItems) => {
                                         if (tooltipItems.length > 0) {
@@ -1078,7 +1077,7 @@
                                     label: (context) => {
                                          // Hide tooltips for the transparent band layers
                                          if (context.datasetIndex < 5) return null;
-                                         return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                         return `$${context.parsed.y.toFixed(2)}`;
                                     }
                                 }
                             }
@@ -1088,7 +1087,7 @@
                                 type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
                                 title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    color: '#64748b', autoSkip: false, font: { family: 'Inter', size: 10 },
+                                    color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
                                     callback: function(value) {
                                         const tick = this.getTicks().find(t => t.value === value);
                                         return tick ? tick.label : null;
@@ -1101,7 +1100,7 @@
                                 type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
                                 title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    color: '#64748b', font: { family: 'JetBrains Mono', size: 10 },
+                                    color: '#64748b', font: { family: "'Inter', sans-serif", size: 10 }, 
                                     callback: function(value, index, ticks) {
                                         const logVal = Math.log10(value);
                                         if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
@@ -1280,7 +1279,7 @@
                 rowsHtml += `
                     <div>
                         <span>${item.label}</span>
-                        <span>${priceString}</span>
+                        <span class="font-mono">${priceString}</span>
                     </div>
                 `;
             });
