@@ -283,8 +283,8 @@
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
                     TAO Tensor Law
-                    <!-- Reverted to font-handwriting for this specific element -->
-                    <span class="hidden sm:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">Bittensor Price Model</span>
+                    <!-- Changed hidden sm:inline to hidden md:inline so it hides when font steps down from 2xl to xl -->
+                    <span class="hidden md:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">Bittensor Price Model</span>
                 </h1>
                 <!-- Tooltip -->
                 <div class="group relative flex items-center">
@@ -1062,7 +1062,7 @@
                                             if (!dataPoint) {
                                                 dataPoint = baseData.reduce((prev, curr) => {
                                                      return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                 });
+                                                });
                                             }
 
                                             if (dataPoint) {
