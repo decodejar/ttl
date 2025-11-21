@@ -1087,7 +1087,7 @@
                                 type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
                                 title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    color: '#64748b', autoSkip: false, font: { family: "'JetBrains Mono', monospace", size: 10 }, // Font updated
+                                    color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
                                     callback: function(value) {
                                         const tick = this.getTicks().find(t => t.value === value);
                                         return tick ? tick.label : null;
@@ -1100,8 +1100,7 @@
                                 type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
                                 title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
-                                    // Changed font family to JetBrains Mono
-                                    color: '#64748b', font: { family: "'JetBrains Mono', monospace", size: 10 }, 
+                                    color: '#64748b', font: { family: "'Inter', sans-serif", size: 10 }, 
                                     callback: function(value, index, ticks) {
                                         const logVal = Math.log10(value);
                                         if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
