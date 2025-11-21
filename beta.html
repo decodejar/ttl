@@ -307,8 +307,8 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Changed sm:justify-between to md:justify-between to match header breakpoint -->
-        <div id="topStatusBar" class="flex flex-wrap items-center justify-center md:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
+        <!-- Changed md:justify-between to sm:justify-between: Keeps spread layout on tablet, centers only on mobile -->
+        <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
              <!-- Changed sm:text-sm to md:text-sm -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
@@ -407,14 +407,16 @@
         <!-- Bottom Model Info Bar -->
         <!-- Removed font-mono to use default Sans -->
         <!-- Changed gap-6 to gap-x-6 gap-y-2 to reduce vertical spacing on wrap -->
-        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-medium text-slate-500">
+        <!-- Added md:text-sm to scale font size on desktop -->
+        <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
             <!-- Model Toggle (Updated to Switch) -->
              <div class="flex items-center group">
                  <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
-                     <span class="mr-3 text-xs font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
+                     <!-- Added md:text-sm to label text -->
+                     <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
                      <div class="relative">
                          <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
                          <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
