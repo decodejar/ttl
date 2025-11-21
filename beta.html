@@ -88,7 +88,7 @@
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
-        /* --- Fullscreen CSS Logic (PRESERVED) --- */
+        /* --- Fullscreen CSS Logic --- */
         
         body:has(#mainContainer:fullscreen) { display: block; background: white; }
 
@@ -137,13 +137,21 @@
         
         #mainContainer.mobile-fullscreen-landscape #bottomModelBar { display: none !important; }
         #mainContainer.mobile-fullscreen-landscape #chartCard { padding: 0 !important; }
+        
         #mainContainer.mobile-fullscreen-landscape #topStatusBar {
              display: flex !important;
              padding: 0.125rem 0.5rem !important;
              margin-bottom: 0.125rem !important;
              gap: 0.5rem 1rem !important;
-             font-size: 0.75rem !important;
         }
+
+        /* Force child text elements to 12px (text-xs) in mobile landscape fullscreen */
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar,
+        #mainContainer.mobile-fullscreen-landscape #topStatusBar * {
+             font-size: 0.75rem !important; /* 12px */
+             line-height: 1rem !important;
+        }
+
         #mainContainer.mobile-fullscreen-landscape header {
              height: 2.25rem !important;
              margin-bottom: 0.125rem !important;
@@ -158,7 +166,7 @@
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper a:first-of-type,
         #mainContainer.mobile-fullscreen-landscape #headerLinkWrapper span { display: none !important; }
         
-        /* --- Projection & Band Table Styles (MODERNIZED) --- */
+        /* --- Projection & Band Table Styles --- */
         #projectionTable,
         #bandLevelsTable {
             position: absolute;
@@ -170,7 +178,7 @@
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             font-size: 0.75rem;
-            line-height: 1.4; /* Reduced from 1.5 */
+            line-height: 1.4; 
             color: #334155;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.6);
@@ -190,7 +198,7 @@
         #bandLevelsTable h3 {
             font-weight: 600;
             color: #0f172a;
-            margin-bottom: 0.5rem; /* Reduced spacing */
+            margin-bottom: 0.5rem; 
             border-bottom: 1px solid rgba(203, 213, 225, 0.5);
             padding-bottom: 0.25rem;
             display: flex;
@@ -206,13 +214,12 @@
             cursor: grabbing;
         }
 
-        /* Targeted selector to fix double line spacing in band table */
         #projectionData > div,
         #bandLevelsTable > div > div {
             display: flex;
             justify-content: space-between;
-            padding: 1px 0; /* Tight padding */
-            gap: 2rem; /* Ensure gap between label and value */
+            padding: 1px 0; 
+            gap: 2rem; 
         }
 
         #projectionData > div span:first-child,
@@ -223,7 +230,6 @@
         
         #projectionData > div span:last-child,
         #bandLevelsTable > div > div span:last-child {
-            /* Force JetBrains Mono for data values */
             font-family: 'JetBrains Mono', monospace; 
             font-weight: 500;
             color: #0f172a;
@@ -270,11 +276,11 @@
             <!-- Left: Logo/Links -->
             <div class="flex items-center">
                 <a href="https://decodejar.com" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 group">
-                    <!-- Removed Purple Ring -->
+                    <!-- Logo -->
                     <div class="rounded-full group-hover:scale-105 transition-transform duration-300">
                         <img src="decode.png" alt="decodejar" class="w-8 h-8 rounded-full bg-white border-2 border-white" onerror="this.src='https://placehold.co/40x40/eeeeee/333333?text=D'; this.onerror=null;">
                     </div>
-                    <!-- Highlight color changed to Blue -->
+                    <!-- Text -->
                     <span class="hidden sm:block font-sans font-bold text-black text-lg tracking-tight group-hover:text-blue-600 transition-colors">decodejar</span>
                 </a>
             </div>
@@ -283,7 +289,6 @@
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
                 <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
                     TAO Tensor Law
-                    <!-- Changed hidden sm:inline to hidden md:inline so it hides when font steps down from 2xl to xl -->
                     <span class="hidden md:inline ml-1 text-lg text-slate-400 font-handwriting font-normal text-indigo-500/80">Bittensor Price Model</span>
                 </h1>
                 <!-- Tooltip -->
@@ -307,10 +312,8 @@
         </header>
 
         <!-- Top Status Bar -->
-        <!-- Changed md:justify-between to sm:justify-between: Keeps spread layout on tablet, centers only on mobile -->
         <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-6 py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Price & Status -->
-             <!-- Changed sm:text-sm to md:text-sm -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
                  <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
@@ -321,20 +324,16 @@
              </div>
              
              <!-- Right Group: Rating & Toggle -->
-             <!-- Changed sm:text-sm to md:text-sm -->
              <div class="flex items-center gap-4 text-xs md:text-sm">
-                 <!-- Zone (Moved here) -->
+                 <!-- Zone -->
                  <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
 
                  <!-- Bands Toggle -->
                  <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
-                          <!-- Label moved to left, styled to match Price: label -->
-                          <!-- Changed sm:text-sm to md:text-sm -->
                           <span class="mr-3 text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
-                             <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
                              <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
                              <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                           </div>
@@ -344,19 +343,17 @@
         </div>
 
         <!-- Chart Area -->
-        <!-- Added padding px-4 pb-4 as requested -->
         <div id="chartCard" class="relative flex-grow min-h-0 w-full px-4 pb-4 bg-white">
             <!-- Loading Spinner -->
             <div id="loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col gap-3 items-center justify-center z-30 transition-opacity duration-300">
                 <div class="loader"></div>
-                <!-- Removed font-mono -->
                 <p class="text-xs text-slate-400 animate-pulse uppercase tracking-widest">Initializing Model</p>
             </div>
             
             <!-- Canvas Wrapper -->
             <div id="chartWrapper" class="relative w-full h-full bg-white">
                 
-                <!-- Draggable Tables (Hidden by default, structure preserved) -->
+                <!-- Draggable Tables -->
                 <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
                     <h3 id="projectionHeader">
                         <span>Fair Value</span>
@@ -366,7 +363,6 @@
                             </svg>
                         </button>
                     </h3>
-                    <!-- Removed gap-1 class to tighten spacing -->
                     <div id="projectionData" class="flex flex-col pt-1"></div>
                 </div>
 
@@ -405,17 +401,13 @@
         </div>
 
         <!-- Bottom Model Info Bar -->
-        <!-- Removed font-mono to use default Sans -->
-        <!-- Changed gap-6 to gap-x-6 gap-y-2 to reduce vertical spacing on wrap -->
-        <!-- Added md:text-sm to scale font size on desktop -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-6 py-2 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
-            <!-- Model Toggle (Updated to Switch) -->
+            <!-- Model Toggle -->
              <div class="flex items-center group">
                  <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
-                     <!-- Added md:text-sm to label text -->
                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
                      <div class="relative">
                          <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
@@ -426,7 +418,6 @@
              </div>
             
             <div id="growthExponentDiv" class="text-slate-600"></div>
-            <!-- Added text-slate-600 to match Day Offset -->
             <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
         </div>
     </div>
@@ -441,7 +432,6 @@
         /*
          * TAO Tensor Law Model — by decodejar
          * Copyright (c) 2025 taotensorlaw.com. All Rights Reserved.
-         * * NOTE: Original logic preserved 100%.
          */
 
         // --- SECTION: GLOBAL ELEMENT REFERENCES ---
@@ -491,13 +481,13 @@
         let panStartMin = 0;
         let panStartLogRange = 0;
 
-        // Band Fill Colors (Updated to match new theme slightly better, but logic same)
+        // Band Fill Colors
         const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
         const greenFillColor = 'rgba(74, 222, 128, 0.15)'; // Green-400
         const yellowFillColor = 'rgba(250, 204, 21, 0.15)'; // Yellow-400
         const redFillColor = 'rgba(248, 113, 113, 0.15)';   // Red-400
 
-        // Reusable Line Styles (Updated colors for slate theme)
+        // Reusable Line Styles
         const grayLineStyle = { borderColor: 'rgba(148, 163, 184, 0.7)', borderWidth: 1, borderDash: [] }; // Slate-400
         const orangeLineStyle = { borderColor: '#f97316', borderWidth: 2, borderDash: [] }; // Orange-500
         const grayDashedLineStyle = { borderColor: 'rgba(148, 163, 184, 0.9)', borderWidth: 1, borderDash: [4, 4] };
@@ -518,7 +508,6 @@
                 
                 const baseFontSize = Math.max(30, Math.min(80, width / 12)); 
                 ctx.font = `bold ${baseFontSize.toFixed(0)}px Inter, sans-serif`;
-                // Watermark opacity set to 0.075 as requested
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.075)'; 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -714,7 +703,6 @@
                 dotColor = "bg-yellow-400"; 
             }
             
-            // Only update status if not in Demo mode (to preserve the yellow demo text)
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
                 dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
             }
@@ -796,7 +784,6 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                // NOTE: Value band is P20-P50, but the HTML mock had P20-P20. Correcting here to P20-P50 boundary prices.
                 if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
@@ -811,7 +798,6 @@
             else if (rSquared >= 0.5) fitColorClass = "bg-yellow-400";
             else fitColorClass = "bg-red-500";
             
-            // Replaced &nbsp; with a standard space
             modelFitDiv.innerHTML = `<span class="status-dot ${fitColorClass}"></span>Fit (R²): <span class="font-bold font-mono text-slate-800 ml-1">${rSquared.toFixed(4)}</span>`;
             
             const startIndex = extendedMinDay;
@@ -932,54 +918,36 @@
 
             if (chart) {
                 // 1. Update Data Arrays for Reused Datasets
-                // The new structure requires 11 datasets total (0-10).
-                
-                // Define the data structure for the 11 layers
                 const datasetsStruct = [
                     // --- BOUNDARY/FILL LAYERS (0-4) ---
-                    // 0: Boundary P1 (Base for Discount)
                     { label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
-                    // 1: Discount Band (P1-P20) - Fills to 0
                     { label: 'Discount Band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
-                    // 2: Value Band (P20-P50) - Fills to 1
                     { label: 'Value Band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
-                    // 3: Expensive Band (P50-P80) - Fills to 2
                     { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
-                    // 4: Bubble Band (P80-P99) - Fills to 3
                     { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
                     // --- VISUAL LINE LAYERS (5-10) ---
-                    // 5: Price
-                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, // Slate-900
-                    // 6: Median Line (P50)
+                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
                     { label: '50th Percentile', data: medianLineData }, 
-                    // 7: 1st Pctl
                     { label: '1st Pctl', data: p1LineData },
-                    // 8: 99th Pctl
                     { label: '99th Pctl', data: p99LineData },
-                    // 9: 20th Pctl
                     { label: '20th Pctl', data: p20LineData },
-                    // 10: 80th Pctl
                     { label: '80th Pctl', data: p80LineData },
                 ];
 
                 // Apply updates to existing chart datasets or push new ones
                 datasetsStruct.forEach((struct, i) => {
                     if (chart.data.datasets[i]) {
-                         // Update data and core properties
                          Object.assign(chart.data.datasets[i], struct);
                     } else {
-                         // Create new
                          chart.data.datasets.push({
                              ...datasetDefaults,
                              ...struct,
-                             // Default visibility logic handled in applyBandVisibility
                              hidden: false
                          });
                     }
                 });
 
-                // Remove extra datasets if any (cleanup from old structure)
                 if (chart.data.datasets.length > datasetsStruct.length) {
                     chart.data.datasets.splice(datasetsStruct.length, chart.data.datasets.length - datasetsStruct.length);
                 }
@@ -1016,14 +984,14 @@
                                 label: 'TAO Price', 
                                 data: chartPriceDataPoints, 
                                 backgroundColor: 'rgba(0, 0, 0, 0.0)', 
-                                borderColor: '#0f172a', // Slate-900 
+                                borderColor: '#0f172a', 
                                 borderWidth: 2, 
                                 tension: 0.1, 
                                 pointRadius: 0, 
                                 pointHoverRadius: 0, 
                                 pointHitRadius: 15 
                             },
-                            // 6: Median (P50) - Initial style handled in applyBandVisibility
+                            // 6: Median (P50)
                             { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
                             // 7: 1st
                             { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
@@ -1041,16 +1009,15 @@
                             legend: {
                                 labels: {
                                     color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
-                                    // Filter out the Band layers (0-4) and only show Price (5) and Lines (6-10)
                                     filter: (item) => item.datasetIndex >= 5
                                 }
                             },
                             tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)', // Slate-900
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)', 
                                 titleColor: '#f8fafc',
                                 bodyColor: '#e2e8f0',
-                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Font updated
-                                bodyFont: { family: "'JetBrains Mono', monospace" }, // Font updated
+                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 },
+                                bodyFont: { family: "'JetBrains Mono', monospace" },
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
                                 padding: 10,
@@ -1082,7 +1049,6 @@
                                         return '';
                                     },
                                     label: (context) => {
-                                         // Hide tooltips for the transparent band layers
                                          if (context.datasetIndex < 5) return null;
                                          return `$${context.parsed.y.toFixed(2)}`;
                                     }
@@ -1152,11 +1118,9 @@
              const showBands = showBandsCheckbox.checked;
              
              if (showBands) {
-                 // --- START: Reset position as requested by user ---
                  bandLevelsTable.style.top = ''; 
                  bandLevelsTable.style.left = ''; 
-                 // --- END: Reset position ---
-
+                 
                  bandLevelsTable.style.display = ''; 
                  bandLevelsTable.classList.remove('hidden'); 
              } else {
@@ -1167,83 +1131,54 @@
              chart.update();
         }
 
-        /**
-         * Toggles visibility and styles for band datasets.
-         * Enforces strictly different "views" based on the checkbox state.
-         */
         function applyBandVisibility(showBands) {
              if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
                  return;
              }
              
-             // Helper to force visibility state
              const setVis = (index, visible) => {
                  chart.setDatasetVisibility(index, visible);
                  chart.data.datasets[index].hidden = !visible; 
              };
 
              if (showBands) {
-                 // --- BANDS VIEW ---
-                 // 1. Show fill layers (0-4)
                  for (let i = 0; i <= 4; i++) setVis(i, true);
-
-                 // FORCE Price Visibility (5)
                  setVis(5, true);
                  
-                 // 2. Enforce "Thin Solid Grey" style for ALL lines (6-10)
                  const fineGrey = grayFineLineStyle;
                  
-                 // Median (6)
                  Object.assign(chart.data.datasets[6], fineGrey);
                  setVis(6, true);
-                 // P1 (7)
                  Object.assign(chart.data.datasets[7], fineGrey);
                  setVis(7, true);
-                 // P99 (8)
                  Object.assign(chart.data.datasets[8], fineGrey);
                  setVis(8, true);
-                 // P20 (9)
                  Object.assign(chart.data.datasets[9], fineGrey);
                  setVis(9, true);
-                 // P80 (10)
                  Object.assign(chart.data.datasets[10], fineGrey);
                  setVis(10, true);
                  
              } else {
-                 // --- CLEAN VIEW ---
-                 // 1. Hide fill layers (0-4)
                  for (let i = 0; i <= 4; i++) setVis(i, false);
-
-                 // FORCE Price Visibility (5)
                  setVis(5, true);
 
-                 // 2. Reset lines to default clean view styles
-                 
-                 // P50 (Median) -> Solid Orange, Visible
                  Object.assign(chart.data.datasets[6], orangeLineStyle);
                  setVis(6, true);
                  
-                 // P1 (7) -> Dashed Grey, Visible
                  Object.assign(chart.data.datasets[7], grayDashedLineStyle);
                  setVis(7, true);
                  
-                 // P99 (8) -> Dashed Grey, Visible
                  Object.assign(chart.data.datasets[8], grayDashedLineStyle);
                  setVis(8, true);
                  
-                 // P20 (9) -> Hidden
                  Object.assign(chart.data.datasets[9], grayDashedLineStyle);
                  setVis(9, false);
                  
-                 // P80 (10) -> Hidden
                  Object.assign(chart.data.datasets[10], grayDashedLineStyle);
                  setVis(10, false);
              }
         }
 
-        /**
-         * Calculates R-squared (coefficient of determination) for the log-log regression.
-         */
         function calculateProjections(baseData, modelParams, dataElement) {
             const tableElement = document.getElementById('projectionTable');
             
@@ -1293,7 +1228,6 @@
 
             if (dataElement) dataElement.innerHTML = rowsHtml;
             if (tableElement) {
-                // Reset position for projection table when re-displaying it
                 tableElement.style.top = '';
                 tableElement.style.left = '';
                 
@@ -1302,10 +1236,6 @@
             }
         }
 
-        /**
-         * NEW: Helper to make elements draggable via their header.
-         * Supports Mouse and Touch events.
-         */
         function makeDraggable(element, handle) {
             if (!element || !handle) return;
 
@@ -1313,25 +1243,19 @@
             let startX, startY, initialLeft, initialTop;
 
             const startDrag = (e) => {
-                // Prevent default behavior to stop text selection, etc.
                 if (e.type === 'touchstart') {
-                    // e.preventDefault(); // Optional: usually better not to preventDefault on touchstart immediately
                 } else {
                     e.preventDefault();
                 }
                 
                 isDragging = true;
                 
-                // Get start position (mouse or touch)
                 const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
                 const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
 
                 startX = clientX;
                 startY = clientY;
                 
-                // Get current element position
-                // Note: element must be position:absolute/relative for offsetTop/Left to be meaningful
-                // We use offsetLeft/Top relative to the parent container (chartWrapper)
                 initialLeft = element.offsetLeft;
                 initialTop = element.offsetTop;
 
@@ -1354,14 +1278,12 @@
 
             const stopDrag = () => {
                 isDragging = false;
-                handle.style.cursor = 'grab'; // Changed from 'move' to 'grab' for better UI feedback
+                handle.style.cursor = 'grab'; 
             };
 
-            // Attach events to handle
             handle.addEventListener('mousedown', startDrag);
             handle.addEventListener('touchstart', startDrag, { passive: false });
 
-            // Attach events to document/window to track movement outside the handle
             document.addEventListener('mousemove', drag);
             document.addEventListener('touchmove', drag, { passive: false });
             
