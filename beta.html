@@ -311,9 +311,7 @@
              <!-- Left Group: Price & Status -->
              <div class="flex items-center gap-6 text-xs sm:text-sm font-medium text-slate-600">
                  <!-- Price (First) -->
-                 <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700">
-                     TAO Price: <span class="ml-2 font-bold text-slate-900">N/A</span>
-                 </div>
+                 <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
                  <!-- Data Status (Second) -->
                  <div id="dataStatusDiv" class="flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
                      <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
@@ -323,18 +321,15 @@
              <!-- Right Group: Rating & Toggle -->
              <div class="flex items-center gap-4 text-xs sm:text-sm">
                  <!-- Zone (Moved here) -->
-                 <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                     <span class="status-dot bg-slate-200"></span><span class="font-medium text-slate-600">N/A</span>
-                 </div>
+                 <div id="priceZoneDiv" class="hidden sm:flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm"></div>
 
                  <!-- Bands Toggle -->
-                 <!-- Removed 'hidden' class -->
-                 <div id="showBandsContainer" class="flex items-center group">
+                 <div id="showBandsContainer" class="flex items-center hidden group">
                      <label for="showBandsCheckbox" class="flex items-center cursor-pointer select-none">
                           <!-- Label moved to left, styled to match Price: label -->
                           <span class="mr-3 text-xs sm:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
-                             <input type="checkbox" id="showBandsCheckbox" class="peer sr-only" disabled>
+                             <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
                              <!-- Changed focus ring to blue-300 and checked bg to blue-500 -->
                              <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
                              <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
@@ -651,15 +646,8 @@
                 growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
                 modelParamDiv.innerHTML = '<strong>Day Offset:</strong> N/A';
                 modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
-                
-                // Reset Top Bar to N/A state
-                lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold text-slate-900">N/A</span>`;
-                priceZoneDiv.innerHTML = `<span class="status-dot bg-slate-200"></span><span class="font-medium text-slate-600">N/A</span>`;
-
-                // Disable inputs instead of hiding containers
                 if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
-                if (showBandsCheckbox) showBandsCheckbox.disabled = true;
-                
+                showBandsContainer.classList.add('hidden');
                 loader.style.display = 'none';
                 return;
             }
@@ -696,6 +684,27 @@
                 modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
                 activeDayOffset: activeDayOffset,
                 slope: slope,
+                meanIntercept: meanIntercept
+            };
+
+            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
+            
+            const lastBaseDataPoint = baseData[baseData.length - 1]; 
+            const lastTimestamp = lastBaseDataPoint.time; 
+            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            const now = new Date().getTime();
+            const diffMs = now - lastTimestamp;
+            const oneDayMs = 24 * 60 * 60 * 1000;
+            const sevenDaysMs = 7 * oneDayMs;
+
+            let dotColor = "bg-red-500"; 
+            if (diffMs < oneDayMs) {
+                dotColor = "bg-green-500"; 
+            } else if (diffMs < sevenDaysMs) {
+                dotColor = "bg-yellow-400"; 
             }
             
             // Only update status if not in Demo mode (to preserve the yellow demo text)
@@ -1123,9 +1132,6 @@
             showBandsContainer.classList.remove('hidden');
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
-            
-            // Re-enable checkbox
-            showBandsCheckbox.disabled = false;
 
             useOptimalOffsetCheckbox.removeEventListener('change', createOrUpdateChart);
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
