@@ -1047,6 +1047,7 @@
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
                                 padding: 10,
+                                displayColors: false,
                                 callbacks: {
                                     title: (tooltipItems) => {
                                         if (tooltipItems.length > 0) {
@@ -1076,7 +1077,7 @@
                                     label: (context) => {
                                          // Hide tooltips for the transparent band layers
                                          if (context.datasetIndex < 5) return null;
-                                         return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                         return `$${context.parsed.y.toFixed(2)}`;
                                     }
                                 }
                             }
