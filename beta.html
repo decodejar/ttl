@@ -717,7 +717,7 @@
             }
             
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-sans">${lastUpdateDate}</span>`;
             }
 
             lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
@@ -774,7 +774,7 @@
             else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
             else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
 
-            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-mono text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-sans text-slate-600">${priceZone}</span>`;
             priceZoneDiv.classList.remove('hidden');
 
             const medianIntercept = meanIntercept + medianResidual;
@@ -1029,7 +1029,7 @@
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)', 
                                 titleColor: '#f8fafc',
                                 bodyColor: '#f8fafc', // Unified white color for price
-                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 },
+                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
                                 bodyFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Unified bold weight
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
