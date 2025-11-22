@@ -195,8 +195,15 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        #projectionTable { top: 12%; left: 5%; }
-        #bandLevelsTable { top: 18%; left: 8%; }
+        /* Default / Mobile Positions */
+        #projectionTable { top: 15%; left: 2%; }
+        #bandLevelsTable { top: 23%; left: 6%; }
+
+        /* Desktop Positions (min-width: 768px) */
+        @media (min-width: 768px) {
+            #projectionTable { top: 12%; left: 7%; }
+            #bandLevelsTable { top: 18%; left: 10%; }
+        }
 
         #projectionTable h3,
         #bandLevelsTable h3 {
@@ -1320,27 +1327,27 @@
         // UPDATED: Added auto-exit fullscreen logic on rotation from landscape to portrait
         let wasInLandscapeFullscreen = false;
 
-        function handleFullscreenChange() {
+        function resetPopupPositions() {
+            const pTable = document.getElementById('projectionTable');
+            const bTable = document.getElementById('bandLevelsTable');
+            
+            if (pTable) {
+                pTable.style.top = '';
+                pTable.style.left = '';
+                pTable.style.display = '';
+                pTable.classList.remove('hidden');
+            }
+            if (bTable) {
+                bTable.style.top = '';
+                bTable.style.left = '';
+            }
+        }
+
+        function updateLayout() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
                 const isMobile = window.innerWidth < 1024;
                 const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
-
-                // --- Reset Popup Positions & Visibility ---
-                const pTable = document.getElementById('projectionTable');
-                const bTable = document.getElementById('bandLevelsTable');
-                
-                if (pTable) {
-                    pTable.style.top = '';
-                    pTable.style.left = '';
-                    pTable.style.display = '';
-                    pTable.classList.remove('hidden');
-                }
-                if (bTable) {
-                    bTable.style.top = '';
-                    bTable.style.left = '';
-                }
-                // -------------------------------------------
 
                 if (isInFullscreen) {
                     fsIconEnter.classList.add('hidden');
@@ -1379,6 +1386,11 @@
                      }, 50); 
                  }
              });
+        }
+
+        function onFullscreenChangedEvent() {
+            resetPopupPositions();
+            updateLayout();
         }
 
         function refitYAxis() {
@@ -1680,13 +1692,13 @@ function handleTouchStart(e) {
 
     // --- SECTION: EVENT LISTENERS ---
 
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
-        window.addEventListener('resize', handleFullscreenChange);
+        document.addEventListener('fullscreenchange', onFullscreenChangedEvent);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChangedEvent); 
+        window.addEventListener('resize', updateLayout);
          if (screen.orientation) {
-             screen.orientation.addEventListener('change', handleFullscreenChange);
+             screen.orientation.addEventListener('change', updateLayout);
          } else {
-             window.addEventListener('orientationchange', handleFullscreenChange); 
+             window.addEventListener('orientationchange', updateLayout); 
          }
 
         // Initial load
@@ -1721,7 +1733,7 @@ function handleTouchStart(e) {
                 });
             }
 
-            setTimeout(handleFullscreenChange, 150); 
+            setTimeout(updateLayout, 150); 
         }
     </script>
 </body>
