@@ -320,9 +320,9 @@
         <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-4 sm:px-6 py-2 md:py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Status & Price -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
-                 <!-- Data Status (First) - REMOVED BUTTON STYLING -->
+                 <!-- Data Status (First) - UPDATED STATUSES -->
                  <div id="dataStatusDiv" class="flex items-center">
-                     <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
+                     <span class="status-dot bg-green-500 animate-pulse"></span><span class="text-slate-400">Loading</span>
                  </div>
                  <!-- Price (Second) -->
                  <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
@@ -548,7 +548,8 @@
                 return baseData;
             } catch (error) {
                 console.error("Error loading price data:", error);
-                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
+                // UPDATED: Status text for load failure
+                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data not loaded</strong>`;
                 loader.style.display = 'none';
                 return null;
             }
@@ -650,7 +651,8 @@
 
             if (!baseData || baseData.length === 0) {
                 if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('Demo')) { 
-                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
+                    // UPDATED: Status text for empty/corrupted data
+                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data corrupted</strong>`;
                 }
                 growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
                 modelParamDiv.innerHTML = '<strong>Offset:</strong> N/A';
