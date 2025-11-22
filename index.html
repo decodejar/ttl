@@ -175,9 +175,8 @@
         #projectionTable,
         #bandLevelsTable {
             position: absolute;
-            top: 12%;
             z-index: 20;
-            background-color: rgba(255, 255, 255, 0.85);
+            background-color: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 0.75rem;
@@ -196,8 +195,15 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        #projectionTable { left: 5%; }
-        #bandLevelsTable { left: 5%; }
+        /* Default / Mobile Positions */
+        #projectionTable { top: 12%; left: 2%; }
+        #bandLevelsTable { top: 24%; left: 6%; }
+
+        /* Desktop Positions (min-width: 768px) */
+        @media (min-width: 768px) {
+            #projectionTable { top: 10%; left: 8%; }
+            #bandLevelsTable { top: 18%; left: 11%; }
+        }
 
         #projectionTable h3,
         #bandLevelsTable h3 {
@@ -320,9 +326,9 @@
         <div id="topStatusBar" class="flex flex-wrap items-center justify-center sm:justify-between gap-x-4 gap-y-2 px-4 sm:px-6 py-2 md:py-3 border-b border-slate-100 bg-slate-50">
              <!-- Left Group: Status & Price -->
              <div class="flex items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
-                 <!-- Data Status (First) -->
-                 <div id="dataStatusDiv" class="flex items-center bg-white px-3 py-1 rounded-full border border-slate-200 shadow-sm">
-                     <span class="status-dot bg-slate-200 animate-pulse"></span><span class="text-slate-400">Loading...</span>
+                 <!-- Data Status (First) - UPDATED STATUSES -->
+                 <div id="dataStatusDiv" class="flex items-center">
+                     <span class="status-dot bg-green-500 animate-pulse"></span><span class="text-slate-400">Loading</span>
                  </div>
                  <!-- Price (Second) -->
                  <div id="lastPriceDiv" class="hidden sm:flex items-center text-slate-700"></div>
@@ -339,7 +345,7 @@
                           <span class="mr-3 text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
-                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                              <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                           </div>
                      </label>
@@ -360,7 +366,7 @@
                 
                 <!-- Draggable Tables -->
                 <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="projectionHeader">
+                    <h3 id="projectionHeader" class="text-xs md:text-sm">
                         <span>Fair Value</span>
                         <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -372,7 +378,7 @@
                 </div>
 
                 <div id="bandLevelsTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="bandsHeader">
+                    <h3 id="bandsHeader" class="text-xs md:text-sm">
                         <span>Valuation Bands</span>
                         <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -416,7 +422,7 @@
                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
                      <div class="relative">
                          <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
-                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                      </div>
                  </label>
@@ -548,7 +554,8 @@
                 return baseData;
             } catch (error) {
                 console.error("Error loading price data:", error);
-                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A (Error)`;
+                // UPDATED: Status text for load failure
+                dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data not loaded</strong>`;
                 loader.style.display = 'none';
                 return null;
             }
@@ -649,14 +656,31 @@
             }
 
             if (!baseData || baseData.length === 0) {
-                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('Demo')) { 
-                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Updated:</strong>&nbsp;N/A`;
+                // 1. Status Indicator (Preserve "Data not loaded" if present)
+                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('not loaded') && !dataStatusDiv.innerHTML.includes('Demo')) { 
+                    dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data corrupted</strong>`;
                 }
-                growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
-                modelParamDiv.innerHTML = '<strong>Offset:</strong> N/A';
-                modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
+
+                // 2. Top Bar: Price (Show N/A)
+                lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">N/A</span>`;
+                lastPriceDiv.classList.remove('hidden');
+
+                // 3. Top Bar: Valuation (Show N/A with grey dot)
+                priceZoneDiv.innerHTML = `<span class="status-dot bg-slate-300"></span><span class="font-medium font-sans text-slate-600">N/A</span>`;
+                priceZoneDiv.classList.remove('hidden');
+
+                // 4. Top Bar: Bands Switch (Visible but Disabled)
+                showBandsContainer.classList.remove('hidden');
+                showBandsCheckbox.disabled = true;
+
+                // 5. Bottom Bar: Metrics (Show N/A)
+                growthExponentDiv.innerHTML = 'Exponent (α): <span class="font-bold font-mono text-slate-800">N/A</span>';
+                modelParamDiv.innerHTML = 'Offset: <span class="font-bold font-mono text-slate-800">N/A</span>';
+                modelFitDiv.innerHTML = 'Fit (R²): <span class="font-bold font-mono text-slate-800">N/A</span>';
+
+                // 6. Bottom Bar: Optimise Switch (Disabled)
                 if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
-                showBandsContainer.classList.add('hidden');
+                
                 loader.style.display = 'none';
                 return;
             }
@@ -695,6 +719,7 @@
             };
 
             if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
+            if (showBandsCheckbox) showBandsCheckbox.disabled = false;
             
             const lastBaseDataPoint = baseData[baseData.length - 1]; 
             const lastTimestamp = lastBaseDataPoint.time; 
@@ -715,10 +740,10 @@
             }
             
             if(!dataStatusDiv.innerHTML.includes("Demo")) {
-                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
+                dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-sans">${lastUpdateDate}</span>`;
             }
 
-            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
             lastPriceDiv.classList.remove('hidden');
 
             const chartPrices = priceData.map(p => p.y);
@@ -772,7 +797,7 @@
             else if (lastResidual > p20Residual) { priceZone = "Value"; priceZoneColor = "bg-green-500"; }
             else { priceZone = "Discount"; priceZoneColor = "bg-blue-400"; }
 
-            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-mono text-slate-600">${priceZone}</span>`;
+            priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-sans text-slate-600">${priceZone}</span>`;
             priceZoneDiv.classList.remove('hidden');
 
             const medianIntercept = meanIntercept + medianResidual;
@@ -938,7 +963,7 @@
                     { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
                     // --- VISUAL LINE LAYERS (5-10) ---
-                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
+                    { label: 'Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
                     { label: '50th Percentile', data: medianLineData }, 
                     { label: '1st Pctl', data: p1LineData },
                     { label: '99th Pctl', data: p99LineData },
@@ -992,7 +1017,7 @@
                             // 5: Price
                             { 
                                 ...datasetDefaults, 
-                                label: 'TAO Price', 
+                                label: 'Price', 
                                 data: chartPriceDataPoints, 
                                 backgroundColor: 'rgba(0, 0, 0, 0.0)', 
                                 borderColor: '#0f172a', 
@@ -1027,7 +1052,7 @@
                                 backgroundColor: 'rgba(15, 23, 42, 0.9)', 
                                 titleColor: '#f8fafc',
                                 bodyColor: '#f8fafc', // Unified white color for price
-                                titleFont: { family: "'JetBrains Mono', monospace", weight: 600 },
+                                titleFont: { family: "'Inter', sans-serif", weight: 600 },
                                 bodyFont: { family: "'JetBrains Mono', monospace", weight: 600 }, // Unified bold weight
                                 borderColor: 'rgba(255,255,255,0.1)',
                                 borderWidth: 1,
@@ -1242,9 +1267,7 @@
 
             if (dataElement) dataElement.innerHTML = rowsHtml;
             if (tableElement) {
-                tableElement.style.top = '';
-                tableElement.style.left = '';
-                
+                // Removed top/left reset to persist position on updates
                 tableElement.style.display = ''; 
                 tableElement.classList.remove('hidden');
             }
@@ -1321,7 +1344,23 @@
         // UPDATED: Added auto-exit fullscreen logic on rotation from landscape to portrait
         let wasInLandscapeFullscreen = false;
 
-        function handleFullscreenChange() {
+        function resetPopupPositions() {
+            const pTable = document.getElementById('projectionTable');
+            const bTable = document.getElementById('bandLevelsTable');
+            
+            if (pTable) {
+                pTable.style.top = '';
+                pTable.style.left = '';
+                pTable.style.display = '';
+                pTable.classList.remove('hidden');
+            }
+            if (bTable) {
+                bTable.style.top = '';
+                bTable.style.left = '';
+            }
+        }
+
+        function updateLayout() {
              requestAnimationFrame(() => { 
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
                 const isMobile = window.innerWidth < 1024;
@@ -1364,6 +1403,11 @@
                      }, 50); 
                  }
              });
+        }
+
+        function onFullscreenChangedEvent() {
+            resetPopupPositions();
+            updateLayout();
         }
 
         function refitYAxis() {
@@ -1665,13 +1709,13 @@ function handleTouchStart(e) {
 
     // --- SECTION: EVENT LISTENERS ---
 
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
-        window.addEventListener('resize', handleFullscreenChange);
+        document.addEventListener('fullscreenchange', onFullscreenChangedEvent);
+        document.addEventListener('webkitfullscreenchange', onFullscreenChangedEvent); 
+        window.addEventListener('resize', updateLayout);
          if (screen.orientation) {
-             screen.orientation.addEventListener('change', handleFullscreenChange);
+             screen.orientation.addEventListener('change', updateLayout);
          } else {
-             window.addEventListener('orientationchange', handleFullscreenChange); 
+             window.addEventListener('orientationchange', updateLayout); 
          }
 
         // Initial load
@@ -1706,7 +1750,7 @@ function handleTouchStart(e) {
                 });
             }
 
-            setTimeout(handleFullscreenChange, 150); 
+            setTimeout(updateLayout, 150); 
         }
     </script>
 </body>
