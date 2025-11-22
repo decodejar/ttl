@@ -345,7 +345,7 @@
                           <span class="mr-3 text-xs md:text-sm font-medium text-slate-700 group-hover:text-blue-600 transition-colors">Show Bands</span>
                           <div class="relative">
                              <input type="checkbox" id="showBandsCheckbox" class="peer sr-only">
-                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                             <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                              <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                           </div>
                      </label>
@@ -422,7 +422,7 @@
                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
                      <div class="relative">
                          <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
-                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500"></div>
+                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                      </div>
                  </label>
@@ -656,15 +656,31 @@
             }
 
             if (!baseData || baseData.length === 0) {
-                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('Demo')) { 
-                    // UPDATED: Status text for empty/corrupted data
+                // 1. Status Indicator (Preserve "Data not loaded" if present)
+                if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('not loaded') && !dataStatusDiv.innerHTML.includes('Demo')) { 
                     dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data corrupted</strong>`;
                 }
-                growthExponentDiv.innerHTML = '<strong>Exponent (α):</strong> N/A';
-                modelParamDiv.innerHTML = '<strong>Offset:</strong> N/A';
-                modelFitDiv.innerHTML = '<strong>Fit (R²):</strong> N/A';
+
+                // 2. Top Bar: Price (Show N/A)
+                lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">N/A</span>`;
+                lastPriceDiv.classList.remove('hidden');
+
+                // 3. Top Bar: Valuation (Show N/A with grey dot)
+                priceZoneDiv.innerHTML = `<span class="status-dot bg-slate-300"></span><span class="font-medium font-sans text-slate-600">N/A</span>`;
+                priceZoneDiv.classList.remove('hidden');
+
+                // 4. Top Bar: Bands Switch (Visible but Disabled)
+                showBandsContainer.classList.remove('hidden');
+                showBandsCheckbox.disabled = true;
+
+                // 5. Bottom Bar: Metrics (Show N/A)
+                growthExponentDiv.innerHTML = 'Exponent (α): <span class="font-bold font-mono text-slate-800">N/A</span>';
+                modelParamDiv.innerHTML = 'Offset: <span class="font-bold font-mono text-slate-800">N/A</span>';
+                modelFitDiv.innerHTML = 'Fit (R²): <span class="font-bold font-mono text-slate-800">N/A</span>';
+
+                // 6. Bottom Bar: Optimise Switch (Disabled)
                 if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
-                showBandsContainer.classList.add('hidden');
+                
                 loader.style.display = 'none';
                 return;
             }
@@ -703,6 +719,7 @@
             };
 
             if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
+            if (showBandsCheckbox) showBandsCheckbox.disabled = false;
             
             const lastBaseDataPoint = baseData[baseData.length - 1]; 
             const lastTimestamp = lastBaseDataPoint.time; 
