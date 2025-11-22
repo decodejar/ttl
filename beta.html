@@ -360,7 +360,7 @@
                 
                 <!-- Draggable Tables -->
                 <div id="projectionTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="projectionHeader">
+                    <h3 id="projectionHeader" class="text-xs md:text-sm">
                         <span>Fair Value</span>
                         <button onclick="document.getElementById('projectionTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -372,7 +372,7 @@
                 </div>
 
                 <div id="bandLevelsTable" class="hidden transform transition-transform active:scale-[1.02]">
-                    <h3 id="bandsHeader">
+                    <h3 id="bandsHeader" class="text-xs md:text-sm">
                         <span>Valuation Bands</span>
                         <button onclick="document.getElementById('bandLevelsTable').style.display='none'" type="button" title="Close">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3.5 h-3.5">
@@ -720,7 +720,7 @@
                 dataStatusDiv.innerHTML = `<span class="status-dot ${dotColor}"></span><span class="font-mono">${lastUpdateDate}</span>`;
             }
 
-            lastPriceDiv.innerHTML = `TAO Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
+            lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">$${lastBaseDataPoint.y.toFixed(2)}</span>`;
             lastPriceDiv.classList.remove('hidden');
 
             const chartPrices = priceData.map(p => p.y);
@@ -940,7 +940,7 @@
                     { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
                     // --- VISUAL LINE LAYERS (5-10) ---
-                    { label: 'TAO Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
+                    { label: 'Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
                     { label: '50th Percentile', data: medianLineData }, 
                     { label: '1st Pctl', data: p1LineData },
                     { label: '99th Pctl', data: p99LineData },
@@ -994,7 +994,7 @@
                             // 5: Price
                             { 
                                 ...datasetDefaults, 
-                                label: 'TAO Price', 
+                                label: 'Price', 
                                 data: chartPriceDataPoints, 
                                 backgroundColor: 'rgba(0, 0, 0, 0.0)', 
                                 borderColor: '#0f172a', 
