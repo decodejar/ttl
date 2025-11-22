@@ -175,7 +175,6 @@
         #projectionTable,
         #bandLevelsTable {
             position: absolute;
-            top: 12%;
             z-index: 20;
             background-color: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
@@ -196,8 +195,8 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        #projectionTable { left: 5%; }
-        #bandLevelsTable { left: 5%; }
+        #projectionTable { top: 12%; left: 5%; }
+        #bandLevelsTable { top: 18%; left: 8%; }
 
         #projectionTable h3,
         #bandLevelsTable h3 {
@@ -1326,6 +1325,22 @@
                 const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
                 const isMobile = window.innerWidth < 1024;
                 const isLandscape = screen.orientation ? screen.orientation.type.includes('landscape') : window.innerWidth > window.innerHeight;
+
+                // --- Reset Popup Positions & Visibility ---
+                const pTable = document.getElementById('projectionTable');
+                const bTable = document.getElementById('bandLevelsTable');
+                
+                if (pTable) {
+                    pTable.style.top = '';
+                    pTable.style.left = '';
+                    pTable.style.display = '';
+                    pTable.classList.remove('hidden');
+                }
+                if (bTable) {
+                    bTable.style.top = '';
+                    bTable.style.left = '';
+                }
+                // -------------------------------------------
 
                 if (isInFullscreen) {
                     fsIconEnter.classList.add('hidden');
