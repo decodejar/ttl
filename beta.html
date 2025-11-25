@@ -433,8 +433,8 @@
              <div class="flex items-center gap-2">
                  <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
                     <button type="button" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (789 Days)"></button>
-                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (486 Days)"></button>
-                    <button type="button" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Optimise (Best Fit)"></button>
+                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Nakamoto (486 Days)"></button>
+                    <button type="button" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Optimise (Best Fit)"></button>
                  </div>
                  <!-- Tooltip -->
                  <div class="group/tooltip relative flex items-center">
@@ -742,7 +742,7 @@
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `${optimalOffset}`;
+                labelText = `(${optimalOffset})`;
             } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
