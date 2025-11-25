@@ -432,9 +432,9 @@
             <!-- NEW 3-Way Switch: K | N | O -->
              <div class="flex items-center gap-2">
                  <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
-                    <button type="button" onclick="setOffsetMode('K')" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (789 Days)">K</button>
-                    <button type="button" onclick="setOffsetMode('N')" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (486 Days)">N</button>
-                    <button type="button" onclick="setOffsetMode('O')" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Optimise (Best Fit)">O</button>
+                    <button type="button" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (789 Days)"></button>
+                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (486 Days)"></button>
+                    <button type="button" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Optimise (Best Fit)"></button>
                  </div>
                  <!-- Tooltip -->
                  <div class="group/tooltip relative flex items-center">
@@ -503,13 +503,22 @@
         const Y_AXIS_TOP_PADDING_MIN = 0.1;
         const Y_AXIS_TOP_PADDING_MAX = 0.33;
         
+        // --- SWITCH LABELS & MODES ---
+        const MODE_K = 'K';
+        const MODE_N = 'N';
+        const MODE_O = 'O';
+
+        const LABEL_K = 'K';
+        const LABEL_N = 'N';
+        const LABEL_O = 'O';
+
         let chart; 
         let baseData = []; 
         let priceData = []; 
         let activeModelParams = {}; 
         
         // Switch State: 'N' is Default
-        let currentOffsetMode = 'O';
+        let currentOffsetMode = MODE_N;
 
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -673,9 +682,9 @@
             const inactiveClass = "text-slate-500 hover:text-slate-700 bg-transparent shadow-none";
             const activeClass = "bg-white text-blue-600 shadow-sm";
 
-            btnK.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'K' ? activeClass : inactiveClass}`;
-            btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'N' ? activeClass : inactiveClass}`;
-            btnO.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'O' ? activeClass : inactiveClass}`;
+            btnK.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_K ? activeClass : inactiveClass}`;
+            btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_N ? activeClass : inactiveClass}`;
+            btnO.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_O ? activeClass : inactiveClass}`;
         }
 
         function setOffsetMode(mode) {
@@ -729,12 +738,12 @@
             let activeDayOffset;
             let labelText = "";
             
-            if (currentOffsetMode === 'O') {
+            if (currentOffsetMode === MODE_O) {
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `Optimal (${optimalOffset})`;
-            } else if (currentOffsetMode === 'K') {
+                labelText = `(${optimalOffset})`;
+            } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
             } else {
@@ -750,7 +759,7 @@
             meanIntercept = regression.intercept;
             
             // If not optimal, calculate R2 for this specific offset
-            if (currentOffsetMode !== 'O') {
+            if (currentOffsetMode !== MODE_O) {
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
             }
 
@@ -1823,6 +1832,16 @@
 
         // Initial load
         window.onload = () => {
+            // Initialize button text
+            btnK.innerText = LABEL_K;
+            btnN.innerText = LABEL_N;
+            btnO.innerText = LABEL_O;
+
+            // Bind click listeners using variables
+            btnK.onclick = () => setOffsetMode(MODE_K);
+            btnN.onclick = () => setOffsetMode(MODE_N);
+            btnO.onclick = () => setOffsetMode(MODE_O);
+
             createOrUpdateChart();
             
             // Enable Dragging
