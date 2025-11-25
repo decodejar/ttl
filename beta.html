@@ -748,10 +748,12 @@
             const now = new Date().getTime();
             const diffMs = now - lastTimestamp;
             const oneDayMs = 24 * 60 * 60 * 1000;
+            // Allow up to 49 hours (48h + 1h buffer) for "Green" status to account for update latency
+            const twoDaysMs = 49 * 60 * 60 * 1000; 
             const sevenDaysMs = 7 * oneDayMs;
 
             let dotColor = "bg-red-500"; 
-            if (diffMs < oneDayMs) {
+            if (diffMs < twoDaysMs) {
                 dotColor = "bg-green-500"; 
             } else if (diffMs < sevenDaysMs) {
                 dotColor = "bg-yellow-400"; 
@@ -848,7 +850,7 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
             
