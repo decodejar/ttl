@@ -429,22 +429,13 @@
             <!-- Model Parameters -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
-            <!-- NEW 3-Way Switch: K | N | O -->
+            <!-- NEW 3-Way Switch: K | N | A -->
              <div class="flex items-center gap-2">
                  <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
-                    <button type="button" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (789 Days)"></button>
-                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Nakamoto (486 Days)"></button>
-                    <button type="button" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Optimise (Best Fit)"></button>
+                    <button type="button" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
+                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
+                    <button type="button" id="btnA" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none"></button>
                  </div>
-                 <!-- Tooltip -->
-                 <div class="group/tooltip relative flex items-center">
-                      <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
-                      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-left">
-                        <strong>K (Kusanagi):</strong> Jan 2021 Genesis offset (789 days).<br>
-                        <strong>N (Nakamoto):</strong> Nov 2021 Nakamoto fork offset (486 days). <em>Default.</em><br>
-                        <strong>O (Optimise):</strong> Mathematically optimal best fit offset.
-                      </div>
-                </div>
             </div>
             
             <div id="growthExponentDiv" class="text-slate-600"></div>
@@ -491,7 +482,7 @@
         // Buttons for 3-Way Switch
         const btnK = document.getElementById('btnK');
         const btnN = document.getElementById('btnN');
-        const btnO = document.getElementById('btnO');
+        const btnA = document.getElementById('btnA');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
@@ -506,19 +497,19 @@
         // --- SWITCH LABELS & MODES ---
         const MODE_K = 'K';
         const MODE_N = 'N';
-        const MODE_O = 'O';
+        const MODE_A = 'A';
 
         const LABEL_K = 'K';
         const LABEL_N = 'N';
-        const LABEL_O = 'O';
+        const LABEL_A = 'A';
 
         let chart; 
         let baseData = []; 
         let priceData = []; 
         let activeModelParams = {}; 
         
-        // Switch State: 'O' is Default
-        let currentOffsetMode = MODE_O;
+        // Switch State: 'A' is Default
+        let currentOffsetMode = MODE_A;
 
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -684,7 +675,7 @@
 
             btnK.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_K ? activeClass : inactiveClass}`;
             btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_N ? activeClass : inactiveClass}`;
-            btnO.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_O ? activeClass : inactiveClass}`;
+            btnA.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_A ? activeClass : inactiveClass}`;
         }
 
         function setOffsetMode(mode) {
@@ -721,7 +712,7 @@
                 // Disable Buttons
                 btnK.disabled = true;
                 btnN.disabled = true;
-                btnO.disabled = true;
+                btnA.disabled = true;
 
                 loader.style.display = 'none';
                 return;
@@ -730,7 +721,7 @@
             // Enable Buttons
             btnK.disabled = false;
             btnN.disabled = false;
-            btnO.disabled = false;
+            btnA.disabled = false;
 
             const isLinearTime = !logLogCheckbox.checked;
 
@@ -738,11 +729,11 @@
             let activeDayOffset;
             let labelText = "";
             
-            if (currentOffsetMode === MODE_O) {
+            if (currentOffsetMode === MODE_A) {
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `${optimalOffset}`;
+                labelText = `Auto (${optimalOffset})`;
             } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
@@ -759,7 +750,7 @@
             meanIntercept = regression.intercept;
             
             // If not optimal, calculate R2 for this specific offset
-            if (currentOffsetMode !== MODE_O) {
+            if (currentOffsetMode !== MODE_A) {
                 rSquared = calculateRSquared(priceData, slope, meanIntercept);
             }
 
@@ -1835,12 +1826,12 @@
             // Initialize button text
             btnK.innerText = LABEL_K;
             btnN.innerText = LABEL_N;
-            btnO.innerText = LABEL_O;
+            btnA.innerText = LABEL_A;
 
             // Bind click listeners using variables
             btnK.onclick = () => setOffsetMode(MODE_K);
             btnN.onclick = () => setOffsetMode(MODE_N);
-            btnO.onclick = () => setOffsetMode(MODE_O);
+            btnA.onclick = () => setOffsetMode(MODE_A);
 
             createOrUpdateChart();
             
