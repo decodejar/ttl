@@ -747,8 +747,7 @@
 
             const now = new Date().getTime();
             const diffMs = now - lastTimestamp;
-            const oneDayMs = 24 * 60 * 60 * 1000;
-            // Allow up to 49 hours (48h + 1h buffer) for "Green" status to account for update latency
+            const oneDayMs = 24 * 60 * 60 * 1000; 
             const twoDaysMs = 49 * 60 * 60 * 1000; 
             const sevenDaysMs = 7 * oneDayMs;
 
