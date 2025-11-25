@@ -9,12 +9,12 @@ def fetch_and_save_data():
     Loads existing historical data, then fetches any new data from CoinGecko
     since the last entry and appends it.
     """
-    api_key = os.getenv('COINGECKO_API_KEY')
+    api_key = os.getenv('COINGECKO')
     if not api_key:
-        print("Error: COINGECKO_API_KEY secret is not set in the GitHub repository.")
+        print("Error: COINGECKO secret is not set in the GitHub repository.")
         return
     else:
-        print("Successfully loaded COINGECKO_API_KEY secret.")
+        print("Successfully loaded COINGECKO secret.")
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
     data_filename = os.path.join(script_dir, "price_data.json")
