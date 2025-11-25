@@ -1150,7 +1150,11 @@
                             legend: {
                                 labels: {
                                     color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
-                                    filter: (item) => item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex)
+                                    // Safety Check: Ensure chart is defined before accessing its properties to prevent crash on init
+                                    filter: (item) => {
+                                        if (!chart) return item.datasetIndex >= 5;
+                                        return item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex);
+                                    }
                                 }
                             },
                             tooltip: {
@@ -1163,7 +1167,10 @@
                                 borderWidth: 1,
                                 padding: 10,
                                 displayColors: false,
-                                filter: (item) => item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex),
+                                filter: (item) => {
+                                    if (!chart) return item.datasetIndex >= 5;
+                                    return item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex);
+                                },
                                 callbacks: {
                                     title: (tooltipItems) => {
                                         if (tooltipItems.length > 0) {
