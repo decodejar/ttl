@@ -413,14 +413,14 @@
 
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
-            
-            <!-- NEW 3-Way Switch: K | N | A -->
+            <!-- NEW 4-Way Switch: K | N | F | A -->
              <div class="flex items-center gap-2">
                  <span class="mr-1 text-xs md:text-sm font-medium text-slate-600">Model</span>
                  <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
                     <button type="button" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
-                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none"></button>
-                    <button type="button" id="btnA" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
+                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
+                    <button type="button" id="btnF" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
+                    <button type="button" id="btnA" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none"></button>
                  </div>
             </div>
 
@@ -483,12 +483,14 @@
         // Buttons for 3-Way Switch
         const btnK = document.getElementById('btnK');
         const btnN = document.getElementById('btnN');
+        const btnF = document.getElementById('btnF');
         const btnA = document.getElementById('btnA');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
         const OFFSET_NAKAMOTO = 486; 
         const OFFSET_KUSANAGI = 789;
+        const OFFSET_FINNEY = 0;
         const MAX_OFFSET_SEARCH_LIMIT = 789;      
         const X_AXIS_PROJECTION_PADDING = 0.40; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
@@ -498,10 +500,12 @@
         // --- SWITCH LABELS & MODES ---
         const MODE_K = 'K';
         const MODE_N = 'N';
+        const MODE_F = 'F';
         const MODE_A = 'A';
 
         const LABEL_K = 'K';
         const LABEL_N = 'N';
+        const LABEL_F = 'F';
         const LABEL_A = 'A';
 
         let chart; 
@@ -676,6 +680,7 @@
 
             btnK.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_K ? activeClass : inactiveClass}`;
             btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_N ? activeClass : inactiveClass}`;
+            btnF.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_F ? activeClass : inactiveClass}`;
             btnA.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_A ? activeClass : inactiveClass}`;
         }
 
@@ -713,6 +718,7 @@
                 // Disable Buttons
                 btnK.disabled = true;
                 btnN.disabled = true;
+                btnF.disabled = true;
                 btnA.disabled = true;
 
                 loader.style.display = 'none';
@@ -722,6 +728,7 @@
             // Enable Buttons
             btnK.disabled = false;
             btnN.disabled = false;
+            btnF.disabled = false;
             btnA.disabled = false;
 
             const isLinearTime = !logLogCheckbox.checked;
@@ -738,6 +745,9 @@
             } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
+            } else if (currentOffsetMode === MODE_F) {
+                 activeDayOffset = OFFSET_FINNEY;
+                 labelText = `Finney`;
             } else {
                 // Default 'N'
                  activeDayOffset = OFFSET_NAKAMOTO;
@@ -1828,11 +1838,13 @@
             // Initialize button text
             btnK.innerText = LABEL_K;
             btnN.innerText = LABEL_N;
+            btnF.innerText = LABEL_F;
             btnA.innerText = LABEL_A;
 
             // Bind click listeners using variables
             btnK.onclick = () => setOffsetMode(MODE_K);
             btnN.onclick = () => setOffsetMode(MODE_N);
+            btnF.onclick = () => setOffsetMode(MODE_F);
             btnA.onclick = () => setOffsetMode(MODE_A);
 
             createOrUpdateChart();
