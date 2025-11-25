@@ -517,8 +517,8 @@
         let priceData = []; 
         let activeModelParams = {}; 
         
-        // Switch State: 'N' is Default
-        let currentOffsetMode = MODE_N;
+        // Switch State: 'O' is Default
+        let currentOffsetMode = MODE_O;
 
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
@@ -742,7 +742,7 @@
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `(${optimalOffset})`;
+                labelText = `${optimalOffset}`;
             } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
