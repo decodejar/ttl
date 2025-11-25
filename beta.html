@@ -1067,7 +1067,7 @@
 
                 // Update X Axis type based on check
                 chart.options.scales.x.type = isLinearTime ? 'linear' : 'logarithmic';
-                chart.options.scales.x.title.text = isLinearTime ? 'Time' : 'Time (Log Scale)';
+                chart.options.scales.x.title.text = isLinearTime ? 'Time (Linear Scale)' : 'Time (Log Scale)';
                 chart.options.scales.x.min = extendedMinDay;
                 chart.options.scales.x.max = extendedMaxDay;
                 
@@ -1179,7 +1179,7 @@
                                 // Dynamically switched between logarithmic and linear
                                 type: isLinearTime ? 'linear' : 'logarithmic', 
                                 min: extendedMinDay, max: extendedMaxDay,
-                                title: { display: true, text: isLinearTime ? 'Time' : 'Time (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                title: { display: true, text: isLinearTime ? 'Time (Linear Scale)' : 'Time (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
                                     color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
                                     callback: function(value) {
