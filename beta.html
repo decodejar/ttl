@@ -747,11 +747,11 @@
 
             const now = new Date().getTime();
             const diffMs = now - lastTimestamp;
-            const twoDaysMs = 49 * 60 * 60 * 1000; 
+            const oneDayMs = 24 * 60 * 60 * 1000;
             const sevenDaysMs = 7 * oneDayMs;
 
             let dotColor = "bg-red-500"; 
-            if (diffMs < twoDaysMs) {
+            if (diffMs < oneDayMs) {
                 dotColor = "bg-green-500"; 
             } else if (diffMs < sevenDaysMs) {
                 dotColor = "bg-yellow-400"; 
