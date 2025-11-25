@@ -432,8 +432,8 @@
             <!-- NEW 3-Way Switch: K | N | O -->
              <div class="flex items-center gap-2">
                  <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
-                    <button type="button" onclick="setOffsetMode('K')" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (Jan 2021)">K</button>
-                    <button type="button" onclick="setOffsetMode('N')" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (Nov 2021)">N</button>
+                    <button type="button" onclick="setOffsetMode('K')" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (789 Days)">K</button>
+                    <button type="button" onclick="setOffsetMode('N')" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (486 Days)">N</button>
                     <button type="button" onclick="setOffsetMode('O')" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Optimise (Best Fit)">O</button>
                  </div>
                  <!-- Tooltip -->
@@ -441,8 +441,8 @@
                       <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
                       <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-left">
                         <strong>K (Kusanagi):</strong> Jan 2021 Genesis offset (789 days).<br>
-                        <strong>N (Nakamoto):</strong> Nov 2021 Fork offset (486 days). <em>Default.</em><br>
-                        <strong>O (Optimise):</strong> Mathematically optimal best-fit offset.
+                        <strong>N (Nakamoto):</strong> Nov 2021 Nakamoto fork offset (486 days). <em>Default.</em><br>
+                        <strong>O (Optimise):</strong> Mathematically optimal best fit offset.
                       </div>
                 </div>
             </div>
@@ -733,14 +733,14 @@
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `${optimalOffset} (Optimal)`;
+                labelText = `Optimal (${optimalOffset})`;
             } else if (currentOffsetMode === 'K') {
                  activeDayOffset = OFFSET_KUSANAGI;
-                 labelText = `${OFFSET_KUSANAGI} (Kusanagi)`;
+                 labelText = `Kusanagi`;
             } else {
                 // Default 'N'
                  activeDayOffset = OFFSET_NAKAMOTO;
-                 labelText = `${OFFSET_NAKAMOTO} (Nakamoto)`;
+                 labelText = `Nakamoto`;
             }
 
             // Calculation
