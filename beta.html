@@ -413,6 +413,19 @@
 
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
+            
+            <!-- Linear Toggle -->
+            <div class="flex items-center group mr-2 border-r border-slate-200 pr-6">
+                 <label for="linearTimeCheckbox" class="flex items-center cursor-pointer select-none">
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Linear</span>
+                      <div class="relative">
+                          <input type="checkbox" id="linearTimeCheckbox" class="peer sr-only">
+                          <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                      </div>
+                 </label>
+            </div>
+
             <!-- Order: Offset, Toggle, Exponent, Fit -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
@@ -476,6 +489,7 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
+        const linearTimeCheckbox = document.getElementById('linearTimeCheckbox');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
@@ -499,6 +513,7 @@
         let panStartX = 0;
         let panStartMin = 0;
         let panStartLogRange = 0;
+        let panStartLinearRange = 0;
 
         // Band Fill Colors
         const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
@@ -686,6 +701,8 @@
             }
 
             const useOptimal = useOptimalOffsetCheckbox.checked;
+            const isLinearTime = linearTimeCheckbox.checked;
+
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
             
@@ -838,14 +855,34 @@
             
             const startIndex = extendedMinDay;
             const endIndex = extendedMaxDay;
+
+            // Updated Line Calculation Logic for Curve support in Linear mode
             const calculateLinePoints = (intercept) => {
                   const safeStartIndex = Math.max(startIndex, 1); 
                   const safeEndIndex = Math.max(endIndex, 1);
-                  return [
-                      { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
-                      { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
-                  ];
+                  
+                  if (!isLinearTime) {
+                      // Log mode: Just 2 points form a straight line
+                      return [
+                          { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                          { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                      ];
+                  } else {
+                      // Linear mode: Needs many points to form a curve
+                      const points = [];
+                      const steps = 150; // Resolution of curve
+                      const range = safeEndIndex - safeStartIndex;
+                      const stepSize = range / steps;
+                      
+                      for (let i = 0; i <= steps; i++) {
+                          const currentX = safeStartIndex + (stepSize * i);
+                          const y = Math.pow(10, slope * Math.log10(currentX) + intercept);
+                          points.push({x: currentX, y: y});
+                      }
+                      return points;
+                  }
             };
+
             const medianLineData = calculateLinePoints(medianIntercept);
             const p1LineData = calculateLinePoints(p1Intercept);
             const p99LineData = calculateLinePoints(p99Intercept);
@@ -990,8 +1027,11 @@
 
                  applyBandVisibility(showBandsCheckbox.checked);
 
+                // Update X Axis type based on check
+                chart.options.scales.x.type = isLinearTime ? 'linear' : 'logarithmic';
                 chart.options.scales.x.min = extendedMinDay;
                 chart.options.scales.x.max = extendedMaxDay;
+                
                 chart.options.scales.y.min = extendedMinPrice;
                 chart.options.scales.y.max = extendedMaxPrice;
                 chart.options.scales.x.afterBuildTicks = xAxisAfterBuildTicks;
@@ -1097,8 +1137,10 @@
                         },
                         scales: {
                             x: {
-                                type: 'logarithmic', min: extendedMinDay, max: extendedMaxDay,
-                                title: { display: true, text: `Time (Log Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                // Dynamically switched between logarithmic and linear
+                                type: isLinearTime ? 'linear' : 'logarithmic', 
+                                min: extendedMinDay, max: extendedMaxDay,
+                                title: { display: true, text: `Time (${isLinearTime ? 'Linear' : 'Log'} Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
                                     color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
                                     callback: function(value) {
@@ -1146,6 +1188,7 @@
             showBandsCheckbox.addEventListener('change', handleBandToggle);
 
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            linearTimeCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
             if(chart) chart.update('none'); 
@@ -1432,14 +1475,25 @@
 
             let extendedMinPrice, extendedMaxPrice;
             
-            const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
-            const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            // Zoom Ratio Calculation (Branching based on Log vs Linear)
             let zoomRatio = 1.0; 
-            if (originalLogRangeX > 0) {
-                 zoomRatio = currentLogRangeX / originalLogRangeX;
-                 if (zoomRatio > 1.0) zoomRatio = 1.0;
-                 if (zoomRatio < 0.0) zoomRatio = 0.0;
+            
+            if (chart.options.scales.x.type === 'logarithmic') {
+                const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
+                const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+                if (originalLogRangeX > 0) {
+                     zoomRatio = currentLogRangeX / originalLogRangeX;
+                }
+            } else {
+                const currentRangeX = currentXMax - currentXMin;
+                const originalRangeX = originalExtendedMaxDay - originalExtendedMinDay;
+                if (originalRangeX > 0) {
+                     zoomRatio = currentRangeX / originalRangeX;
+                }
             }
+            
+            if (zoomRatio > 1.0) zoomRatio = 1.0;
+            if (zoomRatio < 0.0) zoomRatio = 0.0;
             
             const minTopPadding = Y_AXIS_TOP_PADDING_MIN;
             const maxTopPadding = Y_AXIS_TOP_PADDING_MAX;
@@ -1471,40 +1525,46 @@
             if (cursorX < chartArea.left) cursorX = chartArea.left;
             if (cursorX > chartArea.right) cursorX = chartArea.right;
 
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const currentLogRange = currentMaxLog - currentMinLog;
+            const isLinear = chart.options.scales.x.type === 'linear';
+
+            // Abstraction for Value vs LogValue
+            const getVal = (val) => isLinear ? val : Math.log10(val);
+            const fromVal = (val) => isLinear ? val : Math.pow(10, val);
+
+            const currentMinVal = getVal(chart.options.scales.x.min);
+            const currentMaxVal = getVal(chart.options.scales.x.max);
+            const currentRange = currentMaxVal - currentMinVal;
             
             const cursorPct = (chartArea.right - chartArea.left > 0) ? (cursorX - chartArea.left) / (chartArea.right - chartArea.left) : 0;
-            const logAtCursor = currentMinLog + (currentLogRange * cursorPct);
+            const valAtCursor = currentMinVal + (currentRange * cursorPct);
 
             const zoomDirection = event.deltaY < 0 ? (1 - ZOOM_FACTOR) : (1 + ZOOM_FACTOR);
-            let newLogRange = currentLogRange * zoomDirection;
+            let newRange = currentRange * zoomDirection;
 
-            const minLogRange = 0.1; 
-            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            const minRange = isLinear ? 30 : 0.1; // Minimum zoom (30 days vs 0.1 log units)
+            const maxRange = getVal(originalExtendedMaxDay) - getVal(originalExtendedMinDay);
             
-            if (newLogRange < minLogRange) newLogRange = minLogRange;
-            if (maxLogRange > minLogRange && newLogRange > maxLogRange) newLogRange = maxLogRange;
+            if (newRange < minRange) newRange = minRange;
+            if (maxRange > minRange && newRange > maxRange) newRange = maxRange;
 
-            let newLogMin = logAtCursor - (newLogRange * cursorPct);
-            let newLogMax = newLogMin + newLogRange;
+            let newMin = valAtCursor - (newRange * cursorPct);
+            let newMax = newMin + newRange;
             
-            const originalMinLog = Math.log10(originalExtendedMinDay);
-            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+            const originalMin = getVal(originalExtendedMinDay);
+            const originalMax = getVal(originalExtendedMaxDay);
 
-            if (newLogMin < originalMinLog) {
-                newLogMin = originalMinLog;
-                newLogMax = newLogMin + newLogRange;
+            if (newMin < originalMin) {
+                newMin = originalMin;
+                newMax = newMin + newRange;
             }
-            if (newLogMax > originalMaxLog) {
-                newLogMax = originalMaxLog;
-                newLogMin = newLogMax - newLogRange;
+            if (newMax > originalMax) {
+                newMax = originalMax;
+                newMin = newMax - newRange;
             }
-            if (newLogMin < originalMinLog) newLogMin = originalMinLog;
+            if (newMin < originalMin) newMin = originalMin;
 
-            chart.options.scales.x.min = Math.pow(10, newLogMin);
-            chart.options.scales.x.max = Math.pow(10, newLogMax);
+            chart.options.scales.x.min = fromVal(newMin);
+            chart.options.scales.x.max = fromVal(newMax);
 
             refitYAxis();
             chart.update('none');
@@ -1516,7 +1576,14 @@
             isPanning = true;
             panStartX = event.clientX;
             panStartMin = chart.options.scales.x.min;
-            panStartLogRange = Math.log10(chart.options.scales.x.max) - Math.log10(panStartMin);
+            
+            // Store range in both formats just in case, or check mode
+            if (chart.options.scales.x.type === 'linear') {
+                panStartLinearRange = chart.options.scales.x.max - panStartMin;
+            } else {
+                panStartLogRange = Math.log10(chart.options.scales.x.max) - Math.log10(panStartMin);
+            }
+            
             event.target.style.cursor = 'grabbing'
         }
 
@@ -1526,30 +1593,42 @@
             const chartArea = chart.chartArea;
             if (!chartArea) return;
 
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const logRange = currentMaxLog - currentMinLog;
+            const isLinear = chart.options.scales.x.type === 'linear';
+            const getVal = (val) => isLinear ? val : Math.log10(val);
+            const fromVal = (val) => isLinear ? val : Math.pow(10, val);
+
+            const currentMinVal = getVal(chart.options.scales.x.min);
+            const currentMaxVal = getVal(chart.options.scales.x.max);
+            const valRange = currentMaxVal - currentMinVal;
+            
             const pixelRange = chartArea.right - chartArea.left;
             if (pixelRange <= 0) return;
-            const logPerPixel = logRange / pixelRange;
+            const valPerPixel = valRange / pixelRange;
 
             const deltaX = event.clientX - panStartX;
-            const logDelta = deltaX * logPerPixel;
+            const valDelta = deltaX * valPerPixel;
 
-            let newLogMin = Math.log10(panStartMin) - logDelta;
-            let newLogMax = newLogMin + panStartLogRange;
+            // Retrieve stored range based on mode
+            const rangeToUse = isLinear ? panStartLinearRange : panStartLogRange;
+            const initialMinVal = getVal(panStartMin);
+
+            let newMinVal = initialMinVal - valDelta;
+            let newMaxVal = newMinVal + rangeToUse;
             
-            if (Math.pow(10, newLogMin) < originalExtendedMinDay) {
-                newLogMin = Math.log10(originalExtendedMinDay);
-                newLogMax = newLogMin + panStartLogRange;
+            const originalMinVal = getVal(originalExtendedMinDay);
+            const originalMaxVal = getVal(originalExtendedMaxDay);
+
+            if (newMinVal < originalMinVal) {
+                newMinVal = originalMinVal;
+                newMaxVal = newMinVal + rangeToUse;
             }
-            if (Math.pow(10, newLogMax) > originalExtendedMaxDay) {
-                newLogMax = Math.log10(originalExtendedMaxDay);
-                newLogMin = newLogMax - panStartLogRange;
+            if (newMaxVal > originalMaxVal) {
+                newMaxVal = originalMaxVal;
+                newMinVal = newMaxVal - rangeToUse;
             }
             
-            chart.options.scales.x.min = Math.pow(10, newLogMin);
-            chart.options.scales.x.max = Math.pow(10, newLogMax);
+            chart.options.scales.x.min = fromVal(newMinVal);
+            chart.options.scales.x.max = fromVal(newMaxVal);
 
             refitYAxis();
             chart.update('none');
@@ -1566,47 +1645,45 @@
         let lastTouchY = 0;
         let isTouching = false;
         let touchStartMin = 0;
-        let touchStartLogRange = 0;
+        
+        // Helper refs for touch math
+        let touchStartValRange = 0;
 
-function handleTouchStart(e) {
+        function handleTouchStart(e) {
             if (!chart) return;
 
             // --- FIX: Legend Hit Detection ---
-            // Calculate touch position relative to canvas
             const rect = e.target.getBoundingClientRect();
             const touchX = e.touches[0].clientX - rect.left;
             const touchY = e.touches[0].clientY - rect.top;
 
-            // If the chart has a legend and we are touching inside it...
             if (chart.legend && chart.legend.fit) {
                 const l = chart.legend;
                 if (touchX >= l.left && touchX <= l.right && 
                     touchY >= l.top && touchY <= l.bottom) {
-                    // Allow default behavior (Chart.js toggle) and exit panning logic
                     return; 
                 }
             }
             // ---------------------------------
 
-            // Only handle single touch for panning
             if (e.touches.length !== 1) return;
-            
-            // Prevent default behavior (scrolling the page)
             if (e.cancelable) e.preventDefault();
 
             isTouching = true;
             lastTouchX = e.touches[0].clientX;
             lastTouchY = e.touches[0].clientY;
             
-            // Snapshot current chart state for panning reference
+            const isLinear = chart.options.scales.x.type === 'linear';
+            const getVal = (val) => isLinear ? val : Math.log10(val);
+
             touchStartMin = chart.options.scales.x.min;
             const max = chart.options.scales.x.max;
-            touchStartLogRange = Math.log10(max) - Math.log10(touchStartMin);
+            touchStartValRange = getVal(max) - getVal(touchStartMin);
         }
 
         function handleTouchMove(e) {
             if (!chart || !isTouching || e.touches.length !== 1) return;
-            e.preventDefault(); // Stop page scroll
+            e.preventDefault(); 
 
             const currentX = e.touches[0].clientX;
             const currentY = e.touches[0].clientY;
@@ -1614,91 +1691,81 @@ function handleTouchStart(e) {
             const deltaX = currentX - lastTouchX;
             const deltaY = currentY - lastTouchY;
 
+            // Prepare Helper Functions
+            const isLinear = chart.options.scales.x.type === 'linear';
+            const getVal = (val) => isLinear ? val : Math.log10(val);
+            const fromVal = (val) => isLinear ? val : Math.pow(10, val);
+
             // 1. PANNING LOGIC (Left/Right)
-            // We apply panning based on X movement
             const chartArea = chart.chartArea;
             if (chartArea) {
-                const currentMinLog = Math.log10(chart.options.scales.x.min);
-                const currentMaxLog = Math.log10(chart.options.scales.x.max);
-                const logRange = currentMaxLog - currentMinLog;
+                const currentMinVal = getVal(chart.options.scales.x.min);
+                const currentMaxVal = getVal(chart.options.scales.x.max);
+                const valRange = currentMaxVal - currentMinVal;
                 const pixelRange = chartArea.right - chartArea.left;
                 
                 if (pixelRange > 0) {
-                    const logPerPixel = logRange / pixelRange;
-                    const logDelta = deltaX * logPerPixel;
+                    const valPerPixel = valRange / pixelRange;
+                    const valDelta = deltaX * valPerPixel;
 
-                    let newLogMin = currentMinLog - logDelta;
-                    let newLogMax = newLogMin + logRange;
+                    let newMinVal = currentMinVal - valDelta;
+                    let newMaxVal = newMinVal + valRange;
 
-                    // Boundary checks
-                    const originalMinLog = Math.log10(originalExtendedMinDay);
-                    const originalMaxLog = Math.log10(originalExtendedMaxDay);
+                    const originalMinVal = getVal(originalExtendedMinDay);
+                    const originalMaxVal = getVal(originalExtendedMaxDay);
 
-                    if (newLogMin < originalMinLog) {
-                        newLogMin = originalMinLog;
-                        newLogMax = newLogMin + logRange;
+                    if (newMinVal < originalMinVal) {
+                        newMinVal = originalMinVal;
+                        newMaxVal = newMinVal + valRange;
                     }
-                    if (newLogMax > originalMaxLog) {
-                         newLogMax = originalMaxLog;
-                         newLogMin = newLogMax - logRange;
+                    if (newMaxVal > originalMaxVal) {
+                         newMaxVal = originalMaxVal;
+                         newMinVal = newMaxVal - valRange;
                     }
                     
-                    chart.options.scales.x.min = Math.pow(10, newLogMin);
-                    chart.options.scales.x.max = Math.pow(10, newLogMax);
+                    chart.options.scales.x.min = fromVal(newMinVal);
+                    chart.options.scales.x.max = fromVal(newMaxVal);
                 }
             }
 
             // 2. ZOOMING LOGIC (Up/Down)
-            // Sliding UP (negative Y delta) zooms IN. Sliding DOWN (positive Y delta) zooms OUT.
-            // Sensitivity constant - smaller means smoother/slower zoom
             const ZOOM_SENSITIVITY = 0.006; 
-            
-            // Determine zoom factor based on vertical movement
-            // deltaY < 0 (Up) => Factor < 1 (Shrink range/Zoom In)
-            // deltaY > 0 (Down) => Factor > 1 (Expand range/Zoom Out)
             const zoomFactor = 1 + (deltaY * ZOOM_SENSITIVITY);
 
-            const currentMinLog = Math.log10(chart.options.scales.x.min);
-            const currentMaxLog = Math.log10(chart.options.scales.x.max);
-            const currentLogRange = currentMaxLog - currentMinLog;
+            const currentMinVal = getVal(chart.options.scales.x.min);
+            const currentMaxVal = getVal(chart.options.scales.x.max);
+            const currentRange = currentMaxVal - currentMinVal;
             
-            // Calculate new range
-            let newLogRange = currentLogRange * zoomFactor;
+            let newRange = currentRange * zoomFactor;
 
-            // Enforce Min/Max zoom levels
-            const minLogRange = 0.1; 
-            const maxLogRange = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
+            const minRange = isLinear ? 30 : 0.1; 
+            const maxRange = getVal(originalExtendedMaxDay) - getVal(originalExtendedMinDay);
 
-            if (newLogRange < minLogRange) newLogRange = minLogRange;
-            if (newLogRange > maxLogRange) newLogRange = maxLogRange;
+            if (newRange < minRange) newRange = minRange;
+            if (newRange > maxRange) newRange = maxRange;
 
-            // Apply zoom centered on the current view
-            const centerLog = (currentMinLog + currentMaxLog) / 2;
-            let newLogMinZoom = centerLog - (newLogRange / 2);
-            let newLogMaxZoom = centerLog + (newLogRange / 2);
+            const centerVal = (currentMinVal + currentMaxVal) / 2;
+            let newMinZoom = centerVal - (newRange / 2);
+            let newMaxZoom = centerVal + (newRange / 2);
 
-            // Boundary checks for zoom
-            const originalMinLog = Math.log10(originalExtendedMinDay);
-            const originalMaxLog = Math.log10(originalExtendedMaxDay);
+            const originalMinVal = getVal(originalExtendedMinDay);
+            const originalMaxVal = getVal(originalExtendedMaxDay);
 
-            if (newLogMinZoom < originalMinLog) {
-                newLogMinZoom = originalMinLog;
-                newLogMaxZoom = newLogMinZoom + newLogRange;
+            if (newMinZoom < originalMinVal) {
+                newMinZoom = originalMinVal;
+                newMaxZoom = newMinZoom + newRange;
             }
-            if (newLogMaxZoom > originalMaxLog) {
-                newLogMaxZoom = originalMaxLog;
-                newLogMinZoom = newLogMaxZoom - newLogRange;
+            if (newMaxZoom > originalMaxVal) {
+                newMaxZoom = originalMaxVal;
+                newMinZoom = newMaxZoom - newRange;
             }
             
-            // Apply Zoom results
-            chart.options.scales.x.min = Math.pow(10, newLogMinZoom);
-            chart.options.scales.x.max = Math.pow(10, newLogMaxZoom);
+            chart.options.scales.x.min = fromVal(newMinZoom);
+            chart.options.scales.x.max = fromVal(newMaxZoom);
 
-            // Update references for next frame
             lastTouchX = currentX;
             lastTouchY = currentY;
 
-            // Redraw
             refitYAxis();
             chart.update('none');
         }
@@ -1725,8 +1792,6 @@ function handleTouchStart(e) {
             // Enable Dragging
             makeDraggable(document.getElementById('projectionTable'), document.getElementById('projectionHeader'));
             makeDraggable(document.getElementById('bandLevelsTable'), document.getElementById('bandsHeader'));
-            
-            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
             
             const canvas = document.getElementById('powerLawChart');
             if (canvas) {
