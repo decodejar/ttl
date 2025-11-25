@@ -414,12 +414,12 @@
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             
-            <!-- Linear Toggle -->
-            <div class="flex items-center group mr-2 border-r border-slate-200 pr-6">
-                 <label for="linearTimeCheckbox" class="flex items-center cursor-pointer select-none">
-                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Linear</span>
+            <!-- Log-Log Toggle (Updated label, default checked, removed vertical border) -->
+            <div class="flex items-center group">
+                 <label for="logLogCheckbox" class="flex items-center cursor-pointer select-none">
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log-Log</span>
                       <div class="relative">
-                          <input type="checkbox" id="linearTimeCheckbox" class="peer sr-only">
+                          <input type="checkbox" id="logLogCheckbox" class="peer sr-only" checked>
                           <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                           <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                       </div>
@@ -489,7 +489,7 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
-        const linearTimeCheckbox = document.getElementById('linearTimeCheckbox');
+        const logLogCheckbox = document.getElementById('logLogCheckbox');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
@@ -701,7 +701,8 @@
             }
 
             const useOptimal = useOptimalOffsetCheckbox.checked;
-            const isLinearTime = linearTimeCheckbox.checked;
+            // If Log-Log is Checked, isLinearTime is false.
+            const isLinearTime = !logLogCheckbox.checked;
 
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
@@ -1198,7 +1199,7 @@
             showBandsCheckbox.addEventListener('change', handleBandToggle);
 
             useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
-            linearTimeCheckbox.addEventListener('change', createOrUpdateChart);
+            logLogCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
             if(chart) chart.update('none'); 
