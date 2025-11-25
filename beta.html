@@ -1126,10 +1126,10 @@
                             { ...datasetDefaults, ...grayDashedLineStyle, label: '1st Pctl', data: p1LineData },
                             // 8: 99th - Dashed
                             { ...datasetDefaults, ...grayDashedLineStyle, label: '99th Pctl', data: p99LineData },
-                            // 9: 20th - Dashed
-                            { ...datasetDefaults, ...grayDashedLineStyle, label: '20th Pctl', data: p20LineData },
-                            // 10: 80th - Dashed
-                            { ...datasetDefaults, ...grayDashedLineStyle, label: '80th Pctl', data: p80LineData },
+                            // 9: 20th - Dashed - HIDDEN DEFAULT IN SIMPLE MODE
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '20th Pctl', data: p20LineData, hidden: true },
+                            // 10: 80th - Dashed - HIDDEN DEFAULT IN SIMPLE MODE
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '80th Pctl', data: p80LineData, hidden: true },
 
                             // --- GROUP B: BANDS (11-15) ---
                             // 11: Median (P50) - Fine Grey
@@ -1150,10 +1150,19 @@
                             legend: {
                                 labels: {
                                     color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
-                                    // Safety Check: Ensure chart is defined before accessing its properties to prevent crash on init
+                                    // FIXED: Filter based on active mode (Group A vs B), NOT individual visibility.
                                     filter: (item) => {
-                                        if (!chart) return item.datasetIndex >= 5;
-                                        return item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex);
+                                        // Always show Price (5)
+                                        if (item.datasetIndex === 5) return true;
+                                        
+                                        const bandsMode = showBandsCheckbox.checked;
+                                        if (bandsMode) {
+                                            // Show Group B (11-15)
+                                            return item.datasetIndex >= 11 && item.datasetIndex <= 15;
+                                        } else {
+                                            // Show Group A (6-10)
+                                            return item.datasetIndex >= 6 && item.datasetIndex <= 10;
+                                        }
                                     }
                                 }
                             },
@@ -1292,7 +1301,6 @@
              
              const setVis = (index, visible) => {
                  chart.setDatasetVisibility(index, visible);
-                 // We don't need to manually set .hidden here usually, setDatasetVisibility handles the fade
              };
 
              if (showBands) {
@@ -1315,8 +1323,12 @@
                  // 2. Show Price
                  setVis(5, true);
 
-                 // 3. Show Group A (Simple Lines)
-                 for (let i = 6; i <= 10; i++) setVis(i, true);
+                 // 3. Show Group A (Simple Lines) - RESTORE DEFAULTS
+                 setVis(6, true); // Median
+                 setVis(7, true); // 1st
+                 setVis(8, true); // 99th
+                 setVis(9, false); // 20th - Hidden by default
+                 setVis(10, false); // 80th - Hidden by default
                  
                  // 4. Hide Group B (Fine Grey Lines)
                  for (let i = 11; i <= 15; i++) setVis(i, false);
