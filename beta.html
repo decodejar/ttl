@@ -742,7 +742,7 @@
                 const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
                 rSquared = optimalOffsetRSquared;
-                labelText = `(${optimalOffset})`;
+                labelText = `${optimalOffset}`;
             } else if (currentOffsetMode === MODE_K) {
                  activeDayOffset = OFFSET_KUSANAGI;
                  labelText = `Kusanagi`;
