@@ -433,7 +433,7 @@
             <!-- Log-Log Toggle (Moved to End) -->
             <div class="flex items-center group">
                  <label for="logLogCheckbox" class="flex items-center cursor-pointer select-none">
-                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log-Log</span>
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log Time</span>
                       <div class="relative">
                           <input type="checkbox" id="logLogCheckbox" class="peer sr-only" checked>
                           <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
@@ -1173,12 +1173,12 @@
                                 }
                             }
                         },
-                        scales: {
+                            scales: {
                             x: {
                                 // Dynamically switched between logarithmic and linear
                                 type: isLinearTime ? 'linear' : 'logarithmic', 
                                 min: extendedMinDay, max: extendedMaxDay,
-                                title: { display: true, text: `Time (${isLinearTime ? 'Linear' : 'Log'} Scale)`, color: '#64748b', font: { size: 11, family: 'Inter' } },
+                                title: { display: true, text: isLinearTime ? 'Time' : 'Time (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
                                 ticks: { 
                                     color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
                                     callback: function(value) {
