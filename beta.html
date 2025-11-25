@@ -489,7 +489,7 @@
 
         const OFFSET_NAKAMOTO = 486; 
         const OFFSET_KUSANAGI = 789;
-        const MAX_OFFSET_SEARCH_LIMIT = 789;      
+        const MAX_OFFSET_SEARCH_LIMIT = 789;       
         const X_AXIS_PROJECTION_PADDING = 0.40; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
         const Y_AXIS_TOP_PADDING_MIN = 0.1;
@@ -1037,13 +1037,25 @@
                     { label: 'Expensive Band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
                     { label: 'Bubble Band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
-                    // --- VISUAL LINE LAYERS (5-10) ---
+                    // --- VISUAL LINE LAYERS ---
+                    // 5: Price (Always on)
                     { label: 'Price', data: chartPriceDataPoints, borderColor: '#0f172a', borderWidth: 2, backgroundColor: 'rgba(0, 0, 0, 0.0)' }, 
-                    { label: '50th Percentile', data: medianLineData }, 
-                    { label: '1st Pctl', data: p1LineData },
-                    { label: '99th Pctl', data: p99LineData },
-                    { label: '20th Pctl', data: p20LineData },
-                    { label: '80th Pctl', data: p80LineData },
+                    
+                    // --- GROUP A: SIMPLE / CURVES (6-10) ---
+                    // Styled as: Median=Orange, Others=Dashed
+                    { ...datasetDefaults, ...orangeLineStyle, label: '50th Percentile', data: medianLineData }, 
+                    { ...datasetDefaults, ...grayDashedLineStyle, label: '1st Pctl', data: p1LineData },
+                    { ...datasetDefaults, ...grayDashedLineStyle, label: '99th Pctl', data: p99LineData },
+                    { ...datasetDefaults, ...grayDashedLineStyle, label: '20th Pctl', data: p20LineData },
+                    { ...datasetDefaults, ...grayDashedLineStyle, label: '80th Pctl', data: p80LineData },
+
+                    // --- GROUP B: BAND LINES (11-15) ---
+                    // Styled as: All Fine Grey
+                    { ...datasetDefaults, ...grayFineLineStyle, label: '50th Percentile', data: medianLineData }, 
+                    { ...datasetDefaults, ...grayFineLineStyle, label: '1st Pctl', data: p1LineData },
+                    { ...datasetDefaults, ...grayFineLineStyle, label: '99th Pctl', data: p99LineData },
+                    { ...datasetDefaults, ...grayFineLineStyle, label: '20th Pctl', data: p20LineData },
+                    { ...datasetDefaults, ...grayFineLineStyle, label: '80th Pctl', data: p80LineData },
                 ];
 
                 // Apply updates to existing chart datasets or push new ones
@@ -1106,16 +1118,30 @@
                                 pointHoverRadius: 0, 
                                 pointHitRadius: 15 
                             },
-                            // 6: Median (P50)
-                            { ...datasetDefaults, label: '50th Percentile', data: medianLineData },
-                            // 7: 1st
-                            { ...datasetDefaults, label: '1st Pctl', data: p1LineData },
-                            // 8: 99th
-                            { ...datasetDefaults, label: '99th Pctl', data: p99LineData },
-                            // 9: 20th
-                            { ...datasetDefaults, label: '20th Pctl', data: p20LineData },
-                            // 10: 80th
-                            { ...datasetDefaults, label: '80th Pctl', data: p80LineData },
+                            
+                            // --- GROUP A: SIMPLE (6-10) ---
+                            // 6: Median (P50) - Orange
+                            { ...datasetDefaults, ...orangeLineStyle, label: '50th Percentile', data: medianLineData },
+                            // 7: 1st - Dashed
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '1st Pctl', data: p1LineData },
+                            // 8: 99th - Dashed
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '99th Pctl', data: p99LineData },
+                            // 9: 20th - Dashed
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '20th Pctl', data: p20LineData },
+                            // 10: 80th - Dashed
+                            { ...datasetDefaults, ...grayDashedLineStyle, label: '80th Pctl', data: p80LineData },
+
+                            // --- GROUP B: BANDS (11-15) ---
+                            // 11: Median (P50) - Fine Grey
+                            { ...datasetDefaults, ...grayFineLineStyle, label: '50th Percentile', data: medianLineData },
+                            // 12: 1st - Fine Grey
+                            { ...datasetDefaults, ...grayFineLineStyle, label: '1st Pctl', data: p1LineData },
+                            // 13: 99th - Fine Grey
+                            { ...datasetDefaults, ...grayFineLineStyle, label: '99th Pctl', data: p99LineData },
+                            // 14: 20th - Fine Grey
+                            { ...datasetDefaults, ...grayFineLineStyle, label: '20th Pctl', data: p20LineData },
+                            // 15: 80th - Fine Grey
+                            { ...datasetDefaults, ...grayFineLineStyle, label: '80th Pctl', data: p80LineData },
                         ]
                     },
                     options: {
@@ -1124,7 +1150,7 @@
                             legend: {
                                 labels: {
                                     color: '#475569', usePointStyle: true, boxWidth: 30, boxHeight: 12, font: { family: "'Inter', sans-serif", size: 11 },
-                                    filter: (item) => item.datasetIndex >= 5
+                                    filter: (item) => item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex)
                                 }
                             },
                             tooltip: {
@@ -1137,6 +1163,7 @@
                                 borderWidth: 1,
                                 padding: 10,
                                 displayColors: false,
+                                filter: (item) => item.datasetIndex >= 5 && chart.isDatasetVisible(item.datasetIndex),
                                 callbacks: {
                                     title: (tooltipItems) => {
                                         if (tooltipItems.length > 0) {
@@ -1167,7 +1194,6 @@
                                          if (context.datasetIndex < 5) return null;
                                          return `$${context.parsed.y.toFixed(2)}`;
                                     },
-                                    // REVERTED: Remove third line as requested
                                     afterLabel: (context) => {
                                         return null;
                                     }
@@ -1252,50 +1278,41 @@
         }
 
         function applyBandVisibility(showBands) {
-             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 11) {
+             // Chart now has 16 datasets (0-15)
+             if (!chart || !chart.data || !chart.data.datasets || chart.data.datasets.length < 16) {
                  return;
              }
              
              const setVis = (index, visible) => {
                  chart.setDatasetVisibility(index, visible);
-                 chart.data.datasets[index].hidden = !visible; 
+                 // We don't need to manually set .hidden here usually, setDatasetVisibility handles the fade
              };
 
              if (showBands) {
+                 // 1. Show Fills
                  for (let i = 0; i <= 4; i++) setVis(i, true);
+                 
+                 // 2. Show Price
                  setVis(5, true);
                  
-                 const fineGrey = grayFineLineStyle;
+                 // 3. Hide Group A (Simple Lines)
+                 for (let i = 6; i <= 10; i++) setVis(i, false);
                  
-                 Object.assign(chart.data.datasets[6], fineGrey);
-                 setVis(6, true);
-                 Object.assign(chart.data.datasets[7], fineGrey);
-                 setVis(7, true);
-                 Object.assign(chart.data.datasets[8], fineGrey);
-                 setVis(8, true);
-                 Object.assign(chart.data.datasets[9], fineGrey);
-                 setVis(9, true);
-                 Object.assign(chart.data.datasets[10], fineGrey);
-                 setVis(10, true);
+                 // 4. Show Group B (Fine Grey Lines)
+                 for (let i = 11; i <= 15; i++) setVis(i, true);
                  
              } else {
+                 // 1. Hide Fills
                  for (let i = 0; i <= 4; i++) setVis(i, false);
+                 
+                 // 2. Show Price
                  setVis(5, true);
 
-                 Object.assign(chart.data.datasets[6], orangeLineStyle);
-                 setVis(6, true);
+                 // 3. Show Group A (Simple Lines)
+                 for (let i = 6; i <= 10; i++) setVis(i, true);
                  
-                 Object.assign(chart.data.datasets[7], grayDashedLineStyle);
-                 setVis(7, true);
-                 
-                 Object.assign(chart.data.datasets[8], grayDashedLineStyle);
-                 setVis(8, true);
-                 
-                 Object.assign(chart.data.datasets[9], grayDashedLineStyle);
-                 setVis(9, false);
-                 
-                 Object.assign(chart.data.datasets[10], grayDashedLineStyle);
-                 setVis(10, false);
+                 // 4. Hide Group B (Fine Grey Lines)
+                 for (let i = 11; i <= 15; i++) setVis(i, false);
              }
         }
 
