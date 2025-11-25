@@ -1067,6 +1067,7 @@
 
                 // Update X Axis type based on check
                 chart.options.scales.x.type = isLinearTime ? 'linear' : 'logarithmic';
+                chart.options.scales.x.title.text = isLinearTime ? 'Time' : 'Time (Log Scale)';
                 chart.options.scales.x.min = extendedMinDay;
                 chart.options.scales.x.max = extendedMaxDay;
                 
