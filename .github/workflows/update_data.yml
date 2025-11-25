@@ -5,8 +5,8 @@ name: update-bittensor-price-data
 
 on:
   schedule:
-    # Runs automatically every day at 00:05 UTC.
-    - cron: '5 0 * * *'
+    # Runs automatically every day at 00:10 UTC (10 mins after daily close).
+    - cron: '10 0 * * *'
   
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
@@ -45,4 +45,3 @@ jobs:
         with:
           commit_message: "Automated update of price_data.json"
           file_pattern: "price_data.json"
-          
