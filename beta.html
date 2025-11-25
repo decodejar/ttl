@@ -770,18 +770,28 @@
             const firstDayNum = priceData[0].x;
             const lastDayNum = priceData[priceData.length - 1].x; 
 
-            const logMinDay = Math.log10(firstDayNum);
-            const logMaxDay = Math.log10(lastDayNum);
-            const logDayRange = logMaxDay - logMinDay;
-
             const extendedMinDay = firstDayNum;
             let extendedMaxDay;
 
-            if (logDayRange > 0) {
-                const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
-                extendedMaxDay = Math.pow(10, extendedLogMaxDay);
+            // UPDATED LOGIC HERE
+            if (isLinearTime) {
+                 const dayRange = lastDayNum - firstDayNum;
+                 if (dayRange > 0) {
+                     extendedMaxDay = lastDayNum + (dayRange * X_AXIS_PROJECTION_PADDING);
+                 } else {
+                     extendedMaxDay = lastDayNum * 1.4;
+                 }
             } else {
-                extendedMaxDay = lastDayNum * 1.4; 
+                const logMinDay = Math.log10(firstDayNum);
+                const logMaxDay = Math.log10(lastDayNum);
+                const logDayRange = logMaxDay - logMinDay;
+
+                if (logDayRange > 0) {
+                    const extendedLogMaxDay = logMaxDay + (logDayRange * X_AXIS_PROJECTION_PADDING);
+                    extendedMaxDay = Math.pow(10, extendedLogMaxDay);
+                } else {
+                    extendedMaxDay = lastDayNum * 1.4; 
+                }
             }
 
             originalExtendedMinDay = extendedMinDay;
@@ -837,7 +847,7 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
             
