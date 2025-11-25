@@ -32,7 +32,7 @@ jobs:
       - name: Run fetch data script
         env:
           # This passes the new CoinGecko API key secret to the Python script.
-          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+          COINGECKO: ${{ secrets.COINGECKO }}
         run: python fetch_data.py
 
       - name: List files in workspace
