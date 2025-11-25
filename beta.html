@@ -414,7 +414,7 @@
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             
-            <!-- Log-Log Toggle (Updated label, default checked, removed vertical border) -->
+            <!-- Log-Log Toggle -->
             <div class="flex items-center group">
                  <label for="logLogCheckbox" class="flex items-center cursor-pointer select-none">
                       <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log-Log</span>
@@ -426,28 +426,26 @@
                  </label>
             </div>
 
-            <!-- Order: Offset, Toggle, Exponent, Fit -->
+            <!-- Model Parameters -->
             <div id="modelParamDiv" class="text-slate-600"></div>
             
-            <!-- Model Toggle -->
-             <div class="flex items-center group">
-                 <label for="useOptimalOffsetCheckbox" class="flex items-center cursor-pointer select-none">
-                     <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Optimise</span>
-                     <div class="relative">
-                         <input type="checkbox" id="useOptimalOffsetCheckbox" class="peer sr-only" checked>
-                         <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                         <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                     </div>
-                 </label>
-                 <!-- UPDATED: Added Tooltip next to switch -->
-                 <div class="group/tooltip relative flex items-center ml-1">
+            <!-- NEW 3-Way Switch: K | N | O -->
+             <div class="flex items-center gap-2">
+                 <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
+                    <button type="button" onclick="setOffsetMode('K')" id="btnK" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Kusanagi (Jan 2021)">K</button>
+                    <button type="button" onclick="setOffsetMode('N')" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none" title="Nakamoto (Nov 2021)">N</button>
+                    <button type="button" onclick="setOffsetMode('O')" id="btnO" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none" title="Optimise (Best Fit)">O</button>
+                 </div>
+                 <!-- Tooltip -->
+                 <div class="group/tooltip relative flex items-center">
                       <span class="text-[10px] font-bold text-slate-400 cursor-help border border-slate-300 rounded-full w-4 h-4 flex items-center justify-center hover:bg-slate-100 hover:text-blue-500 transition-colors">?</span>
-                      <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 bg-slate-800 text-white text-xs rounded-lg p-2 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-left">
-                        <strong>Optimise On:</strong> Calculates the day offset between the Kusanagi genesis and the dataset start date that provides the best statistical fit.<br>
-                        <strong>Optimise Off:</strong> Uses the fundamental age of the Nakamoto fork as the day offset.
+                      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-slate-800 text-white text-xs rounded-lg p-3 opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity duration-200 shadow-xl z-50 font-light leading-relaxed text-left">
+                        <strong>K (Kusanagi):</strong> Jan 2021 Genesis offset (789 days).<br>
+                        <strong>N (Nakamoto):</strong> Nov 2021 Fork offset (486 days). <em>Default.</em><br>
+                        <strong>O (Optimise):</strong> Mathematically optimal best-fit offset.
                       </div>
                 </div>
-             </div>
+            </div>
             
             <div id="growthExponentDiv" class="text-slate-600"></div>
             <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
@@ -488,12 +486,17 @@
         const projectionTable = document.getElementById('projectionTable');
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
-        const useOptimalOffsetCheckbox = document.getElementById('useOptimalOffsetCheckbox');
         const logLogCheckbox = document.getElementById('logLogCheckbox');
+        
+        // Buttons for 3-Way Switch
+        const btnK = document.getElementById('btnK');
+        const btnN = document.getElementById('btnN');
+        const btnO = document.getElementById('btnO');
 
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
-        const HARDCODED_OFFSET = 486; // UPDATED
+        const OFFSET_NAKAMOTO = 486; 
+        const OFFSET_KUSANAGI = 789;
         const MAX_OFFSET_SEARCH_LIMIT = 789;      
         const X_AXIS_PROJECTION_PADDING = 0.33; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
@@ -505,6 +508,9 @@
         let priceData = []; 
         let activeModelParams = {}; 
         
+        // Switch State: 'N' is Default
+        let currentOffsetMode = 'N';
+
         // Zoom & Pan State
         let originalExtendedMinDay = 1;
         let originalExtendedMaxDay = 1000;
@@ -660,6 +666,24 @@
             return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
         }
 
+        // --- SECTION: UI LOGIC FOR 3-WAY SWITCH ---
+        
+        function updateSwitchUI(mode) {
+            // Reset styles
+            const inactiveClass = "text-slate-500 hover:text-slate-700 bg-transparent shadow-none";
+            const activeClass = "bg-white text-blue-600 shadow-sm";
+
+            btnK.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'K' ? activeClass : inactiveClass}`;
+            btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'N' ? activeClass : inactiveClass}`;
+            btnO.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === 'O' ? activeClass : inactiveClass}`;
+        }
+
+        function setOffsetMode(mode) {
+            if (currentOffsetMode === mode) return;
+            currentOffsetMode = mode;
+            updateSwitchUI(mode);
+            createOrUpdateChart();
+        }
 
         // --- SECTION: CORE APPLICATION LOGIC ---
 
@@ -671,78 +695,80 @@
             }
 
             if (!baseData || baseData.length === 0) {
-                // 1. Status Indicator (Preserve "Data not loaded" if present)
                 if (!dataStatusDiv.innerHTML.includes('Error') && !dataStatusDiv.innerHTML.includes('not loaded') && !dataStatusDiv.innerHTML.includes('Demo')) { 
                     dataStatusDiv.innerHTML = `<span class="status-dot bg-red-500"></span><strong>Data corrupted</strong>`;
                 }
-
-                // 2. Top Bar: Price (Show N/A)
                 lastPriceDiv.innerHTML = `Price: <span class="ml-2 font-bold font-mono text-slate-900">N/A</span>`;
                 lastPriceDiv.classList.remove('hidden');
-
-                // 3. Top Bar: Valuation (Show N/A with grey dot)
                 priceZoneDiv.innerHTML = `<span class="status-dot bg-slate-300"></span><span class="font-medium font-sans text-slate-600">N/A</span>`;
                 priceZoneDiv.classList.remove('hidden');
-
-                // 4. Top Bar: Bands Switch (Visible but Disabled)
                 showBandsContainer.classList.remove('hidden');
                 showBandsCheckbox.disabled = true;
 
-                // 5. Bottom Bar: Metrics (Show N/A)
                 growthExponentDiv.innerHTML = 'Exponent (α): <span class="font-bold font-mono text-slate-800">N/A</span>';
                 modelParamDiv.innerHTML = 'Offset: <span class="font-bold font-mono text-slate-800">N/A</span>';
                 modelFitDiv.innerHTML = 'Fit (R²): <span class="font-bold font-mono text-slate-800">N/A</span>';
-
-                // 6. Bottom Bar: Optimise Switch (Disabled)
-                if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = true;
                 
+                // Disable Buttons
+                btnK.disabled = true;
+                btnN.disabled = true;
+                btnO.disabled = true;
+
                 loader.style.display = 'none';
                 return;
             }
+            
+            // Enable Buttons
+            btnK.disabled = false;
+            btnN.disabled = false;
+            btnO.disabled = false;
 
-            const useOptimal = useOptimalOffsetCheckbox.checked;
-            // If Log-Log is Checked, isLinearTime is false.
             const isLinearTime = !logLogCheckbox.checked;
 
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
+            let labelText = "";
             
-            const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
-            
-            if (useOptimal) {
+            if (currentOffsetMode === 'O') {
+                const { optimalOffset, bestFit: optimalOffsetRSquared } = findOptimalOffset(baseData, 1, MAX_OFFSET_SEARCH_LIMIT);
                 activeDayOffset = optimalOffset;
-                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + optimalOffset }));
-                const regression = linearRegression(priceData);
-                slope = regression.slope;
-                meanIntercept = regression.intercept;
-                rSquared = optimalOffsetRSquared; 
-                // UPDATED: Changed "Day Offset:" to "Offset:"
-                modelParamDiv.innerHTML = `Offset: <span class="font-bold font-mono text-slate-800">${optimalOffset}</span>`;
+                rSquared = optimalOffsetRSquared;
+                labelText = `${optimalOffset} (Optimal)`;
+            } else if (currentOffsetMode === 'K') {
+                 activeDayOffset = OFFSET_KUSANAGI;
+                 labelText = `${OFFSET_KUSANAGI} (Kusanagi)`;
             } else {
-                activeDayOffset = HARDCODED_OFFSET;
-                priceData = baseData.map(p => ({ ...p, x: p.dayIndex + HARDCODED_OFFSET }));
-                const regression = linearRegression(priceData);
-                slope = regression.slope;
-                meanIntercept = regression.intercept;
-                rSquared = calculateRSquared(priceData, slope, meanIntercept);
-                // UPDATED: Changed "Model:" to "Offset:"
-                modelParamDiv.innerHTML = `Offset: <span class="font-bold font-mono text-slate-800">Nakamoto</span>`;
+                // Default 'N'
+                 activeDayOffset = OFFSET_NAKAMOTO;
+                 labelText = `${OFFSET_NAKAMOTO} (Nakamoto)`;
             }
+
+            // Calculation
+            priceData = baseData.map(p => ({ ...p, x: p.dayIndex + activeDayOffset }));
+            const regression = linearRegression(priceData);
+            slope = regression.slope;
+            meanIntercept = regression.intercept;
+            
+            // If not optimal, calculate R2 for this specific offset
+            if (currentOffsetMode !== 'O') {
+                rSquared = calculateRSquared(priceData, slope, meanIntercept);
+            }
+
+            modelParamDiv.innerHTML = `Offset: <span class="font-bold font-mono text-slate-800">${labelText}</span>`;
             
             activeModelParams = {
-                modelType: useOptimal ? 'optimalOffset' : 'hardcoded',
+                modelType: currentOffsetMode,
                 activeDayOffset: activeDayOffset,
                 slope: slope,
                 meanIntercept: meanIntercept
             };
 
-            if (useOptimalOffsetCheckbox) useOptimalOffsetCheckbox.disabled = false;
             if (showBandsCheckbox) showBandsCheckbox.disabled = false;
             
             const lastBaseDataPoint = baseData[baseData.length - 1]; 
             const lastTimestamp = lastBaseDataPoint.time; 
-            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, {
-                year: 'numeric', month: 'short', day: 'numeric'
+            const lastUpdateDate = new Date(lastTimestamp).toLocaleDateString(undefined, { 
+                year: 'numeric', month: 'short', day: 'numeric' 
             });
 
             const now = new Date().getTime();
@@ -775,7 +801,6 @@
             const extendedMinDay = firstDayNum;
             let extendedMaxDay;
 
-            // UPDATED LOGIC HERE
             if (isLinearTime) {
                  const dayRange = lastDayNum - firstDayNum;
                  if (dayRange > 0) {
@@ -1198,8 +1223,7 @@
             showBandsContainer.classList.remove('hidden');
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
-
-            useOptimalOffsetCheckbox.addEventListener('change', createOrUpdateChart);
+            
             logLogCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
@@ -1494,13 +1518,13 @@
                 const currentLogRangeX = Math.log10(currentXMax) - Math.log10(currentXMin);
                 const originalLogRangeX = Math.log10(originalExtendedMaxDay) - Math.log10(originalExtendedMinDay);
                 if (originalLogRangeX > 0) {
-                     zoomRatio = currentLogRangeX / originalLogRangeX;
+                      zoomRatio = currentLogRangeX / originalLogRangeX;
                 }
             } else {
                 const currentRangeX = currentXMax - currentXMin;
                 const originalRangeX = originalExtendedMaxDay - originalExtendedMinDay;
                 if (originalRangeX > 0) {
-                     zoomRatio = currentRangeX / originalRangeX;
+                      zoomRatio = currentRangeX / originalRangeX;
                 }
             }
             
