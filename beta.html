@@ -1313,6 +1313,9 @@
              }
 
              applyBandVisibility(showBands);
+             
+             // Set animation duration to 1 second for smooth fade
+             chart.options.animation.duration = 1000;
              chart.update();
         }
 
