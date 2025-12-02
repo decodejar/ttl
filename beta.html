@@ -497,6 +497,49 @@
          * Copyright (c) 2025 taotensorlaw.com. All Rights Reserved.
          */
 
+        // --- SECTION: UTILS FOR COLOR ANIMATION ---
+        const ColorUtils = {
+            // Parse Hex or RGBA string to {r, g, b, a}
+            parseColor: function(colorStr) {
+                if (!colorStr || colorStr === 'transparent') return { r:0, g:0, b:0, a:0 };
+                
+                // Handle Hex
+                if (colorStr.startsWith('#')) {
+                    const hex = colorStr.slice(1);
+                    const bigint = parseInt(hex, 16);
+                    if (hex.length === 6) {
+                        return {
+                            r: (bigint >> 16) & 255,
+                            g: (bigint >> 8) & 255,
+                            b: bigint & 255,
+                            a: 1
+                        };
+                    }
+                }
+                
+                // Handle RGB/RGBA
+                if (colorStr.startsWith('rgb')) {
+                    const parts = colorStr.match(/(\d+(\.\d+)?)/g);
+                    if (parts) {
+                        return {
+                            r: parseFloat(parts[0]),
+                            g: parseFloat(parts[1]),
+                            b: parseFloat(parts[2]),
+                            a: parts[3] ? parseFloat(parts[3]) : 1
+                        };
+                    }
+                }
+                return { r:0, g:0, b:0, a:1 }; // Fallback
+            },
+
+            // Set the opacity of a color string
+            setAlpha: function(colorStr, opacityMultiplier) {
+                const c = this.parseColor(colorStr);
+                const newAlpha = c.a * opacityMultiplier;
+                return `rgba(${c.r}, ${c.g}, ${c.b}, ${newAlpha})`;
+            }
+        };
+
         // --- SECTION: GLOBAL ELEMENT REFERENCES ---
         const mainContainer = document.getElementById('mainContainer');
         const headerElement = document.querySelector('header');
@@ -527,7 +570,7 @@
         const OFFSET_NAKAMOTO = 486; 
         const OFFSET_KUSANAGI = 789;
         const OFFSET_FINNEY = -17;
-        const MAX_OFFSET_SEARCH_LIMIT = 789;       
+        const MAX_OFFSET_SEARCH_LIMIT = 789;        
         const X_AXIS_PROJECTION_PADDING = 0.40; 
         const Y_AXIS_BOTTOM_PADDING = 0.1;
         const Y_AXIS_TOP_PADDING_MIN = 0.1;
@@ -1092,6 +1135,11 @@
                              hidden: false
                          });
                     }
+                    
+                    // Store original colors for animation reference
+                    const ds = chart.data.datasets[i];
+                    ds._origBorder = ds.borderColor || 'transparent';
+                    ds._origBackground = ds.backgroundColor || 'transparent';
                 });
 
                 if (chart.data.datasets.length > datasetsStruct.length) {
@@ -1216,8 +1264,8 @@
                                             
                                             if (!dataPoint) {
                                                 dataPoint = baseData.reduce((prev, curr) => {
-                                                      return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
-                                                });
+                                                        return (Math.abs(curr.dayIndex - targetDayIndex) < Math.abs(prev.dayIndex - targetDayIndex) ? curr : prev);
+                                                    });
                                             }
 
                                             if (dataPoint) {
@@ -1239,51 +1287,57 @@
                                 }
                             }
                         },
-                            scales: {
-                            x: {
-                                // Dynamically switched between logarithmic and linear
-                                type: isLinearTime ? 'linear' : 'logarithmic', 
-                                min: extendedMinDay, max: extendedMaxDay,
-                                title: { display: true, text: isLinearTime ? 'Time (Linear Scale)' : 'Time (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
-                                ticks: { 
-                                    color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
-                                    callback: function(value) {
-                                        const tick = this.getTicks().find(t => t.value === value);
-                                        return tick ? tick.label : null;
-                                    }
-                                },
-                                afterBuildTicks: xAxisAfterBuildTicks, 
-                                grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                            },
-                            y: {
-                                type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
-                                title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
-                                ticks: { 
-                                    color: '#64748b', font: { family: "'Inter', sans-serif", size: 10 }, 
-                                    callback: function(value, index, ticks) {
-                                        const logVal = Math.log10(value);
-                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
-                                            return `$${value.toLocaleString()}`;
-                                        }
-                                        return ''; 
-                                    }
-                                },
-                                afterBuildTicks: yAxisAfterBuildTicks, 
-                                grid: { 
-                                    color: function(context) {
-                                        const value = context.tick.value;
-                                        if (value <= 0) return 'rgba(0, 0, 0, 0.05)'; 
-                                        const logVal = Math.log10(value);
-                                        if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
-                                            return 'rgba(0, 0, 0, 0.08)'; 
-                                        } else {
-                                            return 'rgba(0, 0, 0, 0.03)';
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                           scales: {
+                           x: {
+                               // Dynamically switched between logarithmic and linear
+                               type: isLinearTime ? 'linear' : 'logarithmic', 
+                               min: extendedMinDay, max: extendedMaxDay,
+                               title: { display: true, text: isLinearTime ? 'Time (Linear Scale)' : 'Time (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
+                               ticks: { 
+                                   color: '#64748b', autoSkip: false, font: { family: "'Inter', sans-serif", size: 10 },
+                                   callback: function(value) {
+                                       const tick = this.getTicks().find(t => t.value === value);
+                                       return tick ? tick.label : null;
+                                   }
+                               },
+                               afterBuildTicks: xAxisAfterBuildTicks, 
+                               grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                           },
+                           y: {
+                               type: 'logarithmic', min: extendedMinPrice, max: extendedMaxPrice,
+                               title: { display: true, text: 'Price (Log Scale)', color: '#64748b', font: { size: 11, family: 'Inter' } },
+                               ticks: { 
+                                   color: '#64748b', font: { family: "'Inter', sans-serif", size: 10 }, 
+                                   callback: function(value, index, ticks) {
+                                       const logVal = Math.log10(value);
+                                       if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                           return `$${value.toLocaleString()}`;
+                                       }
+                                       return ''; 
+                                   }
+                               },
+                               afterBuildTicks: yAxisAfterBuildTicks, 
+                               grid: { 
+                                   color: function(context) {
+                                       const value = context.tick.value;
+                                       if (value <= 0) return 'rgba(0, 0, 0, 0.05)'; 
+                                       const logVal = Math.log10(value);
+                                       if (Math.abs(logVal - Math.round(logVal)) < 1e-9) {
+                                           return 'rgba(0, 0, 0, 0.08)'; 
+                                       } else {
+                                           return 'rgba(0, 0, 0, 0.03)';
+                                       }
+                                   }
+                               }
+                           }
+                       }
                     }
+                });
+                
+                // --- Store original colors for new chart ---
+                chart.data.datasets.forEach(ds => {
+                    ds._origBorder = ds.borderColor || 'transparent';
+                    ds._origBackground = ds.backgroundColor || 'transparent';
                 });
             }
 
@@ -1302,18 +1356,108 @@
              
              const showBands = showBandsCheckbox.checked;
              
+             // UI Updates (Popup)
              if (showBands) {
-                 bandLevelsTable.style.top = ''; 
-                 bandLevelsTable.style.left = ''; 
-                 
                  bandLevelsTable.style.display = ''; 
                  bandLevelsTable.classList.remove('hidden'); 
              } else {
                  bandLevelsTable.style.display = 'none'; 
              }
+             
+             // Trigger Animation
+             animateBandTransition(showBands);
+        }
 
-             applyBandVisibility(showBands);
-             chart.update();
+        function animateBandTransition(targetShowBands) {
+             if (!chart) return;
+             
+             const startTime = performance.now();
+             const duration = 1500; // 1.5 seconds
+             
+             const datasets = chart.data.datasets;
+             const enteringIndices = [];
+             const exitingIndices = [];
+             
+             datasets.forEach((ds, i) => {
+                 // Price (5) is always visible, ignore
+                 if (i === 5) return;
+                 
+                 let shouldBeVisible = false;
+                 
+                 if (targetShowBands) {
+                     // Bands Mode: Show Fills (0-4) and Fine Lines (11-15)
+                     if (i <= 4) shouldBeVisible = true;
+                     if (i >= 11 && i <= 15) shouldBeVisible = true; 
+                 } else {
+                     // Simple Mode: Show Simple Lines (6-10)
+                     if (i >= 6 && i <= 10) {
+                         // Default simple mode: 6(Med), 7(1st), 8(99th) are visible. 9,10 hidden.
+                         if (i === 6 || i === 7 || i === 8) shouldBeVisible = true;
+                     }
+                 }
+                 
+                 if (shouldBeVisible) {
+                     enteringIndices.push(i);
+                     // Make sure it's not hidden so it can fade in
+                     chart.setDatasetVisibility(i, true);
+                 } else {
+                     // Only fade out if it is currently visible
+                     if (chart.isDatasetVisible(i)) {
+                         exitingIndices.push(i);
+                     }
+                 }
+             });
+             
+             function frame(now) {
+                 const elapsed = now - startTime;
+                 const progress = Math.min(elapsed / duration, 1);
+                 
+                 // Linear interpolation
+                 const ease = progress; 
+
+                 // Fade In
+                 enteringIndices.forEach(idx => {
+                     const ds = datasets[idx];
+                     const origBorder = ds._origBorder;
+                     const origBg = ds._origBackground;
+                     
+                     ds.borderColor = ColorUtils.setAlpha(origBorder, ease);
+                     ds.backgroundColor = ColorUtils.setAlpha(origBg, ease);
+                 });
+                 
+                 // Fade Out
+                 exitingIndices.forEach(idx => {
+                     const ds = datasets[idx];
+                     const origBorder = ds._origBorder;
+                     const origBg = ds._origBackground;
+                     
+                     ds.borderColor = ColorUtils.setAlpha(origBorder, 1 - ease);
+                     ds.backgroundColor = ColorUtils.setAlpha(origBg, 1 - ease);
+                 });
+                 
+                 chart.update('none'); // Efficient update without recalculating scales
+                 
+                 if (progress < 1) {
+                     requestAnimationFrame(frame);
+                 } else {
+                     // Cleanup: Set final states
+                     exitingIndices.forEach(idx => {
+                         chart.setDatasetVisibility(idx, false);
+                         // Restore colors for next time
+                         datasets[idx].borderColor = datasets[idx]._origBorder;
+                         datasets[idx].backgroundColor = datasets[idx]._origBackground;
+                     });
+                     
+                     enteringIndices.forEach(idx => {
+                         chart.setDatasetVisibility(idx, true);
+                         datasets[idx].borderColor = datasets[idx]._origBorder;
+                         datasets[idx].backgroundColor = datasets[idx]._origBackground;
+                     });
+                     chart.update('none');
+                 }
+             }
+             
+             requestAnimationFrame(frame);
         }
 
         function applyBandVisibility(showBands) {
