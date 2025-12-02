@@ -473,10 +473,10 @@
 
             <!-- Log-Log Toggle (Moved to End) -->
             <div class="flex items-center group">
-                 <label for="linearTimeCheckbox" class="flex items-center cursor-pointer select-none">
-                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Linear Time</span>
+                 <label for="logLogCheckbox" class="flex items-center cursor-pointer select-none">
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log Time</span>
                       <div class="relative">
-                          <input type="checkbox" id="linearTimeCheckbox" class="peer sr-only">
+                          <input type="checkbox" id="logLogCheckbox" class="peer sr-only" checked>
                           <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                           <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
                       </div>
@@ -519,7 +519,7 @@
         const projectionTable = document.getElementById('projectionTable');
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
-        const linearTimeCheckbox = document.getElementById('linearTimeCheckbox');
+        const logLogCheckbox = document.getElementById('logLogCheckbox');
         const autoFitCheckbox = document.getElementById('autoFitCheckbox');
         
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
@@ -749,7 +749,7 @@
             // Determine Mode from Checkbox
             currentOffsetMode = autoFitCheckbox.checked ? MODE_A : MODE_N;
 
-            const isLinearTime = linearTimeCheckbox.checked;
+            const isLinearTime = !logLogCheckbox.checked;
 
             let slope, meanIntercept, rSquared;
             let activeDayOffset;
@@ -1291,7 +1291,7 @@
             showBandsCheckbox.removeEventListener('change', handleBandToggle);
             showBandsCheckbox.addEventListener('change', handleBandToggle);
             
-            linearTimeCheckbox.addEventListener('change', createOrUpdateChart);
+            logLogCheckbox.addEventListener('change', createOrUpdateChart);
 
             applyBandVisibility(showBandsCheckbox.checked);
             if(chart) chart.update('none'); 
