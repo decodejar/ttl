@@ -1372,19 +1372,19 @@
              if (!chart) return;
              
              const startTime = performance.now();
-             const duration = 500; // milliseconds
+             const duration = 600; // 0.6 seconds (Faster)
              
              const datasets = chart.data.datasets;
              const enteringIndices = [];
              const exitingIndices = [];
              
              datasets.forEach((ds, i) => {
-                 // Price (5) is always visible, ignore
-                 if (i === 5) return;
-                 
                  let shouldBeVisible = false;
                  
-                 if (targetShowBands) {
+                 // Price (5) should always be visible
+                 if (i === 5) {
+                     shouldBeVisible = true;
+                 } else if (targetShowBands) {
                      // Bands Mode: Show Fills (0-4) and Fine Lines (11-15)
                      if (i <= 4) shouldBeVisible = true;
                      if (i >= 11 && i <= 15) shouldBeVisible = true; 
@@ -1397,9 +1397,11 @@
                  }
                  
                  if (shouldBeVisible) {
-                     enteringIndices.push(i);
-                     // Make sure it's not hidden so it can fade in
-                     chart.setDatasetVisibility(i, true);
+                     // Only fade in if NOT currently visible (prevents resetting opacity of already visible items like Price)
+                     if (!chart.isDatasetVisible(i)) {
+                         enteringIndices.push(i);
+                         chart.setDatasetVisibility(i, true);
+                     }
                  } else {
                      // Only fade out if it is currently visible
                      if (chart.isDatasetVisible(i)) {
