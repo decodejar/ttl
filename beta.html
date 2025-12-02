@@ -453,13 +453,16 @@
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
             
-            <!-- 2-Way Switch: N | A -->
-             <div class="flex items-center gap-2">
-                 <span class="mr-1 text-xs md:text-sm font-medium text-slate-600">Model</span>
-                 <div class="flex items-center bg-slate-200 p-0.5 rounded-lg">
-                    <button type="button" id="btnN" class="px-3 py-1 rounded-md text-xs font-semibold bg-white text-blue-600 shadow-sm transition-all focus:outline-none"></button>
-                    <button type="button" id="btnA" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-500 hover:text-slate-700 transition-all focus:outline-none"></button>
-                 </div>
+            <!-- NEW Switch: Auto Fit -->
+            <div class="flex items-center group">
+                 <label for="autoFitCheckbox" class="flex items-center cursor-pointer select-none">
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Auto Fit</span>
+                      <div class="relative">
+                          <input type="checkbox" id="autoFitCheckbox" class="peer sr-only">
+                          <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                      </div>
+                 </label>
             </div>
 
             <!-- Model Parameters (Moved After Switch) -->
@@ -517,11 +520,8 @@
         const projectionData = document.getElementById('projectionData');
         const bandLevelsTable = document.getElementById('bandLevelsTable');
         const logLogCheckbox = document.getElementById('logLogCheckbox');
+        const autoFitCheckbox = document.getElementById('autoFitCheckbox');
         
-        // Buttons for Switch
-        const btnN = document.getElementById('btnN');
-        const btnA = document.getElementById('btnA');
-
         // --- SECTION: CHART CONFIGURATION & CONSTANTS ---
 
         const OFFSET_NAKAMOTO = 486; 
@@ -536,9 +536,6 @@
         // --- SWITCH LABELS & MODES ---
         const MODE_N = 'N';
         const MODE_A = 'A';
-
-        const LABEL_N = 'N';
-        const LABEL_A = 'A';
 
         let chart; 
         let baseData = []; 
@@ -703,24 +700,6 @@
             return ss_tot === 0 ? 1 : Math.max(0, 1 - (ss_res / ss_tot)); 
         }
 
-        // --- SECTION: UI LOGIC FOR SWITCH ---
-        
-        function updateSwitchUI(mode) {
-            // Reset styles
-            const inactiveClass = "text-slate-500 hover:text-slate-700 bg-transparent shadow-none";
-            const activeClass = "bg-white text-blue-600 shadow-sm";
-
-            btnN.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_N ? activeClass : inactiveClass}`;
-            btnA.className = `px-3 py-1 rounded-md text-xs font-semibold transition-all focus:outline-none ${mode === MODE_A ? activeClass : inactiveClass}`;
-        }
-
-        function setOffsetMode(mode) {
-            if (currentOffsetMode === mode) return;
-            currentOffsetMode = mode;
-            updateSwitchUI(mode);
-            createOrUpdateChart();
-        }
-
         // --- SECTION: CORE APPLICATION LOGIC ---
 
         async function createOrUpdateChart() {
@@ -746,16 +725,17 @@
                 modelFitDiv.innerHTML = 'Fit (R²): <span class="font-bold font-mono text-slate-800">N/A</span>';
                 
                 // Disable Buttons
-                btnN.disabled = true;
-                btnA.disabled = true;
+                autoFitCheckbox.disabled = true;
 
                 loader.style.display = 'none';
                 return;
             }
             
             // Enable Buttons
-            btnN.disabled = false;
-            btnA.disabled = false;
+            autoFitCheckbox.disabled = false;
+
+            // Determine Mode from Checkbox
+            currentOffsetMode = autoFitCheckbox.checked ? MODE_A : MODE_N;
 
             const isLinearTime = !logLogCheckbox.checked;
 
@@ -1892,13 +1872,8 @@
 
         // Initial load
         window.onload = () => {
-            // Initialize button text
-            btnN.innerText = LABEL_N;
-            btnA.innerText = LABEL_A;
-
             // Bind click listeners using variables
-            btnN.onclick = () => setOffsetMode(MODE_N);
-            btnA.onclick = () => setOffsetMode(MODE_A);
+            autoFitCheckbox.addEventListener('change', createOrUpdateChart);
 
             createOrUpdateChart();
             
