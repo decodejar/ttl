@@ -73,9 +73,6 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    screens: {
-                        'md': '800px', /* Redefine 'md' breakpoint from default 768px to 800px */
-                    },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         handwriting: ['Courgette', 'cursive'],
@@ -303,34 +300,7 @@
         }
         #projectionTable h3 button:hover,
         #bandLevelsTable h3 button:hover { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
-
-        /* --- Height-Based Responsive Overrides --- */
-        /* Forces "Compact Mode" when height is < 600px */
-        @media (max-height: 600px) {
-            
-            /* Compact Header */
-            header {
-                height: 3.5rem !important; /* h-14 equivalent */
-            }
-            
-            /* Compact Top & Bottom Bars */
-            #topStatusBar, 
-            #bottomModelBar {
-                padding-top: 0.5rem !important;    /* py-2 equivalent */
-                padding-bottom: 0.5rem !important; /* py-2 equivalent */
-            }
-
-            /* Force smaller text on bars and their labels */
-            #topStatusBar, #topStatusBar *,
-            #bottomModelBar, #bottomModelBar * {
-                font-size: 0.75rem !important;     /* text-xs equivalent */
-                line-height: 1rem !important;
-            }
-            
-            /* Adjust specific spacing gaps if needed */
-            #topStatusBar { gap: 0.5rem !important; }
-        }
-        
+       
     </style>
 </head>
 <body class="text-slate-800 flex flex-col items-center h-screen p-3 sm:p-4 md:px-6 md:pt-6 md:pb-2 overflow-y-auto bg-slate-200">
