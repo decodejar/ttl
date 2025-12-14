@@ -452,6 +452,18 @@
 
         <!-- Bottom Model Info Bar -->
         <div id="bottomModelBar" class="bg-slate-50 border-t border-slate-100 px-4 sm:px-6 py-2 md:py-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs md:text-sm font-medium text-slate-500">
+
+            <!-- Log-Log Toggle (Moved to End) -->
+            <div class="flex items-center group">
+                 <label for="linearTimeCheckbox" class="flex items-center cursor-pointer select-none">
+                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log-Linear</span>
+                      <div class="relative">
+                          <input type="checkbox" id="linearTimeCheckbox" class="peer sr-only">
+                          <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
+                      </div>
+                 </label>
+            </div>
             
             <!-- NEW Switch: Auto Fit -->
             <div class="flex items-center group">
@@ -471,17 +483,6 @@
             <div id="growthExponentDiv" class="text-slate-600"></div>
             <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
 
-            <!-- Log-Log Toggle (Moved to End) -->
-            <div class="flex items-center group">
-                 <label for="linearTimeCheckbox" class="flex items-center cursor-pointer select-none">
-                      <span class="mr-3 text-xs md:text-sm font-medium text-slate-600 group-hover:text-blue-600 transition-colors">Log-Linear</span>
-                      <div class="relative">
-                          <input type="checkbox" id="linearTimeCheckbox" class="peer sr-only">
-                          <div class="block h-6 w-10 rounded-full bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 transition-colors peer-checked:bg-blue-500 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
-                          <div class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-4"></div>
-                      </div>
-                 </label>
-            </div>
         </div>
     </div>
 
