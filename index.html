@@ -341,9 +341,9 @@
 
             <!-- Center: Title -->
             <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2">
-                <h1 class="text-lg sm:text-xl md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
+                <h1 class="text-lg md:text-2xl font-semibold text-black tracking-tight whitespace-nowrap">
                     TAO Tensor Law
-                    <span class="hidden sm:inline ml-1 sm:text-base md:text-lg text-slate-400 font-handwriting font-normal text-blue-500/80">Bittensor Price Model</span>
+                    <span class="hidden sm:inline ml-1 sm:text-sm md:text-lg text-slate-400 font-handwriting font-normal text-blue-500/80">Bittensor Price Model</span>
                 </h1>
                 <!-- Tooltip -->
                 <div class="group relative flex items-center">
@@ -966,7 +966,7 @@
 
                 if (bubbleEl) bubbleEl.textContent = `$${lastP80Price.toFixed(2)} - $${lastP99Price.toFixed(2)}`;
                 if (expensiveEl) expensiveEl.textContent = `$${lastP50Price.toFixed(2)} - $${lastP80Price.toFixed(2)}`;
-                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP50Price.toFixed(2)}`;
+                if (valueEl) valueEl.textContent = `$${lastP20Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
                 if (discountEl) discountEl.textContent = `$${lastP1Price.toFixed(2)} - $${lastP20Price.toFixed(2)}`;
             }
             
