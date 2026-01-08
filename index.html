@@ -955,12 +955,21 @@
             // Updated: Add medianIntercept to params for use in calculateProjections
             activeModelParams.medianIntercept = medianIntercept;
 
+            // Calculate "Today" relative to start for consistent reporting in Bands Popup
+            const startTimestamp = baseData[0].time;
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const currentTimestamp = new Date().getTime();
+            const daysSinceStart = Math.round((currentTimestamp - startTimestamp) / msPerDay);
+            const todayIndex = baseData[0].dayIndex + daysSinceStart;
+            const todayLogX = Math.log10(todayIndex + activeDayOffset);
+
             if (bandLevelsTable) {
-                const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
-                const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
-                const lastP50Price = Math.pow(10, slope * lastLogX + medianIntercept);
-                const lastP80Price = Math.pow(10, slope * lastLogX + p80Intercept);
-                const lastP99Price = Math.pow(10, slope * lastLogX + p99Intercept);
+                // Use todayLogX instead of lastLogX to align with Fair Value projection
+                const lastP1Price = Math.pow(10, slope * todayLogX + p1Intercept);
+                const lastP20Price = Math.pow(10, slope * todayLogX + p20Intercept);
+                const lastP50Price = Math.pow(10, slope * todayLogX + medianIntercept);
+                const lastP80Price = Math.pow(10, slope * todayLogX + p80Intercept);
+                const lastP99Price = Math.pow(10, slope * todayLogX + p99Intercept);
 
                 const bubbleEl = document.querySelector('#bandLevelsTable #bandLevelBubble > span:last-child');
                 const expensiveEl = document.querySelector('#bandLevelsTable #bandLevelExpensive > span:last-child');
