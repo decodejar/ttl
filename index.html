@@ -952,6 +952,9 @@
             const p20Intercept = meanIntercept + p20Residual;
             const p80Intercept = meanIntercept + p80Residual;
 
+            // Updated: Add medianIntercept to params for use in calculateProjections
+            activeModelParams.medianIntercept = medianIntercept;
+
             if (bandLevelsTable) {
                 const lastP1Price = Math.pow(10, slope * lastLogX + p1Intercept);
                 const lastP20Price = Math.pow(10, slope * lastLogX + p20Intercept);
@@ -987,29 +990,29 @@
 
             // Updated Line Calculation Logic for Curve support in Linear mode
             const calculateLinePoints = (intercept) => {
-                  const safeStartIndex = Math.max(startIndex, 1); 
-                  const safeEndIndex = Math.max(endIndex, 1);
-                  
-                  if (!isLinearTime) {
-                      // Log mode: Just 2 points form a straight line
-                      return [
-                          { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
-                          { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
-                      ];
-                  } else {
-                      // Linear mode: Needs many points to form a curve
-                      const points = [];
-                      const steps = 150; // Resolution of curve
-                      const range = safeEndIndex - safeStartIndex;
-                      const stepSize = range / steps;
-                      
-                      for (let i = 0; i <= steps; i++) {
-                          const currentX = safeStartIndex + (stepSize * i);
-                          const y = Math.pow(10, slope * Math.log10(currentX) + intercept);
-                          points.push({x: currentX, y: y});
-                      }
-                      return points;
-                  }
+                 const safeStartIndex = Math.max(startIndex, 1); 
+                 const safeEndIndex = Math.max(endIndex, 1);
+                 
+                 if (!isLinearTime) {
+                     // Log mode: Just 2 points form a straight line
+                     return [
+                         { x: startIndex, y: Math.pow(10, slope * Math.log10(safeStartIndex) + intercept) },
+                         { x: endIndex, y: Math.pow(10, slope * Math.log10(safeEndIndex) + intercept) }
+                     ];
+                 } else {
+                     // Linear mode: Needs many points to form a curve
+                     const points = [];
+                     const steps = 150; // Resolution of curve
+                     const range = safeEndIndex - safeStartIndex;
+                     const stepSize = range / steps;
+                     
+                     for (let i = 0; i <= steps; i++) {
+                         const currentX = safeStartIndex + (stepSize * i);
+                         const y = Math.pow(10, slope * Math.log10(currentX) + intercept);
+                         points.push({x: currentX, y: y});
+                     }
+                     return points;
+                 }
             };
 
             const medianLineData = calculateLinePoints(medianIntercept);
@@ -1537,7 +1540,8 @@
                 return;
             }
 
-            const { slope, meanIntercept, activeDayOffset } = modelParams;
+            // Updated: Use medianIntercept for Fair Value calculation to align with chart/bands
+            const { slope, medianIntercept, activeDayOffset } = modelParams;
             const firstDataPointDate = new Date(baseData[0].time);
             const firstDayIndex = baseData[0].dayIndex; 
             
@@ -1560,7 +1564,8 @@
                 let dayForLog = targetDayIndex + activeDayOffset;
                 if (dayForLog <= 0) return NaN; 
                 const logX = Math.log10(dayForLog);
-                return Math.pow(10, slope * logX + meanIntercept);
+                // Using medianIntercept (50th Percentile) for consistency
+                return Math.pow(10, slope * logX + medianIntercept);
             };
 
             let rowsHtml = '';
