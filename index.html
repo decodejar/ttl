@@ -459,7 +459,7 @@
                 const text = 'taotensorlaw.com';
 
                 const baseFontSize = Math.max(30, Math.min(120, width / 12));
-                ctx.font = `bold ${baseFontSize.toFixed(0)}px Inter, sans-serif`;
+                ctx.font = `600 ${baseFontSize.toFixed(0)}px Inter, sans-serif`; // 600, not 'bold': preserves the original rendered weight now that Inter 700 is loaded for the logo
                 ctx.fillStyle = 'rgba(15, 23, 42, 0.075)';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
