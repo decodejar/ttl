@@ -319,15 +319,15 @@
     </div>
 
     <script>
-        // Disclaimer gate: lock the app until the visitor accepts. Acceptance is remembered
-        // on this device; bump the key version if the disclaimer wording changes.
+        // Disclaimer gate: lock the app until the visitor accepts. Acceptance lasts for
+        // this browser session; bump the key version if the disclaimer wording changes.
         (function () {
             var KEY = 'ttl-disclaimer-v1';
             var overlay = document.getElementById('disclaimerOverlay');
             var main = document.getElementById('mainContainer');
             if (!overlay || !main) return;
             var accepted = false;
-            try { accepted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+            try { accepted = sessionStorage.getItem(KEY) === '1'; } catch (e) {}
             if (accepted) { overlay.remove(); return; }
             var locked = Array.prototype.filter.call(main.children, function (el) { return el !== overlay; });
             locked.forEach(function (el) { el.setAttribute('inert', ''); });
@@ -335,7 +335,7 @@
             if (panel) panel.style.display = 'none';
             var btn = document.getElementById('disclaimerAccept');
             btn.addEventListener('click', function () {
-                try { localStorage.setItem(KEY, '1'); } catch (e) {}
+                try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
                 locked.forEach(function (el) { el.removeAttribute('inert'); });
                 if (panel) panel.style.display = '';
                 overlay.remove();
