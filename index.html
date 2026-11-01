@@ -307,7 +307,42 @@
             <div id="modelFitDiv" class="flex items-center text-slate-600"></div>
 
         </div>
+
+        <!-- Disclaimer: chart stays visible behind this but cannot be used until accepted -->
+        <div id="disclaimerOverlay" class="absolute inset-0 z-50 flex items-center justify-center" style="background-color: rgba(248, 250, 252, 0.35); padding: 1rem;">
+            <div role="dialog" aria-modal="true" aria-labelledby="disclaimerTitle" aria-describedby="disclaimerBody" class="bg-white border border-slate-200 rounded-lg shadow-xl text-center overflow-y-auto" style="width: min(22rem, 100%); max-height: 100%; padding: 1.25rem 1.5rem;">
+                <h2 id="disclaimerTitle" class="text-lg font-semibold text-slate-900 mb-2">Before You Continue</h2>
+                <p id="disclaimerBody" class="text-xs md:text-sm leading-relaxed text-slate-600">TAO Tensor Law is an experimental research tool. It charts TAO's price history against a power-law regression and shows where price has historically sat relative to that trend. It does not value TAO, predict its price or recommend any action, and nothing here is financial advice.</p>
+                <button id="disclaimerAccept" type="button" class="mt-6 px-4 py-2 bg-white border border-slate-200 text-blue-600 text-xs md:text-sm font-semibold rounded-lg shadow-md hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300">I Understand</button>
+            </div>
+        </div>
     </div>
+
+    <script>
+        // Disclaimer gate: lock the app until the visitor accepts. Acceptance is remembered
+        // on this device; bump the key version if the disclaimer wording changes.
+        (function () {
+            var KEY = 'ttl-disclaimer-v1';
+            var overlay = document.getElementById('disclaimerOverlay');
+            var main = document.getElementById('mainContainer');
+            if (!overlay || !main) return;
+            var accepted = false;
+            try { accepted = localStorage.getItem(KEY) === '1'; } catch (e) {}
+            if (accepted) { overlay.remove(); return; }
+            var locked = Array.prototype.filter.call(main.children, function (el) { return el !== overlay; });
+            locked.forEach(function (el) { el.setAttribute('inert', ''); });
+            var panel = document.getElementById('modelPanel');
+            if (panel) panel.style.display = 'none';
+            var btn = document.getElementById('disclaimerAccept');
+            btn.addEventListener('click', function () {
+                try { localStorage.setItem(KEY, '1'); } catch (e) {}
+                locked.forEach(function (el) { el.removeAttribute('inert'); });
+                if (panel) panel.style.display = '';
+                overlay.remove();
+            });
+            try { btn.focus({ preventScroll: true }); } catch (e) { btn.focus(); }
+        })();
+    </script>
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 px-4 sm:px-6 py-2 pt-3 md:py-3 md:pt-4 space-y-1 w-full">
@@ -324,7 +359,7 @@
                 </a>
             </div>
         </div>
-        <p class="text-[10px] text-slate-400 leading-relaxed">Disclaimer: TAO Tensor Law is an experimental research and educational tool. It describes historical price behaviour against a statistical trend and does not value any asset, predict any price, or recommend any action. Nothing here is financial, investment or trading advice, and nothing here is tailored to anyone's circumstances. The author is not a licensed financial adviser. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
+        <p class="text-[10px] text-slate-400 leading-relaxed">Disclaimer: TAO Tensor Law is an experimental research and educational tool. It describes historical price behaviour against a statistical trend and does not value any asset, predict any price, or recommend any action. Nothing here is financial, investment or trading advice, and nothing here is tailored to anyone's circumstances. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
     </footer>
 
 
