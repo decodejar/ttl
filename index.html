@@ -45,7 +45,7 @@
           "@id": "https://taotensorlaw.com/#software",
           "name": "TAO Tensor Law",
           "url": "https://taotensorlaw.com/",
-          "applicationCategory": "UtilitiesApplication",
+          "applicationCategory": "FinanceApplication",
           "operatingSystem": "Web",
           "author": {
             "@id": "https://decodejar.com/#organization"
@@ -233,7 +233,6 @@
                     <div id="modelPanelBody">
                         <h3 class="text-xs md:text-sm">Model Trend</h3>
                         <div id="projectionData" class="flex flex-col"></div>
-                        <p class="text-[10px] text-slate-400 leading-relaxed pt-1">Fitted trend extended forward. Not a forecast.</p>
                         <div id="bandsSection" class="hidden">
                             <h3 class="text-xs md:text-sm flex items-center justify-between gap-4">
                                 <span>Trend Bands</span>
@@ -245,20 +244,20 @@
                                 </select>
                             </h3>
                             <div id="bandsData" class="flex flex-col">
-                                <div id="bandLevelHighest">
-                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-slate-300 mr-2 shadow-sm"></span>Highest</span>
+                                <div id="bandLevelBubble">
+                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-red-400 mr-2 shadow-sm"></span>Highest</span>
                                     <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                                 </div>
-                                <div id="bandLevelUpper">
-                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-slate-400 mr-2 shadow-sm"></span>Upper</span>
+                                <div id="bandLevelExpensive">
+                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-yellow-400 mr-2 shadow-sm"></span>Upper</span>
                                     <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                                 </div>
-                                <div id="bandLevelLower">
-                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-slate-400 mr-2 shadow-sm"></span>Lower</span>
+                                <div id="bandLevelValue">
+                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-green-500 mr-2 shadow-sm"></span>Lower</span>
                                     <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                                 </div>
-                                <div id="bandLevelLowest">
-                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-slate-300 mr-2 shadow-sm"></span>Lowest</span>
+                                <div id="bandLevelDiscount">
+                                    <span class="inline-flex items-center text-xs"><span class="w-2 h-2 rounded-full bg-blue-400 mr-2 shadow-sm"></span>Lowest</span>
                                     <span class="whitespace-nowrap text-slate-700 font-mono">$N/A</span>
                                 </div>
                             </div>
@@ -325,13 +324,13 @@
                 </a>
             </div>
         </div>
-        <p class="text-xs text-slate-500 leading-relaxed">Disclaimer: TAO Tensor Law is an experimental research and educational tool. It describes historical price behaviour against a statistical trend and does not value any asset, predict any price, or recommend any action. Nothing here is financial, investment or trading advice, and nothing here is tailored to anyone's circumstances. The author is not a licensed financial adviser. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
+        <p class="text-[10px] text-slate-400 leading-relaxed">Disclaimer: TAO Tensor Law is an experimental research and educational tool. It describes historical price behaviour against a statistical trend and does not value any asset, predict any price, or recommend any action. Nothing here is financial, investment or trading advice, and nothing here is tailored to anyone's circumstances. The author is not a licensed financial adviser. The cryptocurrency market is volatile; invest at your own risk and only what you can afford to lose. Past performance does not guarantee future results.</p>
     </footer>
 
 
     <script>
         /*
-         * TAO Tensor Law Model, by decodejar
+         * TAO Tensor Law Model — by decodejar
          * Copyright (c) 2025 taotensorlaw.com. All Rights Reserved.
          */
 
@@ -471,10 +470,10 @@
         let lastTapY = 0;
 
         // Band Fill Colors
-        const blueFillColor = 'rgba(100, 116, 139, 0.08)';  // Lowest band (P1-P20)
-        const greenFillColor = 'rgba(100, 116, 139, 0.18)'; // Lower band (P20-P50)
-        const yellowFillColor = 'rgba(100, 116, 139, 0.18)'; // Upper band (P50-P80)
-        const redFillColor = 'rgba(100, 116, 139, 0.08)';   // Highest band (P80-P99)
+        const blueFillColor = 'rgba(96, 165, 250, 0.15)';  // Blue-400
+        const greenFillColor = 'rgba(74, 222, 128, 0.15)'; // Green-400
+        const yellowFillColor = 'rgba(250, 204, 21, 0.15)'; // Yellow-400
+        const redFillColor = 'rgba(248, 113, 113, 0.15)';   // Red-400
 
         // Reusable Line Styles
         const orangeLineStyle = { borderColor: '#f97316', borderWidth: 2, borderDash: [] }; // Orange-500
@@ -782,10 +781,10 @@
 
             let priceZone = "";
             let priceZoneColor = "";
-            if (lastResidual > p80Residual) { priceZone = "Highest band"; priceZoneColor = "bg-slate-400"; }
-            else if (lastResidual > medianResidual) { priceZone = "Upper band"; priceZoneColor = "bg-slate-400"; }
-            else if (lastResidual > p20Residual) { priceZone = "Lower band"; priceZoneColor = "bg-slate-400"; }
-            else { priceZone = "Lowest band"; priceZoneColor = "bg-slate-400"; }
+            if (lastResidual > p80Residual) { priceZone = "Highest band"; priceZoneColor = "bg-red-500"; }
+            else if (lastResidual > medianResidual) { priceZone = "Upper band"; priceZoneColor = "bg-yellow-400"; }
+            else if (lastResidual > p20Residual) { priceZone = "Lower band"; priceZoneColor = "bg-green-500"; }
+            else { priceZone = "Lowest band"; priceZoneColor = "bg-blue-400"; }
 
             priceZoneDiv.innerHTML = `<span class="status-dot ${priceZoneColor}"></span><span class="font-medium font-sans text-slate-600">${priceZone}</span>`;
             priceZoneDiv.classList.remove('hidden');
@@ -1059,13 +1058,13 @@
                         datasets: [
                             // 0: Boundary P1
                             { ...fillDatasetDefaults, label: 'Boundary P1', data: p1LineData, borderColor: 'transparent', fill: false },
-                            // 1: Lowest band (P1-P20)
+                            // 1: Discount Band
                             { ...fillDatasetDefaults, label: 'Lowest band (P1-P20)', data: p20LineData, borderColor: 'transparent', backgroundColor: blueFillColor, fill: 0 },
-                            // 2: Lower band (P20-P50)
+                            // 2: Value Band
                             { ...fillDatasetDefaults, label: 'Lower band (P20-P50)', data: medianLineData, borderColor: 'transparent', backgroundColor: greenFillColor, fill: 1 },
-                            // 3: Upper band (P50-P80)
+                            // 3: Expensive Band
                             { ...fillDatasetDefaults, label: 'Upper band (P50-P80)', data: p80LineData, borderColor: 'transparent', backgroundColor: yellowFillColor, fill: 2 },
-                            // 4: Highest band (P80-P99)
+                            // 4: Bubble Band
                             { ...fillDatasetDefaults, label: 'Highest band (P80-P99)', data: p99LineData, borderColor: 'transparent', backgroundColor: redFillColor, fill: 3 },
 
                             // 5: Price
@@ -1445,7 +1444,7 @@
         }
 
         // Recompute the Trend Bands ranges for the date chosen in the dropdown
-        // (Today, or 1 January of the next three years, same convention as Model Trend).
+        // (Today, or 1 January of the next three years — same convention as Model Trend).
         function updateBandLevels() {
             if (!bandsSection || !baseData || baseData.length === 0 || !activeModelParams) return;
             const { slope, activeDayOffset, medianIntercept, p1Intercept, p20Intercept, p80Intercept, p99Intercept } = activeModelParams;
@@ -1465,13 +1464,13 @@
             const targetDayIndex = baseData[0].dayIndex + Math.round((targetDate.getTime() - baseData[0].time) / MS_PER_DAY);
             const xVal = targetDayIndex + activeDayOffset;
 
-            const highestEl = document.querySelector('#bandsSection #bandLevelHighest > span:last-child');
-            const upperEl = document.querySelector('#bandsSection #bandLevelUpper > span:last-child');
-            const lowerEl = document.querySelector('#bandsSection #bandLevelLower > span:last-child');
-            const lowestEl = document.querySelector('#bandsSection #bandLevelLowest > span:last-child');
+            const bubbleEl = document.querySelector('#bandsSection #bandLevelBubble > span:last-child');
+            const expensiveEl = document.querySelector('#bandsSection #bandLevelExpensive > span:last-child');
+            const valueEl = document.querySelector('#bandsSection #bandLevelValue > span:last-child');
+            const discountEl = document.querySelector('#bandsSection #bandLevelDiscount > span:last-child');
 
             if (xVal <= 0) {
-                [highestEl, upperEl, lowerEl, lowestEl].forEach(el => { if (el) el.textContent = '$N/A'; });
+                [bubbleEl, expensiveEl, valueEl, discountEl].forEach(el => { if (el) el.textContent = '$N/A'; });
                 return;
             }
 
@@ -1479,10 +1478,10 @@
             const priceAt = (intercept) => Math.pow(10, slope * logX + intercept);
             const p1 = priceAt(p1Intercept), p20 = priceAt(p20Intercept), p50 = priceAt(medianIntercept), p80 = priceAt(p80Intercept), p99 = priceAt(p99Intercept);
 
-            if (highestEl) highestEl.textContent = `$${p80.toFixed(2)} - $${p99.toFixed(2)}`;
-            if (upperEl) upperEl.textContent = `$${p50.toFixed(2)} - $${p80.toFixed(2)}`;
-            if (lowerEl) lowerEl.textContent = `$${p20.toFixed(2)} - $${p50.toFixed(2)}`;
-            if (lowestEl) lowestEl.textContent = `$${p1.toFixed(2)} - $${p20.toFixed(2)}`;
+            if (bubbleEl) bubbleEl.textContent = `$${p80.toFixed(2)} - $${p99.toFixed(2)}`;
+            if (expensiveEl) expensiveEl.textContent = `$${p50.toFixed(2)} - $${p80.toFixed(2)}`;
+            if (valueEl) valueEl.textContent = `$${p20.toFixed(2)} - $${p50.toFixed(2)}`;
+            if (discountEl) discountEl.textContent = `$${p1.toFixed(2)} - $${p20.toFixed(2)}`;
         }
 
         function calculateProjections(baseData, modelParams, dataElement) {
